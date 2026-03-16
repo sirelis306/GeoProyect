@@ -1,0 +1,41 @@
+.main-layout {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+  
+  .sidebar-container {
+    width: 320px;
+    height: 100%;
+    background: white;
+    border-right: 1px solid #ddd;
+    z-index: 1000;
+  }
+  
+  .map-container {
+    flex-grow: 1;
+    height: 100%;
+    position: relative;
+  }
+
+  .dashboard-wrapper {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+  
+  .sidebar-aside {
+    width: 320px;
+    height: 100%;
+    flex-shrink: 0;
+    border-right: 1px solid #eee;
+  }
+  
+  .map-view {
+    flex-grow: 1;
+    height: 100%;
+  }

@@ -1,0 +1,16 @@
+.sidebar { padding: 20px; font-family: sans-serif; }
+.brand { display: flex; align-items: center; margin-bottom: 30px; }
+.brand-text strong { display: block; color: #ff6600; font-size: 1.2em; }
+.section-label { font-size: 11px; color: #888; margin: 20px 0 10px; font-weight: bold; }
+.layer-item { 
+  width: 100%; text-align: left; padding: 12px; margin-bottom: 8px;
+  border: 1px solid #eee; border-radius: 10px; background: #fff; cursor: pointer;
+}
+.layer-item.active { border-color: #ff6600; box-shadow: 0 2px 8px rgba(255,102,0,0.1); }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 10px; }
+.orange { background: #ff6600; }
+.blue { background: #007bff; }
+.btn-main { 
+  width: 100%; padding: 12px; background: #fff0e6; color: #ff6600; 
+  border: none; border-radius: 10px; font-weight: bold; cursor: pointer;
+}
