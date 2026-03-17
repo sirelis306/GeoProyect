@@ -1,6 +1,47 @@
-#map {
-    height: 100%; 
-    width: 100%;
-    min-height: 100vh; 
-    display: block;
-  }
+/* Asegurar que el contenedor principal ocupe todo el espacio */
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* Evita scroll en el componente */
+}
+
+#map { 
+  height: 100%; 
+  width: 100%;
+  display: block;
+}
+
+  /* Panel de capas claro y moderno */
+::ng-deep .leaflet-control-layers {
+  border-radius: 12px !important;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+  padding: 12px !important;
+}
+
+/* Quita el fondo blanco y borde que Leaflet pone por defecto a los DivIcon */
+.leaflet-div-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Contenedor del marcador personalizado */
+.custom-pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50% 50% 50% 0; /* Crea la forma de gota/pin */
+  transform: rotate(-45deg); /* Gira la gota para que la punta mire hacia abajo */
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+/* El icono dentro del pin */
+.custom-pin span {
+  transform: rotate(45deg); /* Devuelve el icono a su posición original */
+  color: white;
+  font-size: 20px;
+}

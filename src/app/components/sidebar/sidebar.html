@@ -1,29 +1,64 @@
 <div class="sidebar">
-    <div class="brand">
-      <img src="assets/logo-movilnet.png" alt="Movilnet" class="logo">
-      <div class="brand-text">
-        <strong>GeoProyect</strong>
-        <span>VENEZUELA OPERATIVA</span>
-      </div>
-    </div>
-  
-    <div class="section-label">CONTROL DE CAPAS</div>
-    <div class="layer-list">
-      <button class="layer-item active">
-        <span class="dot orange"></span> Regiones Movilnet
-      </button>
-      <button class="layer-item">
-        <span class="dot blue"></span> Radio Bases
-      </button>
-      <button class="layer-item disabled">
-        <span class="dot green"></span> Oficinas Comerciales
-      </button>
-    </div>
-  
-    <div class="section-label">+ OPERACIONES GIS</div>
-    <button class="btn-main">Agregar Nueva Región</button>
-    <div class="btn-group">
-      <button class="btn-sub">Antena</button>
-      <button class="btn-sub">Abonado</button>
+  <div class="brand">
+    <div class="brand-text">
+      <strong>GeoProyect</strong>
     </div>
   </div>
+
+  <div class="section-label">CONTROL DE CAPAS</div>
+  <div class="layer-list">
+    <!-- Capa 1: Regiones -->
+    <button class="layer-item" 
+            [class.active]="gis.capasVisibles().regiones"
+            (click)="toggle('regiones')">
+      <span class="dot orange"></span> Capa 1: Regiones
+    </button>
+
+     <!-- Leyenda de Regiones (solo visible cuando Capa 1 está activa) -->
+     <div class="legend-container" *ngIf="gis.capasVisibles().regiones">
+      <div class="section-label">REGIONES OPERATIVAS</div>
+      <div class="legend-grid">
+        <div class="legend-item" *ngFor="let region of regiones">
+          <span class="color-box" [style.backgroundColor]="region.color"></span>
+          <span class="region-name">{{ region.nombre }}</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Capa 2: Operaciones (principal) -->
+    <button class="layer-item" 
+            [class.active]="gis.capasVisibles().operaciones"
+            (click)="toggle('operaciones')">
+      <span class="dot blue"></span> Capa 2: Operaciones
+    </button>
+  
+    <!-- Subcapas de Operaciones (solo visibles cuando Capa 2 está activa) -->
+    <div class="subcapas-container" *ngIf="gis.capasVisibles().operaciones">
+      <div class="section-label">TIPO DE ELEMENTO</div>
+      
+      <button class="subcapa-item" 
+              [class.active]="gis.capasVisibles().detalleCap2 === 'antenas'"
+              (click)="setDetalle('antenas')">
+        <span class="dot" style="background: #FF1493;"></span> Radio Bases (Antenas)
+      </button>
+      
+      <button class="subcapa-item" 
+              [class.active]="gis.capasVisibles().detalleCap2 === 'abonados'"
+              (click)="setDetalle('abonados')">
+        <span class="dot" style="background: #00BFFF;"></span> Abonados
+      </button>
+      
+      <button class="subcapa-item" 
+              [class.active]="gis.capasVisibles().detalleCap2 === 'oficinas'"
+              (click)="setDetalle('oficinas')">
+        <span class="dot" style="background: #32CD32;"></span> Oficinas Comerciales
+      </button>
+      
+      <button class="subcapa-item" 
+              [class.active]="gis.capasVisibles().detalleCap2 === 'agentes'"
+              (click)="setDetalle('agentes')">
+        <span class="dot" style="background: #FF8C00;"></span> Agentes Autorizados
+      </button>
+    </div>
+  </div>
+</div>

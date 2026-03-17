@@ -1,16 +1,154 @@
-.sidebar { padding: 20px; font-family: sans-serif; }
-.brand { display: flex; align-items: center; margin-bottom: 30px; }
-.brand-text strong { display: block; color: #ff6600; font-size: 1.2em; }
-.section-label { font-size: 11px; color: #888; margin: 20px 0 10px; font-weight: bold; }
-.layer-item { 
-  width: 100%; text-align: left; padding: 12px; margin-bottom: 8px;
-  border: 1px solid #eee; border-radius: 10px; background: #fff; cursor: pointer;
+.sidebar { 
+  padding: 20px; 
+  font-family: sans-serif; 
+  width: 100%;
+  background: white;
+  height: 100%;
+  overflow-y: auto;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+  margin: 0;
 }
-.layer-item.active { border-color: #ff6600; box-shadow: 0 2px 8px rgba(255,102,0,0.1); }
-.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 10px; }
+
+.brand { 
+  display: flex; 
+  align-items: center; 
+  margin-bottom: 30px; 
+}
+
+.brand-text strong { 
+  display: block; 
+  color: #ff6600; 
+  font-size: 1.2em; 
+}
+
+.section-label { 
+  font-size: 11px; 
+  color: #888; 
+  margin: 20px 0 10px; 
+  font-weight: bold; 
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.layer-item, .subcapa-item { 
+  width: 100%; 
+  text-align: left; 
+  padding: 12px 15px; 
+  margin-bottom: 8px;
+  border: 1px solid #eee; 
+  border-radius: 10px; 
+  background: #fff; 
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+}
+
+.layer-item:hover, .subcapa-item:hover {
+  background: #f8f9fa;
+  border-color: #ddd;
+}
+
+.layer-item.active { 
+  border-color: #ff6600; 
+  background: #fff0e6;
+  box-shadow: 0 2px 8px rgba(255,102,0,0.1); 
+}
+
+.subcapa-item.active {
+  border-color: #0066cc;
+  background: #e6f0ff;
+  box-shadow: 0 2px 8px rgba(0,102,204,0.1);
+}
+
+.dot { 
+  display: inline-block; 
+  width: 10px; 
+  height: 10px; 
+  border-radius: 50%; 
+  margin-right: 12px; 
+}
+
 .orange { background: #ff6600; }
 .blue { background: #007bff; }
-.btn-main { 
-  width: 100%; padding: 12px; background: #fff0e6; color: #ff6600; 
-  border: none; border-radius: 10px; font-weight: bold; cursor: pointer;
+
+.subcapas-container {
+  margin-left: 10px;
+  padding-left: 10px;
+  border-left: 2px solid #e0e0e0;
+  animation: slideDown 0.3s ease;
+}
+
+/* Estilos para la leyenda de regiones */
+.legend-container {
+  margin: 10px 0 20px 10px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid #eee;
+  animation: slideDown 0.3s ease;
+}
+
+.legend-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #444;
+}
+
+.color-box {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+.region-name {
+  font-weight: 500;
+}
+
+/* Ajuste para los botones de subcapa */
+.subcapa-item {
+  padding: 10px 15px;
+  font-size: 13px;
+  background: #fafafa;
+  border-color: #e8e8e8;
+}
+
+.subcapa-item .dot {
+  width: 8px;
+  height: 8px;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Ajuste para los botones de subcapa */
+.subcapa-item {
+  padding: 10px 15px;
+  font-size: 13px;
+  background: #fafafa;
+  border-color: #e8e8e8;
+}
+
+.subcapa-item .dot {
+  width: 8px;
+  height: 8px;
 }
