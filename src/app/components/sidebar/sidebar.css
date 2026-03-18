@@ -17,7 +17,7 @@
 
 .brand-text strong { 
   display: block; 
-  color: #ff6600; 
+  color: #3240A5; 
   font-size: 1.2em; 
 }
 
@@ -51,14 +51,14 @@
 }
 
 .layer-item.active { 
-  border-color: #ff6600; 
-  background: #fff0e6;
+  border-color: #3240A5; 
+  background: #f0f1fa;
   box-shadow: 0 2px 8px rgba(255,102,0,0.1); 
 }
 
 .subcapa-item.active {
-  border-color: #0066cc;
-  background: #e6f0ff;
+  border-color: #3846b3;
+  background: #dbdef1;
   box-shadow: 0 2px 8px rgba(0,102,204,0.1);
 }
 
@@ -70,8 +70,8 @@
   margin-right: 12px; 
 }
 
-.orange { background: #ff6600; }
-.blue { background: #007bff; }
+.orange { background: #008D36; }
+.blue { background: #3240A5; }
 
 .subcapas-container {
   margin-left: 10px;

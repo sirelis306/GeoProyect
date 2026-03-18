@@ -14,17 +14,22 @@ export class Sidebar {
   public gis = inject(Gis);
 
   // Lista de regiones con sus colores
-  regiones = [
-    { nombre: 'Zuliana', color: '#007bff' },
-    { nombre: 'Andina', color: '#6610f2' },
-    { nombre: 'Central', color: '#fd7e14' },
-    { nombre: 'Capital', color: '#dc3545' },
-    { nombre: 'Los Llanos', color: '#ffc107' },
-    { nombre: 'Centro Occidental', color: '#e83e8c' },
-    { nombre: 'Nororiental', color: '#20c997' },
-    { nombre: 'Guayana', color: '#28a745' },
-    { nombre: 'Insular', color: '#17a2b8' }
-  ];
+  get regionesFiltradas() {
+    // Obtenemos los nombres de las regiones que tienen datos según el tipo seleccionado
+    const nombresActivos = this.gis.getRegionesConDatos(); 
+    
+    // Lista maestra de colores para mapear
+    const colores: any = {
+      'Zuliana': '#007bff', 'Andina': '#6610f2', 'Central': '#fd7e14',
+      'Capital': '#dc3545', 'Los Llanos': '#ffc107', 'Centro Occidental': '#e83e8c',
+      'Nororiental': '#20c997', 'Guayana': '#28a745', 'Insular': '#17a2b8'
+    };
+
+    return nombresActivos.map(nombre => ({
+      nombre: nombre,
+      color: colores[nombre] || '#DEE2E6'
+    }));
+  }
 
   toggle(capa: keyof CapasEstado) {
     this.gis.toggleCapa(capa);

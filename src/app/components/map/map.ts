@@ -71,24 +71,59 @@ export class Map implements AfterViewInit {
     effect(() => {
       const estado = this.gis.capasVisibles();
       
-      if (this.map) {
-        // CAPA 1: Colores de Regiones
-        if (this.capaGeoJsonRegiones) {
-          if (estado.regiones) {
-            this.capaGeoJsonRegiones.addTo(this.map);
-          } else {
-            this.map.removeLayer(this.capaGeoJsonRegiones);
-          }
+      if (this.map && this.capaGeoJsonRegiones) {
+        if (estado.regiones) {
+          this.capaGeoJsonRegiones.addTo(this.map);
+          
+          // Obtenemos las regiones a marcar (ahora incluye lógica para Capa 1 sola)
+          const activas = this.gis.getRegionesConDatos();
+    
+          this.capaGeoJsonRegiones.setStyle((feature: any) => {
+            const nombreEstado = feature.properties.estado || feature.properties.name;
+            const region = this.REGION_POR_ESTADO[nombreEstado];
+            const tieneDatos = activas.includes(region);
+    
+            return {
+              fillColor: tieneDatos ? (this.COLORES_REGIONES[region] || '#DEE2E6') : 'transparent',
+              weight: tieneDatos ? 1.5 : 0,
+              opacity: tieneDatos ? 1 : 0,
+              color: '#FFFFFF',
+              fillOpacity: tieneDatos ? 0.7 : 0
+            };
+          });
+        } else {
+          this.map.removeLayer(this.capaGeoJsonRegiones);
         }
-  
-        // CAPA 2: Marcadores
-        // Limpiamos subcapas
-        this.radioBases.remove();
-        this.oficinas.remove();
-  
+    
+        // --- LÓGICA CAPA 2: PUNTOS ---
+        // Limpiamos todo primero
+        [this.radioBases, this.oficinas, this.abonados, this.agentes].forEach(g => g.clearLayers());
+    
         if (estado.operaciones) {
-          if (estado.detalleCap2 === 'antenas') this.radioBases.addTo(this.map);
-          if (estado.detalleCap2 === 'oficinas') this.oficinas.addTo(this.map);
+          if (estado.detalleCap2 === 'antenas') {
+            this.gis.MOCK_ANTENAS.forEach(a => L.marker([a.latitud, a.longitud]).addTo(this.radioBases));
+            this.radioBases.addTo(this.map);
+          }
+          if (estado.detalleCap2 === 'oficinas') {
+            this.gis.MOCK_OFICINAS.forEach(o => L.marker([o.latitud, o.longitud]).addTo(this.oficinas));
+            this.oficinas.addTo(this.map);
+          }
+          if (estado.detalleCap2 === 'abonados') {
+            this.gis.MOCK_ABONADOS.forEach(ab => {
+              L.marker([ab.latitud, ab.longitud]).addTo(this.abonados);
+            });
+            this.abonados.addTo(this.map);
+          }
+          if (estado.detalleCap2 === 'agentes') {
+            this.gis.MOCK_AGENTES.forEach(ag => {
+              L.marker([ag.latitud, ag.longitud]).addTo(this.agentes);
+            });
+            this.agentes.addTo(this.map);
+          }
+          
+        } else {
+          // Si Capa 2 (operaciones) está OFF, removemos los grupos del mapa
+          [this.radioBases, this.oficinas, this.abonados, this.agentes].forEach(g => g.remove());
         }
       }
     });
@@ -119,14 +154,18 @@ export class Map implements AfterViewInit {
         style: (feature: any) => {
           const nombreEstado = feature.properties.estado || feature.properties.name;
           const region = this.REGION_POR_ESTADO[nombreEstado];
-          const colorRegion = this.COLORES_REGIONES[region] || '#DEE2E6';
+          
+          // Lógica de filtrado:
+          const regionesActivas = this.gis.getRegionesConDatos();
+          const estaActiva = regionesActivas.includes(region);
+          const colorRegion = estaActiva ? (this.COLORES_REGIONES[region] || '#DEE2E6') : 'transparent';
     
           return {
             fillColor: colorRegion,
-            weight: 1.5,
-            opacity: 1,
+            weight: estaActiva ? 1.5 : 0.5, // Más delgado si no tiene datos
+            opacity: estaActiva ? 1 : 0.3,
             color: '#FFFFFF',
-            fillOpacity: 0.8
+            fillOpacity: estaActiva ? 0.8 : 0
           };
         }
       });
@@ -138,5 +177,13 @@ export class Map implements AfterViewInit {
     });
 
     L.control.zoom({ position: 'topright' }).addTo(this.map);
+  }
+
+  get regionesFiltradas() {
+    const nombresActivos = this.gis.getRegionesConDatos();
+    return nombresActivos.map(nombre => ({
+      nombre: nombre,
+      color: this.COLORES_REGIONES[nombre]
+    }));
   }
 }

@@ -16,9 +16,9 @@
 
      <!-- Leyenda de Regiones (solo visible cuando Capa 1 está activa) -->
      <div class="legend-container" *ngIf="gis.capasVisibles().regiones">
-      <div class="section-label">REGIONES OPERATIVAS</div>
+      <div class="section-label">REGIONES CON DATOS</div>
       <div class="legend-grid">
-        <div class="legend-item" *ngFor="let region of regiones">
+        <div class="legend-item" *ngFor="let region of regionesFiltradas">
           <span class="color-box" [style.backgroundColor]="region.color"></span>
           <span class="region-name">{{ region.nombre }}</span>
         </div>
