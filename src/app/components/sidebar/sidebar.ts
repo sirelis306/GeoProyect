@@ -31,6 +31,8 @@ export class Sidebar {
   guardar() {
     const itemFinal = {
       ...this.nuevoItem,
+      latitud: Number(this.nuevoItem.latitud),
+      longitud: Number(this.nuevoItem.longitud),
       region: this.obtenerRegion(this.nuevoItem.estado)
     };
     // Asegúrate de que este método exista en tu gisService.ts
@@ -47,7 +49,7 @@ export class Sidebar {
     const colores: any = {
       'Zuliana': '#007bff', 'Andina': '#6610f2', 'Central': '#fd7e14',
       'Capital': '#dc3545', 'Los Llanos': '#ffc107', 'Centro Occidental': '#e83e8c',
-      'Nororiental': '#20c997', 'Guayana': '#28a745', 'Insular': '#17a2b8'
+      'Nororiental': '#20c997', 'Guayana': '#28a745', 'Insular': '#17a2b8', 'Los Andes': '#b8172c',
     };
 
     return nombresActivos.map(nombre => ({

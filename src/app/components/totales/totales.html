@@ -1,0 +1,33 @@
+<div class="stats-floating-bar" *ngIf="visible()">
+  <div class="stat-item">
+    <span class="stat-dot pink"></span>
+    <div class="stat-content">
+      <small>ANTENAS</small>
+      <strong>{{ totalAntenas() }}</strong>
+    </div>
+  </div>
+  <div class="stat-divider"></div>
+  <div class="stat-item">
+    <span class="stat-dot blue"></span>
+    <div class="stat-content">
+      <small>ABONADOS</small>
+      <strong>{{ totalAbonados() }}</strong>
+    </div>
+  </div>
+  <div class="stat-divider"></div>
+  <div class="stat-item">
+    <span class="stat-dot green"></span>
+    <div class="stat-content">
+      <small>OFICINAS</small>
+      <strong>{{ totalOficinas() }}</strong>
+    </div>
+  </div>
+  <div class="stat-divider"></div>
+  <div class="stat-item">
+    <span class="stat-dot orange"></span>
+    <div class="stat-content">
+      <small>AGENTES</small>
+      <strong>{{ totalAgentes() }}</strong>
+    </div>
+  </div>
+</div>

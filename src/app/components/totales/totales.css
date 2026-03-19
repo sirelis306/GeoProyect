@@ -1,0 +1,54 @@
+.stats-floating-bar {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-30%); /* Ajustado para no chocar con el sidebar */
+  z-index: 1100; /* Superior al z-index de Leaflet que es 1000 */
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 10px 25px;
+  border-radius: 50px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  gap: 20px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.stat-content small {
+  font-size: 9px;
+  color: #888;
+  font-weight: bold;
+}
+
+.stat-content strong {
+  font-size: 16px;
+  color: #333;
+}
+
+.stat-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.pink { background: #FF1493; }
+.blue { background: #00BFFF; }
+.green { background: #32CD32; }
+.orange { background: #FF8C00; }
+
+.stat-divider {
+  width: 1px;
+  height: 25px;
+  background: #eee;
+}

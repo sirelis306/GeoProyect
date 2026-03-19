@@ -44,33 +44,28 @@ export class Gis {
 
   // Agregaremos lógica para determinar qué regiones tienen datos
   getRegionesConDatos(): string[] {
-    const estado = this.capasVisibles();
-    const detalle = estado.detalleCap2;
-    const regiones = new Set<string>();
-  
-    // Si la Capa 2 está activa y tiene un detalle, filtramos por ese detalle
-    if (estado.operaciones && detalle !== 'ninguno') {
-      if (detalle === 'antenas') {
-        regiones.add('Zuliana');
-        regiones.add('Capital');
-      } else if (detalle === 'abonados') {
-        regiones.add('Nororiental');
-      } else if (detalle === 'oficinas') {
-        regiones.add('Central');
-      } else if (detalle === 'agentes') {
-        regiones.add('Centro Occidental');
-      }
-    } else {
-      // SI SOLO LA CAPA 1 ESTÁ ACTIVA (o Capa 2 sin detalle):
-      // Mostramos todas las regiones que tienen CUALQUIER dato de prueba
-      regiones.add('Zuliana');
-      regiones.add('Capital');
-      regiones.add('Central');
-      regiones.add('Nororiental');
-      regiones.add('Centro Occidental');
-    }
-  
-    return Array.from(regiones);
+  const estado = this.capasVisibles();
+  const detalle = estado.detalleCap2;
+  const regiones = new Set<string>();
+
+  // Función interna para obtener regiones de una lista de datos
+  const extraerRegiones = (lista: any[]) => lista.forEach(item => regiones.add(item.region));
+
+  if (estado.operaciones && detalle !== 'ninguno') {
+    // Si la Capa 2 está activa, extraemos regiones solo del tipo seleccionado
+    if (detalle === 'antenas') extraerRegiones(this.radioBasesSignal());
+    else if (detalle === 'oficinas') extraerRegiones(this.oficinasSignal());
+    else if (detalle === 'abonados') extraerRegiones(this.abonadosSignal());
+    else if (detalle === 'agentes') extraerRegiones(this.agentesSignal());
+  } else {
+    // Si solo la Capa 1 está activa, extraemos regiones de TODOS los datos
+    extraerRegiones(this.radioBasesSignal());
+    extraerRegiones(this.oficinasSignal());
+    extraerRegiones(this.abonadosSignal());
+    extraerRegiones(this.agentesSignal());
+  }
+
+  return Array.from(regiones);
   }
 
   toggleCapa(nombre: keyof CapasEstado) {
