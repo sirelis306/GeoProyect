@@ -1,6 +1,7 @@
 import { Component, AfterViewInit, inject, ElementRef, ViewChild, effect } from '@angular/core';
 import { Gis } from '../../services/gis/gisService';
 import { HttpClient } from '@angular/common/http';
+import { RadioBase, Oficina, Abonado, Agente } from '../../models/gis';
 import * as L from 'leaflet';
 
 @Component({
@@ -25,15 +26,15 @@ export class Map implements AfterViewInit {
   private agentes = L.layerGroup();
 
   private COLORES_REGIONES: any = {
-    'Zuliana': '#007bff',
-    'Andina': '#6610f2',
-    'Central': '#fd7e14',
-    'Capital': '#dc3545',
-    'Llanos': '#ffc107',
-    'Centro Occidental': '#e83e8c',
-    'Nororiental': '#20c997',
-    'Guayana': '#28a745',
-    'Insular': '#17a2b8'
+    'Zuliana': '#7ab8fc',
+    'Andina': '#ac7cf8',
+    'Central': '#f8ab6b',
+    'Capital': '#ce5461',
+    'Llanos': '#ffda6b',
+    'Centro Occidental': '#e0679f',
+    'Nororiental': '#53c7a4',
+    'Guayana': '#55aa69',
+    'Insular': '#59afbd'
   };
 
   // Mapeo completo de Estados por Región
@@ -70,6 +71,10 @@ export class Map implements AfterViewInit {
     // Creamos un efecto que reaccione a los cambios del servicio automáticamente
     effect(() => {
       const estado = this.gis.capasVisibles();
+      const antenas = this.gis.radioBasesSignal();
+      const oficinas = this.gis.oficinasSignal();
+      const abonados = this.gis.abonadosSignal();
+      const agentes = this.gis.agentesSignal();
       
       if (this.map && this.capaGeoJsonRegiones) {
         if (estado.regiones) {
@@ -97,30 +102,65 @@ export class Map implements AfterViewInit {
     
         // --- LÓGICA CAPA 2: PUNTOS ---
         // Limpiamos todo primero
-        [this.radioBases, this.oficinas, this.abonados, this.agentes].forEach(g => g.clearLayers());
-    
-        if (estado.operaciones) {
-          if (estado.detalleCap2 === 'antenas') {
-            this.gis.MOCK_ANTENAS.forEach(a => L.marker([a.latitud, a.longitud]).addTo(this.radioBases));
-            this.radioBases.addTo(this.map);
-          }
-          if (estado.detalleCap2 === 'oficinas') {
-            this.gis.MOCK_OFICINAS.forEach(o => L.marker([o.latitud, o.longitud]).addTo(this.oficinas));
-            this.oficinas.addTo(this.map);
-          }
-          if (estado.detalleCap2 === 'abonados') {
-            this.gis.MOCK_ABONADOS.forEach(ab => {
-              L.marker([ab.latitud, ab.longitud]).addTo(this.abonados);
+        if (this.map) {
+          // 1. Limpiamos todas las capas de marcadores
+          [this.radioBases, this.oficinas, this.abonados, this.agentes].forEach(g => g.clearLayers());
+
+          // 2. Definimos la función ANTES del switch para que sea accesible
+          const crearPinIcon = (colorClass: string) => {
+            return L.divIcon({
+              html: `<div class="custom-pin-marker ${colorClass}"></div>`,
+              className: 'marker-pin-container',
+              iconSize: [30, 30],
+              iconAnchor: [15, 30],
+              popupAnchor: [0, -30]
             });
-            this.abonados.addTo(this.map);
+          };
+
+          if (estado.operaciones && estado.detalleCap2 !== 'ninguno') {
+            // 3. Renderizado condicional
+            switch (estado.detalleCap2) {
+              case 'antenas':
+                const iconA = crearPinIcon('pin-antena');
+                antenas.forEach((a: RadioBase) => {
+                  L.marker([a.latitud, a.longitud], { icon: iconA })
+                    .bindPopup(`<b>Antena:</b> ${a.nombre}<br><b>Estado:</b> ${a.estado}`)
+                    .addTo(this.radioBases);
+                });
+                this.radioBases.addTo(this.map);
+                break;
+
+              case 'abonados':
+                const iconAb = crearPinIcon('pin-abonado');
+                abonados.forEach((ab: Abonado) => {
+                  L.marker([ab.latitud, ab.longitud], { icon: iconAb })
+                    .bindPopup(`<b>Abonado:</b> ${ab.nombre}<br><b>Estado:</b> ${ab.estado}`)
+                    .addTo(this.abonados);
+                });
+                this.abonados.addTo(this.map);
+                break;
+
+              case 'oficinas':
+                const iconO = crearPinIcon('pin-oficina');
+                oficinas.forEach((o: Oficina) => {
+                  L.marker([o.latitud, o.longitud], { icon: iconO })
+                    .bindPopup(`<b>Oficina:</b> ${o.nombre}<br><b>Estado:</b> ${o.estado}`)
+                    .addTo(this.oficinas);
+                });
+                this.oficinas.addTo(this.map);
+                break;
+
+              case 'agentes':
+                const iconAg = crearPinIcon('pin-agente');
+                agentes.forEach((ag: Agente) => {
+                  L.marker([ag.latitud, ag.longitud], { icon: iconAg })
+                    .bindPopup(`<b>Agente:</b> ${ag.nombre}<br><b>Estado:</b> ${ag.estado}`)
+                    .addTo(this.agentes);
+                });
+                this.agentes.addTo(this.map);
+                break;
+            }
           }
-          if (estado.detalleCap2 === 'agentes') {
-            this.gis.MOCK_AGENTES.forEach(ag => {
-              L.marker([ag.latitud, ag.longitud]).addTo(this.agentes);
-            });
-            this.agentes.addTo(this.map);
-          }
-          
         } else {
           // Si Capa 2 (operaciones) está OFF, removemos los grupos del mapa
           [this.radioBases, this.oficinas, this.abonados, this.agentes].forEach(g => g.remove());
@@ -135,9 +175,9 @@ export class Map implements AfterViewInit {
       center: [7.1291, -66.1818],
       zoom: 7,
       zoomControl: false,
-      minZoom: 6,        // Zoom mínimo (no dejará alejar más de esto)
-      maxZoom: 18,       // Zoom máximo (opcional, puedes ajustarlo)
-      maxBounds: [       // Límites del mapa (opcional, para que no se salga de cierta área)
+      minZoom: 6,        // Zoom mínimo
+      maxZoom: 18,       // Zoom máximo 
+      maxBounds: [       // Límites del mapa (para que no se salga de cierta área)
         [-15, -85],      // Suroeste (lat, lng)
         [20, -55]        // Noreste (lat, lng)
       ],

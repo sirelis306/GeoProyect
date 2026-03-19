@@ -1,17 +1,42 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Gis } from '../../services/gis/gisService';
+import { FormsModule } from '@angular/forms';
 import { CapasEstado, TipoElementoCap2 } from '../../models/gis';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule, NgSelectModule],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.css',
 })
 export class Sidebar {
   public gis = inject(Gis);
+  mostrarForm = false;
+  tipoEdicion: TipoElementoCap2 = 'ninguno';
+  nuevoItem: any = { nombre: '', estado: '', region: '', latitud: null, longitud: null };
+  listaEstados = ['Amazonas', 'Anzoátegui', 'Apure', 'Aragua', 'Barinas', 'Bolívar', 'Carabobo', 'Cojedes', 'Delta Amacuro', 
+  'Distrito Capital', 'Falcón', 'Guárico', 'La Guaira', 'Lara', 'Mérida', 'Miranda', 'Monagas', 'Nueva Esparta', 'Portuguesa', 
+  'Sucre', 'Táchira', 'Trujillo', 'Yaracuy', 'Zulia', 'Dependencias Federales'];
+
+  abrirModal(tipo: TipoElementoCap2) {
+    console.log('Abriendo modal para:', tipo);
+    this.tipoEdicion = tipo;
+    this.mostrarForm = true;
+    this.nuevoItem = { nombre: '', estado: '', latitud: null, longitud: null };
+  }
+
+  guardar() {
+    const itemFinal = {
+      ...this.nuevoItem,
+      region: this.obtenerRegion(this.nuevoItem.estado)
+    };
+    // Asegúrate de que este método exista en tu gisService.ts
+    this.gis.agregarElemento(this.tipoEdicion, itemFinal); 
+    this.mostrarForm = false;
+  }
 
   // Lista de regiones con sus colores
   get regionesFiltradas() {
@@ -29,6 +54,30 @@ export class Sidebar {
       nombre: nombre,
       color: colores[nombre] || '#DEE2E6'
     }));
+  }
+
+  public obtenerRegion(estado: string): string {
+    const mapeo: any = {
+    // Región Capital
+    'Distrito Capital': 'Capital','Miranda': 'Capital','La Guaira': 'Capital',
+    // Región Central
+    'Carabobo': 'Central', 'Aragua': 'Central', 'Cojedes': 'Central',
+    // Región de los Llanos
+    'Guárico': 'Los Llanos', 'Apure': 'Los Llanos',
+    // Región Centro Occidental
+    'Falcón': 'Centro Occidental', 'Lara': 'Centro Occidental', 'Portuguesa': 'Centro Occidental', 'Yaracuy': 'Centro Occidental',
+    // Región Zuliana
+    'Zulia': 'Zuliana',
+    // Región de los Andes
+    'Mérida': 'Los Andes', 'Táchira': 'Los Andes', 'Trujillo': 'Los Andes', 'Barinas': 'Los Andes',
+    // Región Nororiental
+    'Anzoátegui': 'Nororiental', 'Monagas': 'Nororiental', 'Sucre': 'Nororiental',
+    // Región Insular
+    'Nueva Esparta': 'Insular', 'Dependencias Federales': 'Insular',
+    // Región Guayana
+    'Bolívar': 'Guayana', 'Amazonas': 'Guayana', 'Delta Amacuro': 'Guayana'
+  };
+    return mapeo[estado] || 'Desconocida';
   }
 
   toggle(capa: keyof CapasEstado) {

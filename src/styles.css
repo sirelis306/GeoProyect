@@ -1,3 +1,5 @@
+@import "@ng-select/ng-select/themes/default.theme.css";
+
 /* styles.css */
 html, body {
     margin: 0;
@@ -17,3 +19,26 @@ html, body {
     margin: 0;
     padding: 0;
   }
+
+/*Modal de Agregar Capa 2*/
+.modal-overlay {
+  z-index: 999999 !important;
+}
+
+.modal-content {
+  z-index: 1000000 !important;
+}
+
+/* Forzar por encima de Leaflet */
+.leaflet-container {
+  z-index: 1 !important;
+}
+
+/* Opcional: Personalización para que coincida con tu modal 'puffy' */
+.ng-select .ng-select-container {
+    border-radius: 10px !important;
+    background-color: #f8f9fa !important;
+    border: 1px solid #e0e0e0 !important;
+    min-height: 45px !important;
+    font-family: 'Poppins', sans-serif;
+}

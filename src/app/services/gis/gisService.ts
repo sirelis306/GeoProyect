@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { CapasEstado, TipoElementoCap2, RadioBase, Oficina  } from '../../models/gis';
+import { CapasEstado, TipoElementoCap2, RadioBase, Abonado, Oficina, Agente } from '../../models/gis';
 
 @Injectable({
   providedIn: 'root',
@@ -13,22 +13,34 @@ export class Gis {
   });
 
   // Datos de prueba (Mock Data)
-  readonly MOCK_ANTENAS: RadioBase[] = [
-    { nombre: 'Antena Maracaibo', latitud: 10.6447, longitud: -71.6365, tipo: '5G', estado: 'Operativa' }, // Zulia
-    { nombre: 'Antena Caracas', latitud: 10.4806, longitud: -66.9036, tipo: '4G', estado: 'Operativa' }   // Capital
-  ];
+  radioBasesSignal = signal<RadioBase[]>([
+    { nombre: 'Antena Maracaibo', estado: 'Maracaibo', region: 'Zuliana', latitud: 10.6447, longitud: -71.6365, tipo: '5G', actividad: 'Operativa' }, // Zulia
+    { nombre: 'Antena Caracas', estado: 'Distrito Capital', region: 'Capital', latitud: 10.4806, longitud: -66.9036, tipo: '4G', actividad: 'Operativa' }   // Capital
+  ]);
 
-  readonly MOCK_OFICINAS: Oficina[] = [
-    { nombre: 'Oficina Valencia', direccion: 'Av. Bolívar', latitud: 10.162, longitud: -68.007 } // Central
-  ];
+  oficinasSignal = signal<Oficina[]>([
+    { nombre: 'Oficina Valencia', estado: 'Carabobo', region: 'Central', latitud: 10.162, longitud: -68.007, detalle: 'Cualquier Detalle' } // Central
+  ]);
 
-  readonly MOCK_ABONADOS = [
-    { nombre: 'Zona Residencial Lechería', latitud: 10.185, longitud: -64.691 } // Nororiental
-  ];
+  abonadosSignal = signal<Abonado[]>([
+    { nombre: 'Zona Residencial Lechería', estado: 'Anzoátegui', region: 'Nororiental', latitud: 10.185, longitud: -64.691, detalle: 'X' } // Nororiental
+  ]);
 
-  readonly MOCK_AGENTES = [
-    { nombre: 'Agente Autorizado Coro', latitud: 11.404, longitud: -69.673 } // Centro Occidental
-  ];
+  agentesSignal = signal<Agente[]>([
+    { nombre: 'Agente Autorizado Coro', estado: 'Falcón', region: 'Centro Occidental', latitud: 11.404, longitud: -69.673 } // Centro Occidental
+  ]);
+
+  agregarElemento(tipo: TipoElementoCap2, data: any) {
+    if (tipo === 'antenas') {
+      this.radioBasesSignal.update(prev => [...prev, data]);
+    } else if (tipo === 'oficinas') {
+      this.oficinasSignal.update(prev => [...prev, data]);
+    } else if (tipo === 'abonados') {
+      this.abonadosSignal.update(prev => [...prev, data]);
+    } else if (tipo === 'agentes') {
+      this.agentesSignal.update(prev => [...prev, data]);
+    }
+  }
 
   // Agregaremos lógica para determinar qué regiones tienen datos
   getRegionesConDatos(): string[] {
@@ -41,10 +53,10 @@ export class Gis {
       if (detalle === 'antenas') {
         regiones.add('Zuliana');
         regiones.add('Capital');
-      } else if (detalle === 'oficinas') {
-        regiones.add('Central');
       } else if (detalle === 'abonados') {
         regiones.add('Nororiental');
+      } else if (detalle === 'oficinas') {
+        regiones.add('Central');
       } else if (detalle === 'agentes') {
         regiones.add('Centro Occidental');
       }

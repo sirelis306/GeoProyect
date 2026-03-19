@@ -117,16 +117,256 @@
 }
 
 /* Ajuste para los botones de subcapa */
+.subcapa-group {
+  display: flex;         /* Alinea hijos en horizontal */
+  align-items: center;   /* Centra verticalmente */
+  gap: 8px;              /* Espacio entre el botón largo y el (+) */
+  width: 100%;
+  margin-bottom: 8px;    /* Espacio entre filas */
+}
+
 .subcapa-item {
   padding: 10px 15px;
   font-size: 13px;
   background: #fafafa;
   border-color: #e8e8e8;
+  flex: 1; /* El botón de texto ocupa el espacio restante */
+  margin-bottom: 0
 }
 
 .subcapa-item .dot {
   width: 8px;
   height: 8px;
+}
+
+.add-item-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  color: #6c757d;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.add-item-btn:hover {
+  background: #e9ecef;
+  color: #007bff;
+  border-color: #007bff;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4); /* Fondo oscuro semitransparente */
+  display: flex; /* Centra el contenido */
+  justify-content: center;
+  align-items: center;
+  z-index: 99999 !important; /* Prioridad máxima sobre el mapa */
+  opacity: 0; /* Empieza invisible */
+  visibility: hidden; /* No interactuable */
+  transition: all 0.3s ease-in-out; /* Animación suave */
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-overlay[style*="display: none"] {
+  display: none !important;
+}
+
+.modal-content {
+  background: #ffffff;
+  padding: 32px; /* Más aire interno */
+  border-radius: 20px; /* Bordes muy redondeados */
+  width: 480px; /* Ancho fijo */
+  box-shadow: 0 15px 35px rgba(0,0,0,0.15); /* Sombra suave y profunda */
+  z-index: 100000;
+  position: relative;
+  font-family: 'Poppins', sans-serif; /* O una sans-serif similar, limpia */
+  transform: translateY(-20px); /* Empieza un poco arriba para la animación */
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Animación de entrada de la tarjeta */
+.modal-overlay.active .modal-content {
+  transform: translateY(0);
+}
+
+/* 3. Cabecera del Modal */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.modal-header h3 {
+  margin: 0px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.modal-header small.text-blue {
+  color: #3240A5; /* Color azul corporativo de la marca */
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* Botón 'X' de cerrar */
+.close-x {
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: #888;
+  padding: 0;
+  line-height: 1;
+}
+
+.close-x:hover {
+  color: #3240A5;
+}
+
+/* 4. Cuerpo del Modal (Formulario) */
+.modal-body {
+  margin-bottom: 24px;
+}
+
+/* Disposición en filas de los campos */
+.form-row {
+  display: flex;
+  gap: 16px; /* Espacio entre columnas */
+  margin-top: 16px;
+}
+
+.form-group {
+  flex: 1; /* Ocupa espacio equitativo en la fila */
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+}
+
+/* Estilos de las Etiquetas (Labels) */
+.form-group label {
+  font-weight: 600;
+  font-size: 14px;
+  color: #1a1a1a;
+  margin-bottom: 6px;
+}
+
+/* Estilos comunes para Inputs y Selects (EL CAMBIO CLAVE) */
+.form-group input, .form-group select {
+  padding: 14px; /* Más padding para que sean 'puffy' */
+  border: 1px solid #e0e0e0; /* Borde gris muy suave */
+  border-radius: 10px; /* Bordes redondeados */
+  background: #f8f9fa; /* Fondo grisáceo muy claro */
+  font-size: 14px;
+  color: #495057;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Efecto Focus para Inputs y Selects */
+.form-group input:focus, .form-group select:focus {
+  outline: none;
+  border-color: #3240A5; /* Borde azul de la marca */
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(50,64,165,0.1); /* Sombra azul suave */
+}
+
+/* Estilo para campos de solo lectura (como Región) */
+.form-group input[readonly] {
+  background: #f1f3f5;
+  color: #6c757d;
+  cursor: not-allowed;
+  border-color: #e8e8e8;
+}
+
+/* Limitar el alto de la lista desplegada */
+.ng-dropdown-panel .ng-dropdown-panel-items {
+    max-height: 150px !important; /* Aquí controlas que se vea pequeña */
+}
+
+/* Estilo de cada opción de la lista */
+.ng-dropdown-panel .ng-option {
+    font-size: 13px !important;
+    padding: 8px 12px !important;
+}
+
+/* 5. Pie del Modal (Botones) */
+.modal-footer {
+  display: flex;
+  justify-content: flex-end; /* Botones a la derecha */
+  gap: 12px;
+  margin-top: 32px;
+}
+
+/* Botón Cancelar (Gris, texto oscuro) */
+.btn-cancel {
+  background: #f1f3f5;
+  color: #1a1a1a;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-cancel:hover {
+  background: #e9ecef;
+}
+
+/* Botón Guardar (Azul fuerte, texto blanco) */
+.btn-save {
+  background: #3240A5; /* Azul de la marca */
+  color: #ffffff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(50,64,165,0.2); /* Sombra azul corporativa */
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.btn-save:hover {
+  background: #28338a; /* Azul más oscuro al hover */
+  box-shadow: 0 6px 15px rgba(50,64,165,0.3);
+}
+
+/* Botón deshabilitado (cuando el formulario no es válido) */
+.btn-save:disabled {
+  background: #adb5bd;
+  color: #e8e8e8;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Asegura que el sidebar no corte el modal */
+:host {
+  display: block;
+  position: relative;
 }
 
 @keyframes slideDown {
@@ -138,17 +378,4 @@
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-/* Ajuste para los botones de subcapa */
-.subcapa-item {
-  padding: 10px 15px;
-  font-size: 13px;
-  background: #fafafa;
-  border-color: #e8e8e8;
-}
-
-.subcapa-item .dot {
-  width: 8px;
-  height: 8px;
 }

@@ -10,17 +10,42 @@ export interface CapasEstado {
   export interface RadioBase {
     id?: string;
     nombre: string;
+    estado: string;
+    region: string;
     latitud: number;
     longitud: number;
     tipo: '4G' | '5G' | 'LTE';
-    estado: 'Operativa' | 'Mantenimiento' | 'Falla';
+    actividad: 'Operativa' | 'Mantenimiento' | 'Falla';
+    detalle?: string;
+  }
+
+  export interface Abonado {
+    id?: string;
+    nombre: string;
+    estado: string;
+    region: string;
+    latitud: number;
+    longitud: number;
+    detalle?: string;
   }
   
   // Define cómo es una Oficina Comercial
   export interface Oficina {
     id?: string;
     nombre: string;
-    direccion: string;
+    estado: string;
+    region: string;
     latitud: number;
     longitud: number;
+    detalle?: string;
+  }
+
+  export interface Agente {
+    id?: string;
+    nombre: string;
+    estado: string;
+    region: string;
+    latitud: number;
+    longitud: number;
+    detalle?: string;
   }

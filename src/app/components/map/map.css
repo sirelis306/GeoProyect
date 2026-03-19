@@ -20,28 +20,43 @@
   padding: 12px !important;
 }
 
-/* Quita el fondo blanco y borde que Leaflet pone por defecto a los DivIcon */
-.leaflet-div-icon {
-  background: transparent !important;
-  border: none !important;
-}
 
-/* Contenedor del marcador personalizado */
-.custom-pin {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50% 50% 50% 0; /* Crea la forma de gota/pin */
+
+/* Usamos ::ng-deep para que Leaflet reconozca las clases */
+::ng-deep .custom-pin-marker {
+  width: 30px;
+  height: 30px;
+  border-radius: 50% 50% 50% 0; /* Crea la forma de gota invertida */
+  position: absolute;
   transform: rotate(-45deg); /* Gira la gota para que la punta mire hacia abajo */
-  border: 2px solid #ffffff;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  left: 50%;
+  top: 50%;
+  margin: -15px 0 0 -15px; 
+  box-shadow: 1px 2px 4px rgba(0,0,0,0.5); 
+  border: 1px solid rgba(255,255,255,0.2); 
+  z-index: 1000; /* Asegura que esté por encima de las regiones */
 }
 
-/* El icono dentro del pin */
-.custom-pin span {
-  transform: rotate(45deg); /* Devuelve el icono a su posición original */
-  color: white;
-  font-size: 20px;
+/* El círculo blanco interior */
+::ng-deep .custom-pin-marker::after {
+  content: '';
+  width: 14px;
+  height: 14px;
+  margin: 8px 0 0 8px; 
+  background: #ffffff;
+  position: absolute;
+  border-radius: 50%;
+  box-shadow: inset 0px 1px 1px rgba(0,0,0,0.2);
+}
+
+/* Colores específicos con ::ng-deep */
+::ng-deep .pin-antena { background-color: #ff1447 !important; }
+::ng-deep .pin-abonado { background-color: #0084ff !important; }
+::ng-deep .pin-oficina { background-color: #1dbb2a !important; }
+::ng-deep .pin-agente { background-color: #e98204 !important; }
+
+/* Evita que el contenedor invisible de Leaflet tape el diseño */
+::ng-deep .marker-pin-container {
+  background: none !important;
+  border: none !important;
 }
