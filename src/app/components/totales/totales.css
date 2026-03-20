@@ -2,53 +2,69 @@
   position: absolute;
   top: 20px;
   left: 50%;
-  transform: translateX(-30%); /* Ajustado para no chocar con el sidebar */
-  z-index: 1100; /* Superior al z-index de Leaflet que es 1000 */
+  transform: translateX(-40%);
+  z-index: 1100;
   display: flex;
   align-items: center;
   background: white;
-  padding: 10px 25px;
-  border-radius: 50px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-  gap: 20px;
+  padding: 10px 30px;
+  border-radius: 15px; /* Bordes redondeados más rectos según la imagen */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  gap: 10px;
 }
 
 .stat-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  padding: 5px 10px;
 }
 
-.stat-content {
+/* Forzar círculo perfecto */
+.icon-circle {
+  width: 42px;  /* Tamaño ajustado */
+  height: 42px; /* Debe ser igual al width */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0; /* Evita que se deforme */
+  font-size: 18px;
+}
+
+/* Colores de fondo suaves e iconos fuertes */
+.pink { background-color: #fff0f0; color: #ff5c5c; }
+.blue { background-color: #e8f2ff; color: #4a90e2; }
+.green { background-color: #e8fcf0; color: #2ecc71; }
+.orange { background-color: #fff4e6; color: #f39c12; }
+
+.stat-texts {
   display: flex;
   flex-direction: column;
+  justify-content: center;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  font-family: 'Poppins', sans-serif;
+  color: #95a5a6; /* Gris de la imagen */
+  letter-spacing: 0.5px;
   line-height: 1.2;
 }
 
-.stat-content small {
-  font-size: 9px;
-  color: #888;
-  font-weight: bold;
+.value {
+  font-size: 20px;
+  font-weight: 800;
+  font-family: 'Arial';
+  color: #2c3e50;
+  line-height: 1;
+  margin-top: 2px;
 }
 
-.stat-content strong {
-  font-size: 16px;
-  color: #333;
-}
-
-.stat-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-}
-
-.pink { background: #FF1493; }
-.blue { background: #00BFFF; }
-.green { background: #32CD32; }
-.orange { background: #FF8C00; }
-
-.stat-divider {
+.divider {
   width: 1px;
-  height: 25px;
-  background: #eee;
+  height: 35px;
+  background-color: #eee;
+  margin: 0 5px;
 }

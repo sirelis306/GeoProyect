@@ -9,6 +9,13 @@
   margin: 0;
 }
 
+/* Línea divisora sutil */
+.header-divider {
+  border: 0;
+  border-top: 1px solid #f1f5f9;
+  margin: 15px 0;
+}
+
 .brand { 
   display: flex; 
   align-items: center; 
@@ -19,6 +26,20 @@
   display: block; 
   color: #3240A5; 
   font-size: 1.2em; 
+}
+
+.brand-icon {
+  width: 45px;
+  height: 45px;
+  background: #4355e0; /* Azul moderno */
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-size: 20px;
+  box-shadow: 0 8px 16px rgba(37, 99, 235, 0.3);
+  margin-right: 10px;
 }
 
 .section-label { 
@@ -156,8 +177,8 @@
 
 .add-item-btn:hover {
   background: #e9ecef;
-  color: #007bff;
-  border-color: #007bff;
+  color: #3240A5;
+  border-color: #3542a7;
 }
 
 .modal-overlay {

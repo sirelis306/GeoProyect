@@ -27,7 +27,7 @@ export class Map implements AfterViewInit {
 
   private COLORES_REGIONES: any = {
     'Zuliana': '#7ab8fc',
-    'Andina': '#ac7cf8',
+    'Los Andes': '#ac7cf8',
     'Central': '#f8ab6b',
     'Capital': '#ce5461',
     'Llanos': '#ffda6b',
@@ -55,7 +55,7 @@ export class Map implements AfterViewInit {
     'Zulia': 'Zuliana',
     
     // Región Andina
-    'Mérida': 'Andina', 'Táchira': 'Andina', 'Trujillo': 'Andina', 'Barinas': 'Andina',
+    'Mérida': 'Los Andes', 'Táchira': 'Los Andes', 'Trujillo': 'Los Andes', 'Barinas': 'Los Andes',
     
     // Región Nororiental
     'Anzoátegui': 'Nororiental', 'Monagas': 'Nororiental', 'Sucre': 'Nororiental',
@@ -81,12 +81,12 @@ export class Map implements AfterViewInit {
           this.capaGeoJsonRegiones.addTo(this.map);
           
           // Obtenemos las regiones a marcar (ahora incluye lógica para Capa 1 sola)
-          const activas = this.gis.getRegionesConDatos();
+          const regionesActivas = this.gis.getRegionesConDatos();
     
           this.capaGeoJsonRegiones.setStyle((feature: any) => {
             const nombreEstado = feature.properties.estado || feature.properties.name;
             const region = this.REGION_POR_ESTADO[nombreEstado];
-            const tieneDatos = activas.includes(region);
+            const tieneDatos = regionesActivas.includes(region);
     
             return {
               fillColor: tieneDatos ? (this.COLORES_REGIONES[region] || '#DEE2E6') : 'transparent',

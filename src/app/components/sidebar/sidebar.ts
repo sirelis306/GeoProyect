@@ -29,14 +29,14 @@ export class Sidebar {
   }
 
   guardar() {
-    const itemFinal = {
+    const itemConRegion = {
       ...this.nuevoItem,
       latitud: Number(this.nuevoItem.latitud),
       longitud: Number(this.nuevoItem.longitud),
       region: this.obtenerRegion(this.nuevoItem.estado)
     };
     // Asegúrate de que este método exista en tu gisService.ts
-    this.gis.agregarElemento(this.tipoEdicion, itemFinal); 
+    this.gis.agregarElemento(this.tipoEdicion, itemConRegion); 
     this.mostrarForm = false;
   }
 
@@ -47,9 +47,9 @@ export class Sidebar {
     
     // Lista maestra de colores para mapear
     const colores: any = {
-      'Zuliana': '#007bff', 'Andina': '#6610f2', 'Central': '#fd7e14',
+      'Zuliana': '#007bff', 'Los Andes': '#6610f2', 'Central': '#fd7e14',
       'Capital': '#dc3545', 'Los Llanos': '#ffc107', 'Centro Occidental': '#e83e8c',
-      'Nororiental': '#20c997', 'Guayana': '#28a745', 'Insular': '#17a2b8', 'Los Andes': '#b8172c',
+      'Nororiental': '#20c997', 'Guayana': '#28a745', 'Insular': '#17a2b8',
     };
 
     return nombresActivos.map(nombre => ({
@@ -79,7 +79,7 @@ export class Sidebar {
     // Región Guayana
     'Bolívar': 'Guayana', 'Amazonas': 'Guayana', 'Delta Amacuro': 'Guayana'
   };
-    return mapeo[estado] || 'Desconocida';
+    return mapeo[estado] || '';
   }
 
   toggle(capa: keyof CapasEstado) {

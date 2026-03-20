@@ -48,21 +48,23 @@ export class Gis {
   const detalle = estado.detalleCap2;
   const regiones = new Set<string>();
 
-  // Función interna para obtener regiones de una lista de datos
-  const extraerRegiones = (lista: any[]) => lista.forEach(item => regiones.add(item.region));
+  // Función auxiliar para extraer regiones de cualquier lista de datos
+  const extraerDe = (lista: any[]) => lista.forEach(item => {
+    if (item.region) regiones.add(item.region);
+  });
 
   if (estado.operaciones && detalle !== 'ninguno') {
     // Si la Capa 2 está activa, extraemos regiones solo del tipo seleccionado
-    if (detalle === 'antenas') extraerRegiones(this.radioBasesSignal());
-    else if (detalle === 'oficinas') extraerRegiones(this.oficinasSignal());
-    else if (detalle === 'abonados') extraerRegiones(this.abonadosSignal());
-    else if (detalle === 'agentes') extraerRegiones(this.agentesSignal());
+    if (detalle === 'antenas') extraerDe(this.radioBasesSignal());
+    else if (detalle === 'oficinas') extraerDe(this.oficinasSignal());
+    else if (detalle === 'abonados') extraerDe(this.abonadosSignal());
+    else if (detalle === 'agentes') extraerDe(this.agentesSignal());
   } else {
     // Si solo la Capa 1 está activa, extraemos regiones de TODOS los datos
-    extraerRegiones(this.radioBasesSignal());
-    extraerRegiones(this.oficinasSignal());
-    extraerRegiones(this.abonadosSignal());
-    extraerRegiones(this.agentesSignal());
+    extraerDe(this.radioBasesSignal());
+    extraerDe(this.oficinasSignal());
+    extraerDe(this.abonadosSignal());
+    extraerDe(this.agentesSignal());
   }
 
   return Array.from(regiones);

@@ -1,33 +1,51 @@
 <div class="stats-floating-bar" *ngIf="visible()">
+  <!-- Radio Bases -->
   <div class="stat-item">
-    <span class="stat-dot pink"></span>
-    <div class="stat-content">
-      <small>ANTENAS</small>
-      <strong>{{ totalAntenas() }}</strong>
+    <div class="icon-circle pink">
+      <i class="fas fa-wave-square"></i> <!-- Cambiado para parecerse al pulso de la imagen -->
+    </div>
+    <div class="stat-texts">
+      <span class="label">RADIO BASES</span>
+      <span class="value">{{ totalAntenas() }}</span>
     </div>
   </div>
-  <div class="stat-divider"></div>
+
+  <div class="divider"></div>
+
+  <!-- Abonados -->
   <div class="stat-item">
-    <span class="stat-dot blue"></span>
-    <div class="stat-content">
-      <small>ABONADOS</small>
-      <strong>{{ totalAbonados() }}</strong>
+    <div class="icon-circle blue">
+      <i class="fas fa-user-friends"></i>
+    </div>
+    <div class="stat-texts">
+      <span class="label">ABONADOS</span>
+      <span class="value">{{ totalAbonados() }}</span>
     </div>
   </div>
-  <div class="stat-divider"></div>
+
+  <div class="divider"></div>
+
+  <!-- Oficinas -->
   <div class="stat-item">
-    <span class="stat-dot green"></span>
-    <div class="stat-content">
-      <small>OFICINAS</small>
-      <strong>{{ totalOficinas() }}</strong>
+    <div class="icon-circle green">
+      <i class="fas fa-hotel"></i>
+    </div>
+    <div class="stat-texts">
+      <span class="label">OFICINAS</span>
+      <span class="value">{{ totalOficinas() }}</span>
     </div>
   </div>
-  <div class="stat-divider"></div>
+
+  <div class="divider"></div>
+
+  <!-- Agentes -->
   <div class="stat-item">
-    <span class="stat-dot orange"></span>
-    <div class="stat-content">
-      <small>AGENTES</small>
-      <strong>{{ totalAgentes() }}</strong>
+    <div class="icon-circle orange">
+      <i class="fas fa-user-check"></i>
+    </div>
+    <div class="stat-texts">
+      <span class="label">AGENTES</span>
+      <span class="value">{{ totalAgentes() }}</span>
     </div>
   </div>
 </div>

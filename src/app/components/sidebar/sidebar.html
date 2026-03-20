@@ -1,10 +1,13 @@
 <div class="sidebar">
   <div class="brand">
+    <div class="brand-icon">
+      <i class="fas fa-map"></i> <!-- Usa FontAwesome para el ícono de mapa -->
+    </div>
     <div class="brand-text">
       <strong>GeoProyect</strong>
     </div>
   </div>
-
+  <hr class="header-divider">
   <div class="section-label">CONTROL DE CAPAS</div>
   <div class="layer-list">
     <!-- Capa 1: Regiones -->
@@ -85,7 +88,7 @@
         <div class="modal-body">
           <div class="form-group">
             <label>Nombre</label>
-            <input type="text" [(ngModel)]="nuevoItem.nombre" placeholder="Ej: Antena Norte">
+            <input type="text" [(ngModel)]="nuevoItem.nombre" placeholder="">
           </div>
 
           <div class="form-row">
