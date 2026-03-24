@@ -25,7 +25,14 @@ export class Sidebar {
     console.log('Abriendo modal para:', tipo);
     this.tipoEdicion = tipo;
     this.mostrarForm = true;
-    this.nuevoItem = { nombre: '', estado: '', latitud: null, longitud: null };
+    this.nuevoItem = { 
+      nombre: '', 
+      estado: null,
+      latitud: null, 
+      longitud: null, 
+      detalle: '',
+      actividad: 'Operativa' 
+    };
   }
 
   guardar() {

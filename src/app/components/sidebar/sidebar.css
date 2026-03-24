@@ -9,6 +9,15 @@
   margin: 0;
 }
 
+.custom-select {
+  width: 100%;
+  padding: 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
+  margin-top: 5px;
+}
+
 /* Línea divisora sutil */
 .header-divider {
   border: 0;

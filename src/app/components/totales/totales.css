@@ -33,10 +33,10 @@
 }
 
 /* Colores de fondo suaves e iconos fuertes */
-.pink { background-color: #fff0f0; color: #ff5c5c; }
-.blue { background-color: #e8f2ff; color: #4a90e2; }
-.green { background-color: #e8fcf0; color: #2ecc71; }
-.orange { background-color: #fff4e6; color: #f39c12; }
+.pink { background-color: #fff0f0; color: #FF1493; }
+.blue { background-color: #e8f2ff; color: #00BFFF; }
+.green { background-color: #e8fcf0; color: #32CD32; }
+.orange { background-color: #fff4e6; color: #FF8C00; }
 
 .stat-texts {
   display: flex;

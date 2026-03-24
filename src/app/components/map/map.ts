@@ -103,10 +103,10 @@ export class Map implements AfterViewInit {
         // --- LÓGICA CAPA 2: PUNTOS ---
         // Limpiamos todo primero
         if (this.map) {
-          // 1. Limpiamos todas las capas de marcadores
+          // Limpiamos todas las capas de marcadores
           [this.radioBases, this.oficinas, this.abonados, this.agentes].forEach(g => g.clearLayers());
 
-          // 2. Definimos la función ANTES del switch para que sea accesible
+          // Definimos la función ANTES del switch para que sea accesible
           const crearPinIcon = (colorClass: string) => {
             return L.divIcon({
               html: `<div class="custom-pin-marker ${colorClass}"></div>`,
@@ -118,13 +118,16 @@ export class Map implements AfterViewInit {
           };
 
           if (estado.operaciones && estado.detalleCap2 !== 'ninguno') {
-            // 3. Renderizado condicional
+            // Renderizado condicional
             switch (estado.detalleCap2) {
               case 'antenas':
                 const iconA = crearPinIcon('pin-antena');
                 antenas.forEach((a: RadioBase) => {
-                  L.marker([a.latitud, a.longitud], { icon: iconA })
-                    .bindPopup(`<b>Antena:</b> ${a.nombre}<br><b>Estado:</b> ${a.estado}`)
+                  const lat = Number(a.latitud);
+                  const lng = Number(a.longitud);
+                  const colorActividad = a.actividad === 'Operativa' ? 'green' : a.actividad === 'Falla' ? 'red' : 'orange';
+                  L.marker([lat, lng], { icon: iconA })
+                    .bindPopup(`<b>Antena:</b> ${a.nombre}<br><b>Ubicación:</b> ${a.estado} (${a.region})<br> <b>Coordenadas:</b> ${lat.toFixed(4)}, ${lng.toFixed(4)}<br> ${a.detalle ? `<b>Detalle:</b> ${a.detalle}<br>` : ''} ${a.actividad ? `<b>Estado:</b> <span style="color:${colorActividad}; font-weight: bold;">${a.actividad}</span>` : ''}`)
                     .addTo(this.radioBases);
                 });
                 this.radioBases.addTo(this.map);
@@ -133,8 +136,10 @@ export class Map implements AfterViewInit {
               case 'abonados':
                 const iconAb = crearPinIcon('pin-abonado');
                 abonados.forEach((ab: Abonado) => {
-                  L.marker([ab.latitud, ab.longitud], { icon: iconAb })
-                    .bindPopup(`<b>Abonado:</b> ${ab.nombre}<br><b>Estado:</b> ${ab.estado}`)
+                  const lat = Number(ab.latitud);
+                  const lng = Number(ab.longitud);
+                  L.marker([lat, lng], { icon: iconAb })
+                    .bindPopup(`<b>Abonado:</b> ${ab.nombre}<br> <b>Ubicación:</b> ${ab.estado} (${ab.region})<br> <b>Coordenadas:</b> ${lat.toFixed(4)}, ${lng.toFixed(4)}<br> ${ab.detalle ? `<b>Detalle:</b> ${ab.detalle}<br>` : ''}`)
                     .addTo(this.abonados);
                 });
                 this.abonados.addTo(this.map);
@@ -143,8 +148,10 @@ export class Map implements AfterViewInit {
               case 'oficinas':
                 const iconO = crearPinIcon('pin-oficina');
                 oficinas.forEach((o: Oficina) => {
-                  L.marker([o.latitud, o.longitud], { icon: iconO })
-                    .bindPopup(`<b>Oficina:</b> ${o.nombre}<br><b>Estado:</b> ${o.estado}`)
+                  const lat = Number(o.latitud);
+                  const lng = Number(o.longitud);
+                  L.marker([lat, lng], { icon: iconO })
+                    .bindPopup(`<b>Oficina:</b> ${o.nombre}<br><b>Ubicación:</b> ${o.estado} (${o.region})<br> <b>Coordenadas:</b> ${lat.toFixed(4)}, ${lng.toFixed(4)}<br> ${o.detalle ? `<b>Detalle:</b> ${o.detalle}<br>` : ''}`)
                     .addTo(this.oficinas);
                 });
                 this.oficinas.addTo(this.map);
@@ -153,8 +160,10 @@ export class Map implements AfterViewInit {
               case 'agentes':
                 const iconAg = crearPinIcon('pin-agente');
                 agentes.forEach((ag: Agente) => {
-                  L.marker([ag.latitud, ag.longitud], { icon: iconAg })
-                    .bindPopup(`<b>Agente:</b> ${ag.nombre}<br><b>Estado:</b> ${ag.estado}`)
+                  const lat = Number(ag.latitud);
+                  const lng = Number(ag.longitud);
+                  L.marker([lat, lng], { icon: iconAg })
+                    .bindPopup(`<b>Agente:</b> ${ag.nombre}<br><b>Ubicación:</b> ${ag.estado} (${ag.region})<br> <b>Coordenadas:</b> ${lat.toFixed(4)}, ${lng.toFixed(4)}<br> ${ag.detalle ? `<b>Detalle:</b> ${ag.detalle}<br>` : ''}`)
                     .addTo(this.agentes);
                 });
                 this.agentes.addTo(this.map);
