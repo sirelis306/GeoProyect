@@ -127,7 +127,7 @@ export class Map implements AfterViewInit {
                   const lng = Number(a.longitud);
                   const colorActividad = a.actividad === 'Operativa' ? 'green' : a.actividad === 'Falla' ? 'red' : 'orange';
                   L.marker([lat, lng], { icon: iconA })
-                    .bindPopup(`<b>Antena:</b> ${a.nombre}<br><b>Ubicación:</b> ${a.estado} (${a.region})<br> <b>Coordenadas:</b> ${lat.toFixed(4)}, ${lng.toFixed(4)}<br> ${a.detalle ? `<b>Detalle:</b> ${a.detalle}<br>` : ''} ${a.actividad ? `<b>Estado:</b> <span style="color:${colorActividad}; font-weight: bold;">${a.actividad}</span>` : ''}`)
+                    .bindPopup(`<b>Antena:</b> ${a.nombre}<br><b>Ubicación:</b> ${a.estado} (${a.region})<br> <b>Coordenadas:</b> ${lat.toFixed(4)}, ${lng.toFixed(4)}<br> <b>Tecnología:</b> ${a.tecnologia}<br> ${a.actividad ? `<b>Estado:</b> <span style="color:${colorActividad}; font-weight: bold;">${a.actividad}</span>` : ''} ${a.detalle ? `<b>Detalle:</b> ${a.detalle}<br>` : ''}`)
                     .addTo(this.radioBases);
                 });
                 this.radioBases.addTo(this.map);

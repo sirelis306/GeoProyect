@@ -14,7 +14,7 @@ export interface CapasEstado {
     region: string;
     latitud: number;
     longitud: number;
-    tipo: '4G' | '5G' | 'LTE';
+    tecnologia: '4G' | '5G' | 'LTE';
     actividad: 'Operativa' | 'Mantenimiento' | 'Falla';
     detalle?: string;
   }

@@ -41,7 +41,7 @@ export class Gis {
   agregarElemento(tipo: TipoElementoCap2, data: any) {
     const nuevoItem = { ...data, tipo }; // Añadimos el tipo para la base de datos
     
-    this.http.post(`${this.API_URL}/elementos`, nuevoItem).subscribe({ 
+    this.http.post(`${this.API_URL}/elementos`, data).subscribe({ 
       next: () => {
         this.cargarDatos(); // Recargamos todo desde la BD para que el mapa se actualice solo
     },

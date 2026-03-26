@@ -36,15 +36,51 @@ export class Sidebar {
   }
 
   guardar() {
-    const itemConRegion = {
-      ...this.nuevoItem,
-      latitud: Number(this.nuevoItem.latitud),
-      longitud: Number(this.nuevoItem.longitud),
-      region: this.obtenerRegion(this.nuevoItem.estado)
+    // Objeto base con la región
+    let itemFinal: any = {
+      estado: this.nuevoItem.estado,
+      region: this.obtenerRegion(this.nuevoItem.estado),
+      tipo: this.tipoEdicion
     };
-    // Asegúrate de que este método exista en tu gisService.ts
-    this.gis.agregarElemento(this.tipoEdicion, itemConRegion); 
+
+    // Lógica separada por tipo de elemento
+    if (this.tipoEdicion === 'antenas') {
+      // Para ANTENAS: Usamos nombre, coordenadas, tecnología y actividad
+      itemFinal.nombre = this.nuevoItem.nombre;
+      itemFinal.latitud = Number(this.nuevoItem.latitud);
+      itemFinal.longitud = Number(this.nuevoItem.longitud);
+      itemFinal.tecnologia = this.nuevoItem.tecnologia || '4G';
+      itemFinal.actividad = this.nuevoItem.actividad || 'Operativa';
+      itemFinal.detalle = this.nuevoItem.detalle || '';
+      itemFinal.cantidad = 1; // Una antena es una unidad
+    } else {
+      // Para ABONADOS, AGENTES, OFICINAS: Usamos cantidad y coordenadas automáticas
+      const coords = this.COORD_CENTRALES[this.nuevoItem.estado];
+      
+      itemFinal.nombre = `${this.tipoEdicion.toUpperCase()} - ${this.nuevoItem.estado}`;
+      itemFinal.latitud = coords ? coords.lat : 0;
+      itemFinal.longitud = coords ? coords.lng : 0;
+      itemFinal.cantidad = Number(this.nuevoItem.cantidad) || 0; 
+      
+      // Para que no se rellenen con basura, los ponemos en null o vacío
+      itemFinal.tecnologia = null;
+      itemFinal.actividad = null;
+      itemFinal.detalle = `Grupo de ${this.tipoEdicion}`;
+    }
+
+    // Verificación de seguridad antes de enviar
+    if (!itemFinal.estado || (this.tipoEdicion !== 'antenas' && itemFinal.cantidad <= 0)) {
+      alert("Por favor, rellene el estado y una cantidad válida.");
+      return;
+    }
+
+    // 4. Enviar al servicio
+    this.gis.agregarElemento(this.tipoEdicion, itemFinal); 
+    
     this.mostrarForm = false;
+    
+    // 5. Resetear el formulario para la próxima vez
+    this.nuevoItem = { nombre: '', estado: null, latitud: null, longitud: null, cantidad: null, tecnologia: '4G' };
   }
 
   // Lista de regiones con sus colores
@@ -88,6 +124,33 @@ export class Sidebar {
   };
     return mapeo[estado] || '';
   }
+
+  private COORD_CENTRALES: any = {
+    'Amazonas': { lat: 3.4167, lng: -65.5000 },
+    'Anzoátegui': { lat: 9.3333, lng: -64.3333 },
+    'Apure': { lat: 7.0000, lng: -69.0000 },
+    'Aragua': { lat: 10.2500, lng: -67.2500 },
+    'Barinas': { lat: 8.3333, lng: -70.0000 },
+    'Bolívar': { lat: 6.0000, lng: -63.0000 },
+    'Carabobo': { lat: 10.1620, lng: -68.0070 },
+    'Cojedes': { lat: 9.1667, lng: -68.3333 },
+    'Delta Amacuro': { lat: 8.5000, lng: -61.5000 },
+    'Distrito Capital': { lat: 10.5000, lng: -66.9167 },
+    'Falcón': { lat: 11.0000, lng: -70.0000 },
+    'Guárico': { lat: 8.5000, lng: -66.5000 },
+    'La Guaira': { lat: 10.6000, lng: -66.9333 },
+    'Lara': { lat: 10.1667, lng: -69.6667 },
+    'Mérida': { lat: 8.5000, lng: -71.1667 },
+    'Miranda': { lat: 10.2500, lng: -66.5000 },
+    'Monagas': { lat: 9.3333, lng: -63.0000 },
+    'Nueva Esparta': { lat: 10.9833, lng: -63.9167 },
+    'Portuguesa': { lat: 9.0000, lng: -69.2500 },
+    'Sucre': { lat: 10.4167, lng: -63.5000 },
+    'Táchira': { lat: 7.8333, lng: -72.1667 },
+    'Trujillo': { lat: 9.4167, lng: -70.5000 },
+    'Yaracuy': { lat: 10.3333, lng: -68.7500 },
+    'Zulia': { lat: 10.3333, lng: -72.0000 }
+  };
 
   toggle(capa: keyof CapasEstado) {
     this.gis.toggleCapa(capa);

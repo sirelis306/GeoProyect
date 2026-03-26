@@ -86,19 +86,10 @@
         </div>
 
         <div class="modal-body">
-          <div class="form-group">
-            <label>Nombre</label>
-            <input type="text" [(ngModel)]="nuevoItem.nombre" placeholder="">
-          </div>
-
           <div class="form-row">
             <div class="form-group">
               <label>Estado</label>
-              <ng-select 
-                [(ngModel)]="nuevoItem.estado" 
-                [items]="listaEstados"
-                [clearable]="false"
-                [searchable]="true"
+              <ng-select [(ngModel)]="nuevoItem.estado"  [items]="listaEstados" [clearable]="false" [searchable]="true"
                 placeholder="Seleccione un estado"
                 class="custom-ng-select">
               </ng-select>
@@ -109,30 +100,55 @@
             </div>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label>Longitud</label>
-              <input type="number" [(ngModel)]="nuevoItem.longitud">
-            </div>
-            <div class="form-group">
-              <label>Latitud</label>
-              <input type="number" [(ngModel)]="nuevoItem.latitud">
-            </div>
-          </div>
+          <div class="form-group" *ngIf="tipoEdicion === 'antenas'">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Nombre</label>
+                <input type="text" [(ngModel)]="nuevoItem.nombre" placeholder="">
+              </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label>Detalle</label>
-              <input type="text" [(ngModel)]="nuevoItem.detalle" placeholder="">
+              <div class="form-group">
+                <label>Tecnología</label>
+                <select [(ngModel)]="nuevoItem.tecnologia" class="custom-select">
+                  <option value="2G">GSM / 2G</option>
+                  <option value="3G">UMTS / 3G</option>
+                  <option value="4G">LTE / 4G</option>
+                  <option value="5G">5G NR</option>
+                </select>
+              </div>
             </div>
-            <div class="form-group" *ngIf="tipoEdicion === 'antenas'">
-              <label>Estado de Actividad</label>
-              <select [(ngModel)]="nuevoItem.actividad" class="custom-select">
-                <option value="Operativa">Operativa</option>
-                <option value="Mantenimiento">Mantenimiento</option>
-                <option value="Falla">Falla</option>
-              </select>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Longitud</label>
+                <input type="number" [(ngModel)]="nuevoItem.longitud">
+              </div>
+              <div class="form-group">
+                <label>Latitud</label>
+                <input type="number" [(ngModel)]="nuevoItem.latitud">
+              </div>
             </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Estado de Actividad</label>
+                <select [(ngModel)]="nuevoItem.actividad" class="custom-select">
+                  <option value="Operativa">Operativa</option>
+                  <option value="Mantenimiento">Mantenimiento</option>
+                  <option value="Falla">Falla</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Detalle</label>
+                <input type="text" [(ngModel)]="nuevoItem.detalle" placeholder="">
+              </div>
+            </div>
+
+          </div>
+          <div *ngIf="tipoEdicion !== 'antenas' && tipoEdicion !== 'ninguno'" class="form-group">
+            <label>Cantidad Total en este Estado</label>
+            <input type="number" [(ngModel)]="nuevoItem.cantidad" placeholder="Ej: 1500">
           </div>
         </div>
 
