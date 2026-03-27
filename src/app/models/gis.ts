@@ -16,7 +16,7 @@ export interface CapasEstado {
     longitud: number;
     tecnologia: '4G' | '5G' | 'LTE';
     actividad: 'Operativa' | 'Mantenimiento' | 'Falla';
-    detalle?: string;
+    direccion?: string;
   }
 
   export interface Abonado {
@@ -26,7 +26,9 @@ export interface CapasEstado {
     region: string;
     latitud: number;
     longitud: number;
-    detalle?: string;
+    cantidad?: number;
+    direccion?: string;
+    segmentacion: string;
   }
   
   // Define cómo es una Oficina Comercial
@@ -37,7 +39,8 @@ export interface CapasEstado {
     region: string;
     latitud: number;
     longitud: number;
-    detalle?: string;
+    cantidad?: number;
+    direccion?: string;
   }
 
   export interface Agente {
@@ -47,5 +50,6 @@ export interface CapasEstado {
     region: string;
     latitud: number;
     longitud: number;
-    detalle?: string;
+    cantidad?: number;
+    direccion?: string;
   }

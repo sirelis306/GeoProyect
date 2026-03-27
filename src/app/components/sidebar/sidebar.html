@@ -140,12 +140,22 @@
               </div>
 
               <div class="form-group">
-                <label>Detalle</label>
-                <input type="text" [(ngModel)]="nuevoItem.detalle" placeholder="">
+                <label>Dirección</label>
+                <input type="text" [(ngModel)]="nuevoItem.direccion" placeholder="">
               </div>
             </div>
-
           </div>
+
+          <div *ngIf="tipoEdicion === 'abonados'" class="form-group">
+            <label>Segmentación de Cartera</label>
+            <select [(ngModel)]="nuevoItem.segmentacion_elegida" class="custom-select">
+              <option value="" disabled selected>Seleccione segmentación</option>
+              <option value="3G">3G</option>
+              <option value="4G">4G</option>
+              <option value="5G">5G</option>
+            </select>
+          </div>
+
           <div *ngIf="tipoEdicion !== 'antenas' && tipoEdicion !== 'ninguno'" class="form-group">
             <label>Cantidad Total en este Estado</label>
             <input type="number" [(ngModel)]="nuevoItem.cantidad" placeholder="Ej: 1500">

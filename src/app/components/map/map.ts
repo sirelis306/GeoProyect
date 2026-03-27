@@ -127,7 +127,7 @@ export class Map implements AfterViewInit {
                   const lng = Number(a.longitud);
                   const colorActividad = a.actividad === 'Operativa' ? 'green' : a.actividad === 'Falla' ? 'red' : 'orange';
                   L.marker([lat, lng], { icon: iconA })
-                    .bindPopup(`<b>Antena:</b> ${a.nombre}<br><b>Ubicación:</b> ${a.estado} (${a.region})<br> <b>Coordenadas:</b> ${lat.toFixed(4)}, ${lng.toFixed(4)}<br> <b>Tecnología:</b> ${a.tecnologia}<br> ${a.actividad ? `<b>Estado:</b> <span style="color:${colorActividad}; font-weight: bold;">${a.actividad}</span>` : ''} ${a.detalle ? `<b>Detalle:</b> ${a.detalle}<br>` : ''}`)
+                    .bindPopup(`<b>Antena:</b> ${a.nombre}<br><b>Ubicación:</b> ${a.estado} (${a.region})<br> <b>Coordenadas:</b> ${lat.toFixed(4)}, ${lng.toFixed(4)}<br> <b>Tecnología:</b> ${a.tecnologia}<br> ${a.actividad ? `<b>Estado:</b> <span style="color:${colorActividad}; font-weight: bold;">${a.actividad}</span>` : ''} ${a.direccion ? `<b>Dirección:</b> ${a.direccion}<br>` : ''}`)
                     .addTo(this.radioBases);
                 });
                 this.radioBases.addTo(this.map);
@@ -138,8 +138,35 @@ export class Map implements AfterViewInit {
                 abonados.forEach((ab: Abonado) => {
                   const lat = Number(ab.latitud);
                   const lng = Number(ab.longitud);
+                  
+                  // Mostramos el desglose que viene de la base de datos
+                  const desglose = ab.segmentacion || "3G:0 | 4G:0 | 5G:0";
+
                   L.marker([lat, lng], { icon: iconAb })
-                    .bindPopup(`<b>Abonado:</b> ${ab.nombre}<br> <b>Ubicación:</b> ${ab.estado} (${ab.region})<br> <b>Coordenadas:</b> ${lat.toFixed(4)}, ${lng.toFixed(4)}<br> ${ab.detalle ? `<b>Detalle:</b> ${ab.detalle}<br>` : ''}`)
+                    .bindPopup(`
+                      <div style="min-width: 180px; font-family: sans-serif;">
+                        <h3 style="margin: 0; color: #00BFFF; font-size: 16px;">Abonados - ${ab.estado}</h3>
+                        <hr style="margin: 8px 0; border: 0; border-top: 1px solid #eee;">
+                        
+                        <div style="font-size: 12px; margin-bottom: 8px;">
+                          <b style="color: #555;">Segmentación de Cartera:</b><br>
+                          <div style="margin-top: 5px; display: grid; gap: 4px;">
+                            <span style="background: #fee2e2; color: #b91c1c; padding: 2px 6px; border-radius: 4px;">● ${desglose.split('|')[0] || '3G:0'}</span>
+                            <span style="background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px;">● ${desglose.split('|')[1] || '4G:0'}</span>
+                            <span style="background: #dcfce7; color: #15803d; padding: 2px 6px; border-radius: 4px;">● ${desglose.split('|')[2] || '5G:0'}</span>
+                          </div>
+                        </div>
+
+                        <div style="background-color: #daf6ff; padding: 10px; border-radius: 6px; margin-top: 10px; text-align: center; color: white; border: 1px solid #adebff;">
+                          <span style="display: block; font-size: 10px; color: #555; text-transform: uppercase; opacity: 0.9;">Total Acumulado</span>
+                          <strong style="font-size: 20px; color: #06a7dd;">${ab.cantidad || 0}</strong>
+                        </div>
+                        
+                        <div style="margin-top: 8px; font-size: 9px; color: #aaa; text-align: center;">
+                          Coord: ${lat.toFixed(4)}, ${lng.toFixed(4)}
+                        </div>
+                      </div>
+                    `)
                     .addTo(this.abonados);
                 });
                 this.abonados.addTo(this.map);
@@ -151,7 +178,17 @@ export class Map implements AfterViewInit {
                   const lat = Number(o.latitud);
                   const lng = Number(o.longitud);
                   L.marker([lat, lng], { icon: iconO })
-                    .bindPopup(`<b>Oficina:</b> ${o.nombre}<br><b>Ubicación:</b> ${o.estado} (${o.region})<br> <b>Coordenadas:</b> ${lat.toFixed(4)}, ${lng.toFixed(4)}<br> ${o.detalle ? `<b>Detalle:</b> ${o.detalle}<br>` : ''}`)
+                    .bindPopup(`
+                      <div style="min-width: 160px;">
+                        <h3 style="margin: 0; color: #32CD32; font-size: 16px;">Oficina Comercial</h3>
+                        <hr style="margin: 8px 0; border: 0; border-top: 1px solid #eee;">
+                        <b>Ubicación:</b> ${o.estado} (${o.region})<br>
+                        <div style="background-color: #f4fff4; padding: 10px; border-radius: 6px; margin-top: 8px; text-align: center; border: 1px solid #c2ffc2;">
+                          <span style="display: block; font-size: 11px; color: #555; text-transform: uppercase;">Total Oficinas</span>
+                          <strong style="font-size: 20px; color: #28a745;">${o.cantidad || 0}</strong>
+                        </div>
+                      </div>
+                    `)
                     .addTo(this.oficinas);
                 });
                 this.oficinas.addTo(this.map);
@@ -163,7 +200,17 @@ export class Map implements AfterViewInit {
                   const lat = Number(ag.latitud);
                   const lng = Number(ag.longitud);
                   L.marker([lat, lng], { icon: iconAg })
-                    .bindPopup(`<b>Agente:</b> ${ag.nombre}<br><b>Ubicación:</b> ${ag.estado} (${ag.region})<br> <b>Coordenadas:</b> ${lat.toFixed(4)}, ${lng.toFixed(4)}<br> ${ag.detalle ? `<b>Detalle:</b> ${ag.detalle}<br>` : ''}`)
+                    .bindPopup(`
+                      <div style="min-width: 160px;">
+                        <h3 style="margin: 0; color: #FF8C00; font-size: 16px;">Agente Autorizado</h3>
+                        <hr style="margin: 8px 0; border: 0; border-top: 1px solid #eee;">
+                        <b>Ubicación:</b> ${ag.estado} (${ag.region})<br>
+                        <div style="background-color: #fff9f2; padding: 10px; border-radius: 6px; margin-top: 8px; text-align: center; border: 1px solid #ffebcc;">
+                          <span style="display: block; font-size: 11px; color: #555; text-transform: uppercase;">Total Agentes</span>
+                          <strong style="font-size: 20px; color: #e67e00;">${ag.cantidad || 0}</strong>
+                        </div>
+                      </div>
+                    `)
                     .addTo(this.agentes);
                 });
                 this.agentes.addTo(this.map);

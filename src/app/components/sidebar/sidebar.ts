@@ -30,7 +30,7 @@ export class Sidebar {
       estado: null,
       latitud: null, 
       longitud: null, 
-      detalle: '',
+      direccion: '',
       actividad: 'Operativa' 
     };
   }
@@ -40,47 +40,56 @@ export class Sidebar {
     let itemFinal: any = {
       estado: this.nuevoItem.estado,
       region: this.obtenerRegion(this.nuevoItem.estado),
-      tipo: this.tipoEdicion
+      tipo: this.tipoEdicion,
+      direccion: this.nuevoItem.direccion || '',
+      cantidad: Number(this.nuevoItem.cantidad) || 0
     };
 
-    // Lógica separada por tipo de elemento
     if (this.tipoEdicion === 'antenas') {
-      // Para ANTENAS: Usamos nombre, coordenadas, tecnología y actividad
       itemFinal.nombre = this.nuevoItem.nombre;
       itemFinal.latitud = Number(this.nuevoItem.latitud);
       itemFinal.longitud = Number(this.nuevoItem.longitud);
       itemFinal.tecnologia = this.nuevoItem.tecnologia || '4G';
       itemFinal.actividad = this.nuevoItem.actividad || 'Operativa';
-      itemFinal.detalle = this.nuevoItem.detalle || '';
-      itemFinal.cantidad = 1; // Una antena es una unidad
+      itemFinal.cantidad = 1; 
     } else {
-      // Para ABONADOS, AGENTES, OFICINAS: Usamos cantidad y coordenadas automáticas
       const coords = this.COORD_CENTRALES[this.nuevoItem.estado];
-      
-      itemFinal.nombre = `${this.tipoEdicion.toUpperCase()} - ${this.nuevoItem.estado}`;
+
+      // Si es abonados, guardamos la opción del select en el campo 'segmentacion'
+      if (this.tipoEdicion === 'abonados') {
+        itemFinal.segmentacion = this.nuevoItem.segmentacion_elegida || '4G';
+        itemFinal.nombre = `ABONADOS ${itemFinal.segmentacion} - ${this.nuevoItem.estado}`;
+      } else {
+        itemFinal.nombre = `${this.tipoEdicion.toUpperCase()} - ${this.nuevoItem.estado}`;
+        itemFinal.segmentacion = null; // Oficinas y Agentes no llevan segmentación
+      }
+
       itemFinal.latitud = coords ? coords.lat : 0;
       itemFinal.longitud = coords ? coords.lng : 0;
-      itemFinal.cantidad = Number(this.nuevoItem.cantidad) || 0; 
-      
-      // Para que no se rellenen con basura, los ponemos en null o vacío
       itemFinal.tecnologia = null;
       itemFinal.actividad = null;
-      itemFinal.detalle = `Grupo de ${this.tipoEdicion}`;
     }
 
-    // Verificación de seguridad antes de enviar
+    // Verificación de seguridad
     if (!itemFinal.estado || (this.tipoEdicion !== 'antenas' && itemFinal.cantidad <= 0)) {
       alert("Por favor, rellene el estado y una cantidad válida.");
       return;
     }
 
-    // 4. Enviar al servicio
     this.gis.agregarElemento(this.tipoEdicion, itemFinal); 
-    
     this.mostrarForm = false;
     
-    // 5. Resetear el formulario para la próxima vez
-    this.nuevoItem = { nombre: '', estado: null, latitud: null, longitud: null, cantidad: null, tecnologia: '4G' };
+    // Reseteamos incluyendo el nuevo campo del select
+    this.nuevoItem = { 
+      nombre: '', 
+      estado: null, 
+      latitud: null, 
+      longitud: null, 
+      cantidad: null, 
+      tecnologia: '', 
+      segmentacion_elegida: '',
+      direccion: '' 
+    };
   }
 
   // Lista de regiones con sus colores

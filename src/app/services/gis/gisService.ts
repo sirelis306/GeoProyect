@@ -25,6 +25,23 @@ export class Gis {
     this.cargarDatos(); // Cargamos al iniciar el servicio
   }
 
+  get totalAbonadosSum() {
+    return this.abonadosSignal().reduce((acc, item) => acc + (Number(item.cantidad) || 0), 0);
+  }
+
+  get totalOficinasSum() {
+    return this.oficinasSignal().reduce((acc, item) => acc + (Number(item.cantidad) || 0), 0);
+  }
+
+  get totalAgentesSum() {
+    return this.agentesSignal().reduce((acc, item) => acc + (Number(item.cantidad) || 0), 0);
+  }
+
+  // Para antenas se mantiene el conteo de items individuales
+  get totalAntenasCount() {
+    return this.radioBasesSignal().length;
+  }
+
   cargarDatos() {
     this.http.get<any[]>(`${this.API_URL}/elementos`).subscribe({
       next: (data) => {
@@ -52,7 +69,7 @@ export class Gis {
   // Agregaremos lógica para determinar qué regiones tienen datos
   getRegionesConDatos(): string[] {
     const estado = this.capasVisibles();
-    const detalle = estado.detalleCap2;
+    const direccion = estado.detalleCap2;
     const regiones = new Set<string>();
 
     // Función auxiliar para extraer regiones de cualquier lista de datos
@@ -60,12 +77,12 @@ export class Gis {
       if (item.region) regiones.add(item.region);
   });
 
-  if (estado.operaciones && detalle !== 'ninguno') {
+  if (estado.operaciones && direccion !== 'ninguno') {
     // Si la Capa 2 está activa, extraemos regiones solo del tipo seleccionado
-    if (detalle === 'antenas') extraerDe(this.radioBasesSignal());
-    else if (detalle === 'oficinas') extraerDe(this.oficinasSignal());
-    else if (detalle === 'abonados') extraerDe(this.abonadosSignal());
-    else if (detalle === 'agentes') extraerDe(this.agentesSignal());
+    if (direccion === 'antenas') extraerDe(this.radioBasesSignal());
+    else if (direccion === 'oficinas') extraerDe(this.oficinasSignal());
+    else if (direccion === 'abonados') extraerDe(this.abonadosSignal());
+    else if (direccion === 'agentes') extraerDe(this.agentesSignal());
   } else {
     // Si solo la Capa 1 está activa, extraemos regiones de TODOS los datos
     extraerDe(this.radioBasesSignal());
