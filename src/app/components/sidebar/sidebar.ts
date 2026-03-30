@@ -4,6 +4,7 @@ import { Gis } from '../../services/gis/gisService';
 import { FormsModule } from '@angular/forms';
 import { CapasEstado, TipoElementoCap2 } from '../../models/gis';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-sidebar',
@@ -20,6 +21,8 @@ export class Sidebar {
   listaEstados = ['Amazonas', 'Anzoátegui', 'Apure', 'Aragua', 'Barinas', 'Bolívar', 'Carabobo', 'Cojedes', 'Delta Amacuro', 
   'Distrito Capital', 'Falcón', 'Guárico', 'La Guaira', 'Lara', 'Mérida', 'Miranda', 'Monagas', 'Nueva Esparta', 'Portuguesa', 
   'Sucre', 'Táchira', 'Trujillo', 'Yaracuy', 'Zulia', 'Dependencias Federales'];
+
+  constructor(private router: Router) {}
 
   abrirModal(tipo: TipoElementoCap2) {
     console.log('Abriendo modal para:', tipo);
@@ -90,6 +93,11 @@ export class Sidebar {
       segmentacion_elegida: '',
       direccion: '' 
     };
+  }
+  
+  salir() {
+    localStorage.removeItem('token_geo'); 
+    this.router.navigate(['/login']);    
   }
 
   // Lista de regiones con sus colores

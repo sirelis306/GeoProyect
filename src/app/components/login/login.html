@@ -1,0 +1,33 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="header">
+      <div class="logo-circle">
+        <i class="fas fa-shield-alt"></i>
+      </div>
+      <h2>GeoProyect <span>Secure</span></h2>
+      <p>Ingrese sus credenciales de acceso</p>
+    </div>
+
+    <form (submit)="ingresar()">
+      <div class="form-group">
+        <label>Usuario</label>
+        <input type="text" name="user" [(ngModel)]="creds.username" placeholder="Nombre de usuario" required>
+      </div>
+
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" name="pass" [(ngModel)]="creds.password" placeholder="••••••••" required>
+      </div>
+
+      <div *ngIf="error" class="error-msg">
+        {{ error }}
+      </div>
+
+      <button type="submit" [disabled]="cargando">
+        {{ cargando ? 'Verificando...' : 'Acceder al Sistema' }}
+      </button>
+    </form>
+    
+    <p class="footer-text">© 2026 Sistema de Gestión de Redes</p>
+  </div>
+</div>
