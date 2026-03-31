@@ -22,7 +22,6 @@ export class Gis {
   agentesSignal = signal<Agente[]>([]);
 
   constructor() {
-    this.cargarDatos(); // Cargamos al iniciar el servicio
   }
 
   get totalAbonadosSum() {

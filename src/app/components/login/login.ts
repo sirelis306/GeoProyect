@@ -25,8 +25,9 @@ export class Login {
 
     this.auth.login(this.creds).subscribe({
       next: (res) => {
+        this.cargando = false;
         console.log('Login exitoso', res);
-        this.router.navigate(['/map']);
+        this.router.navigate(['/mapa']);
       },
       error: (err) => {
         this.cargando = false;

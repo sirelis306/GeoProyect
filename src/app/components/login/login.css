@@ -3,8 +3,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+  background: #3240A5;
+  background: linear-gradient(211deg,rgba(50, 64, 165, 0.90) 33%, rgba(129, 209, 219, 0.9) 90%);
+  background-size: 300% 300%;
+  animation: animarGradiente 5s ease infinite;
 }
 
 .login-card {
@@ -18,12 +22,12 @@
 }
 
 .header h2 { margin: 10px 0 5px; color: #1e293b; }
-.header h2 span { color: #3b82f6; font-weight: 300; }
+.header h2 span { color: #3240A5; font-weight: 300; }
 .header p { color: #64748b; font-size: 14px; margin-bottom: 30px; }
 
 .logo-circle {
   width: 60px; height: 60px;
-  background: #3b82f6;
+  background: #3240A5;
   color: white;
   border-radius: 50%;
   display: flex;
@@ -44,12 +48,12 @@ input {
   transition: all 0.3s;
 }
 
-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+input:focus { outline: none; border-color: #3240A5; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
 
 button {
   width: 100%;
   padding: 14px;
-  background: #3b82f6;
+  background: #3240A5;
   color: white;
   border: none;
   border-radius: 8px;
@@ -59,11 +63,11 @@ button {
   margin-top: 10px;
 }
 
-button:hover { background: #2563eb; }
+button:hover { background: #5766dd; }
 button:disabled { background: #94a3b8; cursor: not-allowed; }
 
 .error-msg {
-  background: #fee2e2;
+  background: #f8caca;
   color: #b91c1c;
   padding: 10px;
   border-radius: 8px;

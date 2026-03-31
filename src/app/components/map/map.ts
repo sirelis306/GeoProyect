@@ -224,6 +224,7 @@ export class Map implements AfterViewInit {
       }
     });
   }
+  
 
   ngAfterViewInit() {
     // Crea el mapa
@@ -273,6 +274,7 @@ export class Map implements AfterViewInit {
     });
 
     L.control.zoom({ position: 'topright' }).addTo(this.map);
+    this.gis.cargarDatos();
   }
 
   get regionesFiltradas() {
