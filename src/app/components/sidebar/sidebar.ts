@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { CapasEstado, TipoElementoCap2 } from '../../models/gis';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth/authService';
 
 @Component({
   selector: 'app-sidebar',
@@ -15,6 +16,8 @@ import { Router } from '@angular/router';
 })
 export class Sidebar {
   public gis = inject(Gis);
+  public auth = inject(AuthService);
+  
   mostrarForm = false;
   tipoEdicion: TipoElementoCap2 = 'ninguno';
   nuevoItem: any = { nombre: '', estado: '', region: '', latitud: null, longitud: null };
@@ -22,6 +25,16 @@ export class Sidebar {
   'Distrito Capital', 'Falcón', 'Guárico', 'La Guaira', 'Lara', 'Mérida', 'Miranda', 'Monagas', 'Nueva Esparta', 'Portuguesa', 
   'Sucre', 'Táchira', 'Trujillo', 'Yaracuy', 'Zulia', 'Dependencias Federales'];
 
+  get esAdmin(): boolean {
+    const rol = this.auth.getUserRol();
+    console.log("Tu rol actual es:", rol); // Mira esto en la consola (F12)
+    
+    // Temporalmente, cambia esto a 'true' para ver si el botón aparece físicamente
+    // return true; 
+    
+    return this.auth.getUserRol() === 'admin';
+  }
+  
   constructor(private router: Router) {}
 
   abrirModal(tipo: TipoElementoCap2) {
@@ -82,7 +95,6 @@ export class Sidebar {
     this.gis.agregarElemento(this.tipoEdicion, itemFinal); 
     this.mostrarForm = false;
     
-    // Reseteamos incluyendo el nuevo campo del select
     this.nuevoItem = { 
       nombre: '', 
       estado: null, 
@@ -172,7 +184,6 @@ export class Sidebar {
   toggle(capa: keyof CapasEstado) {
     this.gis.toggleCapa(capa);
     
-    // Si estamos desactivando la Capa 2, también reseteamos el detalle
     if (capa === 'operaciones' && !this.gis.capasVisibles().operaciones) {
       this.gis.setDetalleCap2('ninguno');
     }

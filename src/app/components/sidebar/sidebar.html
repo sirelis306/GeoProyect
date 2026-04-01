@@ -8,6 +8,11 @@
     </div>
   </div>
   <hr class="header-divider">
+  <div class="section-label" *ngIf="esAdmin">ADMIN</div>
+    <button class="layer-item" *ngIf="esAdmin" routerLink="/usuarios" routerLinkActive="active">
+      <span class="dot" style="background: #6366f1;"></span> Gestión de Usuarios
+    </button>
+
   <div class="section-label">CONTROL DE CAPAS</div>
   <div class="layer-list">
     <!-- Capa 1: Regiones -->

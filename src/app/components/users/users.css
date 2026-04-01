@@ -1,0 +1,39 @@
+.usuarios-container {
+  padding: 30px;
+  background: #f8f9fa;
+  height: 100vh;
+}
+
+.custom-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 10px;
+}
+
+.custom-table th {
+  color: #64748b;
+  text-transform: uppercase;
+  font-size: 12px;
+  padding: 10px;
+  text-align: left;
+}
+
+.custom-table tr {
+  background: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.custom-table td {
+  padding: 15px;
+  border-top: 1px solid #f1f5f9;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.badge {
+  background: #e0e7ff;
+  color: #4338ca;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}

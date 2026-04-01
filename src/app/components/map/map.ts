@@ -19,7 +19,6 @@ export class Map implements AfterViewInit {
 
   private map!: L.Map;
 
-  // Definir los grupos de capas como propiedades de la clase
   private radioBases = L.layerGroup();
   private abonados = L.layerGroup();
   private oficinas = L.layerGroup();
@@ -80,7 +79,7 @@ export class Map implements AfterViewInit {
         if (estado.regiones) {
           this.capaGeoJsonRegiones.addTo(this.map);
           
-          // Obtenemos las regiones a marcar (ahora incluye lógica para Capa 1 sola)
+          // Obtenemos las regiones a marcar
           const regionesActivas = this.gis.getRegionesConDatos();
     
           this.capaGeoJsonRegiones.setStyle((feature: any) => {
@@ -100,13 +99,11 @@ export class Map implements AfterViewInit {
           this.map.removeLayer(this.capaGeoJsonRegiones);
         }
     
-        // --- LÓGICA CAPA 2: PUNTOS ---
-        // Limpiamos todo primero
+        // --- LÓGICA CAPA 2 ---
         if (this.map) {
           // Limpiamos todas las capas de marcadores
           [this.radioBases, this.oficinas, this.abonados, this.agentes].forEach(g => g.clearLayers());
 
-          // Definimos la función ANTES del switch para que sea accesible
           const crearPinIcon = (colorClass: string) => {
             return L.divIcon({
               html: `<div class="custom-pin-marker ${colorClass}"></div>`,
@@ -118,7 +115,6 @@ export class Map implements AfterViewInit {
           };
 
           if (estado.operaciones && estado.detalleCap2 !== 'ninguno') {
-            // Renderizado condicional
             switch (estado.detalleCap2) {
               case 'antenas':
                 const iconA = crearPinIcon('pin-antena');
@@ -218,7 +214,7 @@ export class Map implements AfterViewInit {
             }
           }
         } else {
-          // Si Capa 2 (operaciones) está OFF, removemos los grupos del mapa
+          // Si Capa 2 está OFF, removemos los grupos del mapa
           [this.radioBases, this.oficinas, this.abonados, this.agentes].forEach(g => g.remove());
         }
       }
@@ -238,14 +234,14 @@ export class Map implements AfterViewInit {
         [-15, -85],      // Suroeste (lat, lng)
         [20, -55]        // Noreste (lat, lng)
       ],
-      maxBoundsViscosity: 1.0 // Qué tan "duro" es el límite (1 = no deja salir)
+      maxBoundsViscosity: 1.0 
     });
 
     // Muestra los demas paises
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     }).addTo(this.map);
 
-    // Cargar Capa 1 (Relieve/Estados)
+    // Cargar Capa 1 (Relieve/Regiones)
     this.http.get('assets/geojson/venezuela.json').subscribe((data: any) => {
       this.capaGeoJsonRegiones = L.geoJSON(data, {
         style: (feature: any) => {

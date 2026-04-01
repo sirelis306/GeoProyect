@@ -2,11 +2,10 @@ export type TipoElementoCap2 = 'antenas' | 'abonados' | 'oficinas' | 'agentes' |
 
 export interface CapasEstado {
   regiones: boolean;
-  operaciones: boolean; // Esta es la Capa 2 principal
-  detalleCap2: TipoElementoCap2; // Lo que se elija en el select
+  operaciones: boolean;
+  detalleCap2: TipoElementoCap2;
 }
   
-  // Define cómo es una Radio Base (Antena) para la Capa 2
   export interface RadioBase {
     id?: string;
     nombre: string;
@@ -31,7 +30,6 @@ export interface CapasEstado {
     segmentacion: string;
   }
   
-  // Define cómo es una Oficina Comercial
   export interface Oficina {
     id?: string;
     nombre: string;

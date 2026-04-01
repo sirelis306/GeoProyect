@@ -12,7 +12,6 @@ import { CommonModule } from '@angular/common';
 export class Totales {
   public gis = inject(Gis);
 
-  // Creamos propiedades computadas para los totales
   totalAntenas = computed(() => this.gis.radioBasesSignal().length);
   totalAbonados = computed(() => this.gis.abonadosSignal().length);
   totalOficinas = computed(() => this.gis.oficinasSignal().length);

@@ -1,0 +1,27 @@
+<div class="usuarios-container">
+  <div class="header-section">
+    <h2>Gestión de Accesos</h2>
+    <button class="btn-save" (click)="abrirModalCrear()">+ Nuevo Usuario</button>
+  </div>
+
+  <table class="custom-table">
+    <thead>
+      <tr>
+        <th>Usuario</th>
+        <th>Rol</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let user of listaUsuarios">
+        <td>{{ user.username }}</td>
+        <td><span class="badge">{{ user.rol }}</span></td>
+        <td>
+          <button class="btn-icon delete" (click)="borrar(user.id)">
+            <i class="fas fa-trash"></i>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

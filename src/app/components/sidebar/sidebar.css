@@ -13,11 +13,11 @@
 }
 
 .btn-logout {
-  
+
   padding: 12px;
-  background-color: #fee2e2; /* Un rojo muy clarito */
+  background-color: #fae1e1; /* Un rojo muy clarito */
   color: #b91c1c; /* Texto rojo oscuro */
-  border: 1px solid #fecaca;
+  border: 1px solid #f76666;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
@@ -29,8 +29,8 @@
 }
 
 .btn-logout:hover {
-  background-color: #f87171;
-  color: white;
+  background-color: #ffb5b5;
+  color: #b91c1c;
   border-color: #ef4444;
 }
 

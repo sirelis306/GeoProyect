@@ -8,10 +8,9 @@ import { HttpClient } from '@angular/common/http';
 export class Gis {
   private http = inject(HttpClient);
   private API_URL = 'http://localhost:3000/api';
-  // Usamos WritableSignals para un manejo de estado moderno y eficiente
   capasVisibles = signal<CapasEstado>({
     regiones: true,
-    operaciones: false, // Iniciamos la Capa 2 apagada
+    operaciones: false, 
     detalleCap2: 'ninguno'
   });
 
@@ -55,17 +54,17 @@ export class Gis {
   }
 
   agregarElemento(tipo: TipoElementoCap2, data: any) {
-    const nuevoItem = { ...data, tipo }; // Añadimos el tipo para la base de datos
+    const nuevoItem = { ...data, tipo }; 
     
     this.http.post(`${this.API_URL}/elementos`, data).subscribe({ 
       next: () => {
-        this.cargarDatos(); // Recargamos todo desde la BD para que el mapa se actualice solo
+        this.cargarDatos();
     },
       error: (err) => alert('Error al guardar en la base de datos')
     });
   }
 
-  // Agregaremos lógica para determinar qué regiones tienen datos
+  // Lógica para determinar qué regiones tienen datos
   getRegionesConDatos(): string[] {
     const estado = this.capasVisibles();
     const direccion = estado.detalleCap2;
