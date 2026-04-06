@@ -6,8 +6,8 @@ import { Users } from './components/users/users';
 
 export const routes: Routes = [
     { path: 'login', component: Login },
-    { path: '', redirectTo: 'login', pathMatch: 'full' },
-    { path: '**', redirectTo: 'login' },
     { path: 'mapa', component: Map, canActivate: [authGuard] },
-    { path: 'usuarios', component: Users },
+    { path: 'usuarios', component: Users, canActivate: [authGuard] }, // Agrega el guard aquí también
+    { path: '', redirectTo: 'mapa', pathMatch: 'full' }, // Redirigir al mapa, no al login si ya estás logueado
+    { path: '**', redirectTo: 'login' },
 ];

@@ -3,11 +3,12 @@ import { Gis } from '../../services/gis/gisService';
 import { HttpClient } from '@angular/common/http';
 import { RadioBase, Oficina, Abonado, Agente } from '../../models/gis';
 import * as L from 'leaflet';
+import { Totales } from "../totales/totales";
 
 @Component({
   selector: 'app-map',
   standalone: true,
-  imports: [],
+  imports: [Totales],
   templateUrl: './map.html',
   styleUrl: './map.css',
 })
@@ -220,9 +221,21 @@ export class Map implements AfterViewInit {
       }
     });
   }
-  
 
   ngAfterViewInit() {
+    // Validación de seguridad para evitar el error TypeError
+    if (this.mapContainer && this.mapContainer.nativeElement) {
+      this.initMap();
+    } else {
+      console.error("No se pudo encontrar el contenedor del mapa.");
+    }
+  }
+
+  private initMap() {
+    if (!this.mapContainer || !this.mapContainer.nativeElement) {
+      console.error("Error: No se encontró el contenedor del mapa en el DOM.");
+      return;
+    } 
     // Crea el mapa
     this.map = L.map(this.mapContainer.nativeElement, {
       center: [7.1291, -66.1818],

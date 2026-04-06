@@ -1,12 +1,7 @@
 <div class="dashboard-wrapper">
   <app-sidebar class="sidebar-aside" *ngIf="auth.estaLogueado()"></app-sidebar>
 
-  <main class="map-view">
-    <ng-container *ngIf="auth.estaLogueado()">
-        <app-map></app-map>
-        <app-totales></app-totales>
-    </ng-container>
-
+  <main class="main-content">
     <router-outlet></router-outlet>
   </main>
 </div>

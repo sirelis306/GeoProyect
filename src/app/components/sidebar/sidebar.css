@@ -12,8 +12,13 @@
   box-sizing: border-box;
 }
 
-.btn-logout {
+.sidebar-content {
+  flex: 1; /* Ocupa todo el espacio disponible, empujando lo demás hacia abajo */
+  overflow-y: auto; /* Permite scroll si hay muchas capas */
+}
 
+.btn-logout {
+  margin-top: auto;
   padding: 12px;
   background-color: #fae1e1; /* Un rojo muy clarito */
   color: #b91c1c; /* Texto rojo oscuro */

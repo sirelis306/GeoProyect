@@ -1,4 +1,5 @@
 <div class="sidebar">
+  <div class="sidebar-content">
   <div class="brand">
     <div class="brand-icon">
       <i class="fas fa-map"></i> <!-- Usa FontAwesome para el ícono de mapa -->
@@ -13,25 +14,31 @@
       <span class="dot" style="background: #6366f1;"></span> Gestión de Usuarios
     </button>
 
-  <div class="section-label">CONTROL DE CAPAS</div>
-  <div class="layer-list">
-    <!-- Capa 1: Regiones -->
-    <button class="layer-item" 
-            [class.active]="gis.capasVisibles().regiones"
-            (click)="toggle('regiones')">
-      <span class="dot orange"></span> Capa 1: Regiones
+  <div class="section-label">MAPA</div>
+    <button class="layer-item" routerLink="/mapa" routerLinkActive="active">
+      <span class="dot" style="background: #6366f1;"></span> Visualización General
     </button>
 
-    <!-- Leyenda de Regiones (solo visible cuando Capa 1 está activa) -->
-    <div class="legend-container" *ngIf="gis.capasVisibles().regiones">
-      <div class="section-label">REGIONES CON DATOS</div>
-      <div class="legend-grid">
-        <div class="legend-item" *ngFor="let region of regionesFiltradas">
-          <span class="color-box" [style.backgroundColor]="region.color"></span>
-          <span class="region-name">{{ region.nombre }}</span>
+  <ng-container *ngIf="router.url === '/mapa'">
+    <div class="section-label">CONTROL DE CAPAS</div>
+    <div class="layer-list">
+      <!-- Capa 1: Regiones -->
+      <button class="layer-item" 
+              [class.active]="gis.capasVisibles().regiones"
+              (click)="toggle('regiones')">
+        <span class="dot orange"></span> Capa 1: Regiones
+      </button>
+
+      <!-- Leyenda de Regiones (solo visible cuando Capa 1 está activa) -->
+      <div class="legend-container" *ngIf="gis.capasVisibles().regiones">
+        <div class="section-label">REGIONES CON DATOS</div>
+        <div class="legend-grid">
+          <div class="legend-item" *ngFor="let region of regionesFiltradas">
+            <span class="color-box" [style.backgroundColor]="region.color"></span>
+            <span class="region-name">{{ region.nombre }}</span>
+          </div>
         </div>
       </div>
-    </div>
     
     <!-- Capa 2: Operaciones (principal) -->
     <button class="layer-item" 
@@ -77,10 +84,12 @@
       </div>
     </div>
   </div>
+  </ng-container>
+
   <button class="btn-logout" (click)="salir()">
-  <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-</button>
-</div>
+    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+  </button>
+ </div>
 
  <!-- Overlay del Modal -->
     <div class="modal-overlay"  [class.active]="mostrarForm">

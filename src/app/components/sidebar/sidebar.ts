@@ -6,11 +6,12 @@ import { CapasEstado, TipoElementoCap2 } from '../../models/gis';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth/authService';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgSelectModule],
+  imports: [CommonModule, FormsModule, NgSelectModule, RouterModule],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.css',
 })
@@ -26,16 +27,16 @@ export class Sidebar {
   'Sucre', 'Táchira', 'Trujillo', 'Yaracuy', 'Zulia', 'Dependencias Federales'];
 
   get esAdmin(): boolean {
-    const rol = this.auth.getUserRol();
-    console.log("Tu rol actual es:", rol); // Mira esto en la consola (F12)
+    //const rol = this.auth.getUserRol();
+    //console.log("Tu rol actual es:", rol); 
     
     // Temporalmente, cambia esto a 'true' para ver si el botón aparece físicamente
-    // return true; 
+    return true; 
     
-    return this.auth.getUserRol() === 'admin';
+    //return this.auth.getUserRol() === 'admin';
   }
   
-  constructor(private router: Router) {}
+  constructor(public router: Router) {}
 
   abrirModal(tipo: TipoElementoCap2) {
     console.log('Abriendo modal para:', tipo);
