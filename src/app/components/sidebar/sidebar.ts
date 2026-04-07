@@ -1,23 +1,25 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Gis } from '../../services/gis/gisService';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { CapasEstado, TipoElementoCap2 } from '../../models/gis';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth/authService';
 import { RouterModule } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgSelectModule, RouterModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, NgSelectModule, RouterModule],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.css',
 })
 export class Sidebar {
   public gis = inject(Gis);
   public auth = inject(AuthService);
+  private http = inject(HttpClient);
   
   mostrarForm = false;
   tipoEdicion: TipoElementoCap2 = 'ninguno';
@@ -27,13 +29,12 @@ export class Sidebar {
   'Sucre', 'Táchira', 'Trujillo', 'Yaracuy', 'Zulia', 'Dependencias Federales'];
 
   get esAdmin(): boolean {
-    //const rol = this.auth.getUserRol();
+    const rol = this.auth.getUserRol();
     //console.log("Tu rol actual es:", rol); 
-    
     // Temporalmente, cambia esto a 'true' para ver si el botón aparece físicamente
-    return true; 
+    //return true; 
     
-    //return this.auth.getUserRol() === 'admin';
+    return this.auth.getUserRol() === 'admin';
   }
   
   constructor(public router: Router) {}
@@ -52,60 +53,174 @@ export class Sidebar {
     };
   }
 
-  guardar() {
-    // Objeto base con la región
+  // En el componente donde registras el ítem
+  validarCoordenadas(lat: number, lng: number): boolean {
+    const limites = {
+      latMin: 0.6, latMax: 12.2,
+      lngMin: -73.3, lngMax: -59.7
+    };
+
+    if (lat < limites.latMin || lat > limites.latMax || 
+        lng < limites.lngMin || lng > limites.lngMax) {
+      alert("Las coordenadas están fuera de Venezuela. Por favor, verifícalas.");
+      return false;
+    }
+    return true;
+  }
+
+  registroForm = new FormGroup({
+    nombre: new FormControl('', [Validators.required, Validators.minLength(3)]),
+    direccion: new FormControl('', [Validators.required]),
+    latitud: new FormControl('', [Validators.required, Validators.pattern(/^-?\d+(\.\d+)?$/)]),
+    longitud: new FormControl('', [Validators.required, Validators.pattern(/^-?\d+(\.\d+)?$/)])
+  });
+
+  async guardar() { // Añadimos 'async' para poder usar 'await' en la geocodificación
+    // 1. Objeto base
     let itemFinal: any = {
-      estado: this.nuevoItem.estado,
-      region: this.obtenerRegion(this.nuevoItem.estado),
-      tipo: this.tipoEdicion,
-      direccion: this.nuevoItem.direccion || '',
-      cantidad: Number(this.nuevoItem.cantidad) || 0
+        estado: this.nuevoItem.estado,
+        region: this.obtenerRegion(this.nuevoItem.estado),
+        tipo: this.tipoEdicion,
+        direccion: this.nuevoItem.direccion || '',
+        cantidad: Number(this.nuevoItem.cantidad) || 0
     };
 
+    // 2. LÓGICA ESPECIAL PARA RADIOBASES (ANTENAS)
     if (this.tipoEdicion === 'antenas') {
-      itemFinal.nombre = this.nuevoItem.nombre;
-      itemFinal.latitud = Number(this.nuevoItem.latitud);
-      itemFinal.longitud = Number(this.nuevoItem.longitud);
-      itemFinal.tecnologia = this.nuevoItem.tecnologia || '4G';
-      itemFinal.actividad = this.nuevoItem.actividad || 'Operativa';
-      itemFinal.cantidad = 1; 
+        let lat = this.nuevoItem.latitud;
+        let lng = this.nuevoItem.longitud;
+
+        // PRIORIDAD: Si no hay coordenadas, buscamos por dirección
+        if (!lat || !lng) {
+            if (!itemFinal.direccion) {
+                alert("Para antenas debe colocar coordenadas o una dirección válida.");
+                return;
+            }
+            const coordsAuto = await this.obtenerCoordsDesdeDireccion(itemFinal.direccion);
+            if (coordsAuto) {
+                lat = coordsAuto.lat;
+                lng = coordsAuto.lng;
+            } else {
+                alert("No se pudo encontrar la ubicación por dirección. Intente colocar coordenadas manualmente.");
+                return;
+            }
+        }
+
+        // VALIDACIÓN DE SEGURIDAD: Rango de Venezuela
+        const latNum = Number(lat);
+        const lngNum = Number(lng);
+        if (latNum < 0.6 || latNum > 12.2 || lngNum < -73.3 || lngNum > -59.7) {
+            alert("Error: Las coordenadas están fuera de los límites de Venezuela.");
+            return;
+        }
+
+        itemFinal.nombre = this.nuevoItem.nombre;
+        itemFinal.latitud = latNum;
+        itemFinal.longitud = lngNum;
+        itemFinal.tecnologia = this.nuevoItem.tecnologia || '4G';
+        itemFinal.actividad = this.nuevoItem.actividad || 'Operativa';
+        itemFinal.cantidad = 1;
+
     } else {
-      const coords = this.COORD_CENTRALES[this.nuevoItem.estado];
+        // 3. LÓGICA PARA ABONADOS / OFICINAS (Puntos fijos por estado)
+        const coords = this.COORD_CENTRALES[this.nuevoItem.estado];
 
-      // Si es abonados, guardamos la opción del select en el campo 'segmentacion'
-      if (this.tipoEdicion === 'abonados') {
-        itemFinal.segmentacion = this.nuevoItem.segmentacion_elegida || '4G';
-        itemFinal.nombre = `ABONADOS ${itemFinal.segmentacion} - ${this.nuevoItem.estado}`;
-      } else {
-        itemFinal.nombre = `${this.tipoEdicion.toUpperCase()} - ${this.nuevoItem.estado}`;
-        itemFinal.segmentacion = null; // Oficinas y Agentes no llevan segmentación
-      }
+        if (this.tipoEdicion === 'abonados') {
+            itemFinal.segmentacion = this.nuevoItem.segmentacion_elegida || '4G';
+            itemFinal.nombre = `ABONADOS ${itemFinal.segmentacion} - ${this.nuevoItem.estado}`;
+        } else {
+            itemFinal.nombre = `${this.tipoEdicion.toUpperCase()} - ${this.nuevoItem.estado}`;
+            itemFinal.segmentacion = null;
+        }
 
-      itemFinal.latitud = coords ? coords.lat : 0;
-      itemFinal.longitud = coords ? coords.lng : 0;
-      itemFinal.tecnologia = null;
-      itemFinal.actividad = null;
+        itemFinal.latitud = coords ? coords.lat : 0;
+        itemFinal.longitud = coords ? coords.lng : 0;
+        itemFinal.tecnologia = null;
+        itemFinal.actividad = null;
     }
 
-    // Verificación de seguridad
+    // 4. Verificación final de campos obligatorios
     if (!itemFinal.estado || (this.tipoEdicion !== 'antenas' && itemFinal.cantidad <= 0)) {
-      alert("Por favor, rellene el estado y una cantidad válida.");
-      return;
+        alert("Por favor, rellene el estado y una cantidad válida.");
+        return;
     }
 
-    this.gis.agregarElemento(this.tipoEdicion, itemFinal); 
+    // 5. Envío y Limpieza
+    this.gis.agregarElemento(this.tipoEdicion, itemFinal);
     this.mostrarForm = false;
+    this.resetearFormulario();
+}
+
+enviarAlServidor(datos: any) {
+    this.http.post('http://localhost:3000/api/elementos', datos).subscribe({
+      next: (res) => {
+        alert("Elemento guardado con éxito");
+        this.registroForm.reset(); 
+      },
+      error: (err) => console.error("Error al guardar:", err)
+    });
+  }
+
+  // 2. Lógica principal de guardado corregida
+  async guardarItem() {
+    const formValue = this.registroForm.value;
+    let latitud = formValue.latitud;
+    let longitud = formValue.longitud;
+    const direccion = formValue.direccion;
+
+    // Si no hay coordenadas, buscamos por dirección
+    if (!latitud || !longitud) {
+      const coords = await this.obtenerCoordsDesdeDireccion(direccion);
+      if (coords) {
+        // Convertimos a string para el formulario si es necesario
+        this.registroForm.patchValue({
+          latitud: coords.lat.toString(),
+          longitud: coords.lng.toString()
+        });
+        latitud = coords.lat.toString();
+        longitud = coords.lng.toString();
+      } else {
+        return alert("No se encontró la ubicación. Por favor, coloque coordenadas manualmente.");
+      }
+    }
+
+    // Validación de seguridad para que no salga del mapa de Venezuela
+    const latNum = Number(latitud);
+    const lngNum = Number(longitud);
+
+    if (latNum < 0.6 || latNum > 12.2 || lngNum < -73.3 || lngNum > -59.7) {
+      return alert("Error: Las coordenadas están fuera de los límites de Venezuela.");
+    }
+
+    this.enviarAlServidor(this.registroForm.value);
+  }
+
+  async obtenerCoordsDesdeDireccion(direccion: string | null | undefined): Promise<{lat: number, lng: number} | null> {
+    if (!direccion) return null; // Resuelve el error 2345 al asegurar que hay un string
     
-    this.nuevoItem = { 
-      nombre: '', 
-      estado: null, 
-      latitud: null, 
-      longitud: null, 
-      cantidad: null, 
-      tecnologia: '', 
-      segmentacion_elegida: '',
-      direccion: '' 
-    };
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(direccion)}, Venezuela`;
+      const res: any = await this.http.get(url).toPromise();
+      
+      if (res && res.length > 0) {
+        return {
+          lat: parseFloat(res[0].lat),
+          lng: parseFloat(res[0].lon)
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error("Error en geocodificación:", error);
+      return null;
+    }
+  }
+
+// Función auxiliar para limpiar (mantiene el código ordenado)
+  resetearFormulario() {
+      this.nuevoItem = { 
+          nombre: '', estado: null, latitud: null, longitud: null, 
+          cantidad: null, tecnologia: '', segmentacion_elegida: '', direccion: '' 
+      };
   }
   
   salir() {
