@@ -30,7 +30,7 @@ export class Map implements AfterViewInit {
     'Los Andes': '#ac7cf8',
     'Central': '#f8ab6b',
     'Capital': '#ce5461',
-    'Llanos': '#ffda6b',
+    'Los Llanos': '#ffda6b',
     'Centro Occidental': '#e0679f',
     'Nororiental': '#53c7a4',
     'Guayana': '#55aa69',
@@ -135,32 +135,50 @@ export class Map implements AfterViewInit {
                 abonados.forEach((ab: Abonado) => {
                   const lat = Number(ab.latitud);
                   const lng = Number(ab.longitud);
+
+                  // Filtramos todos los registros que pertenecen al mismo estado para sumar sus segmentaciones
+                  const abonadosDelEstado = abonados.filter(item => item.estado === ab.estado);
                   
-                  // Mostramos el desglose que viene de la base de datos
-                  const desglose = ab.segmentacion || "3G:0 | 4G:0 | 5G:0";
+                  const total3G = abonadosDelEstado
+                    .filter(item => item.segmentacion === '3G')
+                    .reduce((acc, curr) => acc + (Number(curr.cantidad) || 0), 0);
+
+                  const total4G = abonadosDelEstado
+                    .filter(item => item.segmentacion === '4G')
+                    .reduce((acc, curr) => acc + (Number(curr.cantidad) || 0), 0);
+
+                  const total5G = abonadosDelEstado
+                    .filter(item => item.segmentacion === '5G')
+                    .reduce((acc, curr) => acc + (Number(curr.cantidad) || 0), 0);
+
+                  const totalGeneral = total3G + total4G + total5G;
 
                   L.marker([lat, lng], { icon: iconAb })
                     .bindPopup(`
-                      <div style="min-width: 180px; font-family: sans-serif;">
+                      <div style="min-width: 200px; font-family: sans-serif;">
                         <h3 style="margin: 0; color: #00BFFF; font-size: 16px;">Abonados - ${ab.estado}</h3>
                         <hr style="margin: 8px 0; border: 0; border-top: 1px solid #eee;">
                         
-                        <div style="font-size: 12px; margin-bottom: 8px;">
-                          <b style="color: #555;">Segmentación de Cartera:</b><br>
-                          <div style="margin-top: 5px; display: grid; gap: 4px;">
-                            <span style="background: #fee2e2; color: #b91c1c; padding: 2px 6px; border-radius: 4px;">● ${desglose.split('|')[0] || '3G:0'}</span>
-                            <span style="background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px;">● ${desglose.split('|')[1] || '4G:0'}</span>
-                            <span style="background: #dcfce7; color: #15803d; padding: 2px 6px; border-radius: 4px;">● ${desglose.split('|')[2] || '5G:0'}</span>
+                        <div style="font-size: 13px; margin-bottom: 8px;">
+                          <b style="color: #555;">Segmentación por Tecnología:</b><br>
+                          <div style="margin-top: 8px; display: grid; gap: 6px;">
+                            <div style="background: #fee2e2; color: #b91c1c; padding: 5px 10px; border-radius: 4px; display: flex; justify-content: space-between;">
+                              <span>● 3G</span> <b>${total3G.toLocaleString()}</b>
+                            </div>
+                            <div style="background: #e0f2fe; color: #0369a1; padding: 5px 10px; border-radius: 4px; display: flex; justify-content: space-between;">
+                              <span>● 4G</span> <b>${total4G.toLocaleString()}</b>
+                            </div>
+                            <div style="background: #dcfce7; color: #15803d; padding: 5px 10px; border-radius: 4px; display: flex; justify-content: space-between;">
+                              <span>● 5G</span> <b>${total5G.toLocaleString()}</b>
+                            </div>
                           </div>
                         </div>
 
-                        <div style="background-color: #daf6ff; padding: 10px; border-radius: 6px; margin-top: 10px; text-align: center; color: white; border: 1px solid #adebff;">
-                          <span style="display: block; font-size: 10px; color: #555; text-transform: uppercase; opacity: 0.9;">Total Acumulado</span>
-                          <strong style="font-size: 20px; color: #06a7dd;">${ab.cantidad || 0}</strong>
-                        </div>
-                        
-                        <div style="margin-top: 8px; font-size: 9px; color: #aaa; text-align: center;">
-                          Coord: ${lat.toFixed(4)}, ${lng.toFixed(4)}
+                        <div style="background-color: #daf6ff; padding: 12px; border-radius: 6px; margin-top: 10px; text-align: center; border: 1px solid #adebff;">
+                          <span style="display: block; font-size: 11px; color: #555; text-transform: uppercase; opacity: 0.9; margin-bottom: 4px;"> Total en el Estado </span>
+                          <strong style="font-size: 22px; color: #06a7dd;">
+                            ${totalGeneral.toLocaleString()}
+                          </strong>
                         </div>
                       </div>
                     `)
