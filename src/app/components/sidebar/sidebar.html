@@ -1,197 +1,225 @@
 <div class="sidebar">
   <div class="sidebar-main-content">
-  <div class="brand">
-    <div class="brand-icon">
-      <i class="fas fa-map"></i> <!-- Usa FontAwesome para el ícono de mapa -->
+    <div class="brand">
+      <div class="brand-icon">
+        <i class="fas fa-map"></i> <!-- Usa FontAwesome para el ícono de mapa -->
+      </div>
+      <div class="brand-text">
+        <strong>STERIÁ</strong>
+      </div>
     </div>
-    <div class="brand-text">
-      <strong>STERIÁ</strong>
-    </div>
-  </div>
-  <hr class="header-divider">
-  <div class="section-label" *ngIf="esAdmin">ADMIN</div>
+    <hr class="header-divider">
+    <div class="section-label" *ngIf="esAdmin">ADMIN</div>
     <button class="layer-item" *ngIf="esAdmin" routerLink="/usuarios" routerLinkActive="active">
       <span class="dot" style="background: #6366f1;"></span> Gestión de Usuarios
     </button>
 
-  <div class="section-label">MAPA</div>
+    <div class="section-label">MAPA</div>
     <button class="layer-item" routerLink="/mapa" routerLinkActive="active">
       <span class="dot" style="background: #6366f1;"></span> Visualización General
     </button>
 
-  <ng-container *ngIf="router.url === '/mapa'">
-    <div class="section-label">CONTROL DE CAPAS</div>
-    <div class="layer-list">
-      <!-- Capa 1: Regiones -->
-      <button class="layer-item" 
-              [class.active]="gis.capasVisibles().regiones"
-              (click)="toggle('regiones')">
-        <span class="dot orange"></span> Capa 1: Regiones
-      </button>
+    <ng-container *ngIf="router.url === '/mapa'">
+      <div class="section-label">CONTROL DE CAPAS</div>
+      <div class="layer-list">
+        <!-- Capa 1: Regiones -->
+        <button class="layer-item" [class.active]="gis.capasVisibles().regiones" (click)="toggle('regiones')">
+          <span class="dot orange"></span> Capa 1: Regiones
+        </button>
 
-      <!-- Leyenda de Regiones (solo visible cuando Capa 1 está activa) -->
-      <div class="legend-container" *ngIf="gis.capasVisibles().regiones">
-        <div class="section-label">REGIONES CON DATOS</div>
-        <div class="legend-grid">
-          <div class="legend-item" *ngFor="let region of regionesFiltradas">
-            <span class="color-box" [style.backgroundColor]="region.color"></span>
-            <span class="region-name">{{ region.nombre }}</span>
+        <!-- Leyenda de Regiones (solo visible cuando Capa 1 está activa) -->
+        <div class="legend-container" *ngIf="gis.capasVisibles().regiones">
+          <div class="section-label">REGIONES CON DATOS</div>
+          <div class="legend-grid">
+            <div class="legend-item" *ngFor="let region of regionesFiltradas">
+              <span class="color-box" [style.backgroundColor]="region.color"></span>
+              <span class="region-name">{{ region.nombre }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Capa 2: Operaciones (principal) -->
+        <button class="layer-item" [class.active]="gis.capasVisibles().operaciones" (click)="toggle('operaciones')">
+          <span class="dot blue"></span> Capa 2: Operaciones
+        </button>
+
+        <!-- Subcapas de Operaciones (solo visibles cuando Capa 2 está activa) -->
+        <div class="subcapas-container" *ngIf="gis.capasVisibles().operaciones">
+          <div class="section-label">TIPO DE ELEMENTO</div>
+
+          <!-- Grupo: Radio Bases -->
+          <div class="subcapa-group">
+            <button class="subcapa-item" [class.active]="gis.capasVisibles().detalleCap2 === 'antenas'"
+              (click)="setDetalle('antenas')">
+              <span class="dot" style="background: #FF1493;"></span> Radio Bases (Antenas)
+            </button>
+            <button class="add-item-btn" (click)="abrirModal('antenas')">+</button>
+          </div>
+
+          <!-- Buscador de Radio Bases -->
+          <div class="subcapa-search" *ngIf="gis.capasVisibles().detalleCap2 === 'antenas'">
+            <div class="search-input-wrapper">
+              <i class="fas fa-search search-icon"></i>
+              <input type="text" placeholder="Buscar por nombre o dirección..." [ngModel]="gis.busquedaAntena()" (ngModelChange)="gis.busquedaAntena.set($event)" class="search-input">
+            </div>
+          </div>
+
+          <!-- Grupo: Abonados -->
+          <div class="subcapa-group">
+            <button class="subcapa-item" [class.active]="gis.capasVisibles().detalleCap2 === 'abonados'"
+              (click)="setDetalle('abonados')">
+              <span class="dot" style="background: #00BFFF;"></span> Abonados
+            </button>
+            <button class="add-item-btn" (click)="abrirModal('abonados')">+</button>
+          </div>
+
+          <!-- Grupo: Oficinas -->
+          <div class="subcapa-group">
+            <button class="subcapa-item" [class.active]="gis.capasVisibles().detalleCap2 === 'oficinas'"
+              (click)="setDetalle('oficinas')">
+              <span class="dot" style="background: #32CD32;"></span> Oficinas Comerciales
+            </button>
+            <button class="add-item-btn" (click)="abrirModal('oficinas')">+</button>
+          </div>
+
+          <!-- Grupo: Agentes -->
+          <div class="subcapa-group">
+            <button class="subcapa-item" [class.active]="gis.capasVisibles().detalleCap2 === 'agentes'"
+              (click)="setDetalle('agentes')">
+              <span class="dot" style="background: #FF8C00;"></span> Agentes Autorizados
+            </button>
+            <button class="add-item-btn" (click)="abrirModal('agentes')">+</button>
           </div>
         </div>
       </div>
-    
-    <!-- Capa 2: Operaciones (principal) -->
-    <button class="layer-item" 
-            [class.active]="gis.capasVisibles().operaciones"
-            (click)="toggle('operaciones')">
-      <span class="dot blue"></span> Capa 2: Operaciones
-    </button>
-  
-    <!-- Subcapas de Operaciones (solo visibles cuando Capa 2 está activa) -->
-    <div class="subcapas-container" *ngIf="gis.capasVisibles().operaciones">
-      <div class="section-label">TIPO DE ELEMENTO</div>
-      
-      <!-- Grupo: Radio Bases -->
-      <div class="subcapa-group">
-        <button class="subcapa-item" [class.active]="gis.capasVisibles().detalleCap2 === 'antenas'" (click)="setDetalle('antenas')">
-          <span class="dot" style="background: #FF1493;"></span> Radio Bases (Antenas)
-        </button>
-        <button class="add-item-btn" (click)="abrirModal('antenas')">+</button>
-      </div>
-
-      <!-- Grupo: Abonados -->
-      <div class="subcapa-group">
-        <button class="subcapa-item" [class.active]="gis.capasVisibles().detalleCap2 === 'abonados'" (click)="setDetalle('abonados')">
-          <span class="dot" style="background: #00BFFF;"></span> Abonados
-        </button>
-        <button class="add-item-btn" (click)="abrirModal('abonados')">+</button>
-      </div>
-
-      <!-- Grupo: Oficinas -->
-      <div class="subcapa-group">
-        <button class="subcapa-item" [class.active]="gis.capasVisibles().detalleCap2 === 'oficinas'" (click)="setDetalle('oficinas')">
-          <span class="dot" style="background: #32CD32;"></span> Oficinas Comerciales
-        </button>
-        <button class="add-item-btn" (click)="abrirModal('oficinas')">+</button>
-      </div>
-
-      <!-- Grupo: Agentes -->
-      <div class="subcapa-group">
-        <button class="subcapa-item" [class.active]="gis.capasVisibles().detalleCap2 === 'agentes'" (click)="setDetalle('agentes')">
-          <span class="dot" style="background: #FF8C00;"></span> Agentes Autorizados
-        </button>
-        <button class="add-item-btn" (click)="abrirModal('agentes')">+</button>
-      </div>
-    </div>
-  </div>
-  </ng-container>
+    </ng-container>
   </div>
 
   <button class="btn-logout" (click)="salir()">
     <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
   </button>
 
- <!-- Overlay del Modal -->
-    <div class="modal-overlay"  [class.active]="mostrarForm">
-      <div class="modal-content">
-        <div class="modal-header">
-          <div>
-            <h3>Agregar Nuevo</h3>
-            <small class="text-blue">{{ tipoEdicion | titlecase }}</small>
+  <!-- Overlay del Modal -->
+  <div class="modal-overlay" [class.active]="mostrarForm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h3>Agregar Nuevo</h3>
+          <small class="text-blue">{{ tipoEdicion | titlecase }}</small>
+        </div>
+        <button class="close-x" (click)="mostrarForm = false">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Estado</label>
+            <ng-select [(ngModel)]="nuevoItem.estado" [items]="listaEstados" [clearable]="false" [searchable]="true"
+              placeholder="Seleccione un estado" class="custom-ng-select">
+            </ng-select>
           </div>
-          <button class="close-x" (click)="mostrarForm = false">&times;</button>
+          <div class="form-group">
+            <label>Región</label>
+            <input type="text" [value]="gis.obtenerRegion(nuevoItem.estado)" readonly placeholder="Se asigna solo">
+          </div>
         </div>
 
-        <div class="modal-body">
+        <div class="form-group" *ngIf="tipoEdicion === 'antenas'">
           <div class="form-row">
             <div class="form-group">
-              <label>Estado</label>
-              <ng-select [(ngModel)]="nuevoItem.estado"  [items]="listaEstados" [clearable]="false" [searchable]="true"
-                placeholder="Seleccione un estado"
-                class="custom-ng-select">
+              <label>Nombre</label>
+              <input type="text" [(ngModel)]="nuevoItem.nombre" placeholder="">
+            </div>
+
+            <div class="form-group">
+              <label>Tecnología</label>
+              <ng-select [(ngModel)]="nuevoItem.tecnologia" [items]="opcionesTecnologia" bindLabel="label"
+                bindValue="value" [multiple]="true" [closeOnSelect]="false" [searchable]="false"
+                class="custom-ng-select" placeholder="Seleccione..." appendTo="body"
+                dropdownPanelClass="custom-dropdown-panel">
+
+                <ng-template ng-header-tmp>
+                  <div class="custom-option select-all-option" (click)="toggleAllTecnologias()">
+                    <div class="custom-checkbox" [class.selected]="todasSeleccionadas"
+                      [class.partial]="algunasSeleccionadas && !todasSeleccionadas">
+                      <i class="fas fa-check" *ngIf="todasSeleccionadas"></i>
+                      <i class="fas fa-minus" *ngIf="algunasSeleccionadas && !todasSeleccionadas"></i>
+                    </div>
+                    <span style="font-weight: 500; font-size: 14px;">Seleccionar Todo</span>
+                  </div>
+                </ng-template>
+
+                <ng-template ng-option-tmp let-item="item" let-item$="item$" let-index="index">
+                  <div class="custom-option" [class.active-row]="item$.selected">
+                    <div class="custom-checkbox" [class.selected]="item$.selected">
+                      <i class="fas fa-check" *ngIf="item$.selected"></i>
+                    </div>
+                    <span style="font-size: 14px; font-weight: 400;">{{item.label}}</span>
+                  </div>
+                </ng-template>
               </ng-select>
             </div>
+          </div>
+
+          <div class="form-row">
             <div class="form-group">
-              <label>Región</label>
-              <input type="text" [value]="gis.obtenerRegion(nuevoItem.estado)" readonly placeholder="Se asigna solo">
+              <label>Longitud</label>
+              <input type="number" [(ngModel)]="nuevoItem.longitud">
+            </div>
+            <div class="form-group">
+              <label>Latitud</label>
+              <input type="number" [(ngModel)]="nuevoItem.latitud">
             </div>
           </div>
+          <small class="text-danger" *ngIf="nuevoItem.latitud && (nuevoItem.latitud < 0.6 || nuevoItem.latitud > 12.2)">
+            Latitud fuera de Venezuela
+          </small>
 
-          <div class="form-group" *ngIf="tipoEdicion === 'antenas'">
-            <div class="form-row">
-              <div class="form-group">
-                <label>Nombre</label>
-                <input type="text" [(ngModel)]="nuevoItem.nombre" placeholder="">
-              </div>
-
-              <div class="form-group">
-                <label>Tecnología</label>
-                <select [(ngModel)]="nuevoItem.tecnologia" class="custom-select">
-                  <option value="2G">GSM / 2G</option>
-                  <option value="3G">UMTS / 3G</option>
-                  <option value="4G">LTE / 4G</option>
-                  <option value="5G">5G NR</option>
-                </select>
-              </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Estado de Actividad</label>
+              <select [(ngModel)]="nuevoItem.actividad" class="custom-select">
+                <option value="Operativa">Operativa</option>
+                <option value="Mantenimiento">Mantenimiento</option>
+                <option value="Vandalizada">Vandalizada</option>
+              </select>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label>Longitud</label>
-                <input type="number" [(ngModel)]="nuevoItem.longitud">
-              </div>
-              <div class="form-group">
-                <label>Latitud</label>
-                <input type="number" [(ngModel)]="nuevoItem.latitud">
-              </div>
-            </div>
-            <small class="text-danger" *ngIf="nuevoItem.latitud && (nuevoItem.latitud < 0.6 || nuevoItem.latitud > 12.2)">
-              Latitud fuera de Venezuela
-            </small>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label>Estado de Actividad</label>
-                <select [(ngModel)]="nuevoItem.actividad" class="custom-select">
-                  <option value="Operativa">Operativa</option>
-                  <option value="Mantenimiento">Mantenimiento</option>
-                  <option value="Falla">Falla</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label>Dirección</label>
-                <div style="display: flex; gap: 5px;">
-                  <input type="text" [(ngModel)]="nuevoItem.direccion" placeholder="Ej: Av. Francisco de Miranda">
-                  <button type="button" class="add-item-btn" (click)="guardar()" title="Validar ubicación">
-                    <i class="fas fa-search-location"></i>
-                  </button>
-                </div>
+            <div class="form-group dir-group-fixed" style="margin-top: 16px;">
+              <label>Dirección</label>
+              <div class="input-with-action">
+                <input type="text" [(ngModel)]="nuevoItem.direccion" placeholder="Ej: Av. Francisco de Miranda"
+                  class="full-width-input">
+                <button type="button" class="action-btn" (click)="guardar()" title="Validar ubicación">
+                  <i class="fas fa-search-location"></i>
+                </button>
               </div>
             </div>
-          </div>
-
-          <div *ngIf="tipoEdicion === 'abonados'" class="form-group">
-            <label>Segmentación de Cartera</label>
-            <select [(ngModel)]="nuevoItem.segmentacion_elegida" class="custom-select">
-              <option value="" disabled selected>Seleccione segmentación</option>
-              <option value="3G">3G</option>
-              <option value="4G">4G</option>
-              <option value="5G">5G</option>
-            </select>
-          </div>
-
-          <div *ngIf="tipoEdicion !== 'antenas' && tipoEdicion !== 'ninguno'" class="form-group">
-            <label>Cantidad Total en este Estado</label>
-            <input type="number" [(ngModel)]="nuevoItem.cantidad" placeholder="Ej: 1500">
           </div>
         </div>
 
-        <div class="modal-footer">
-          <button class="btn-cancel" (click)="mostrarForm = false">Cancelar</button>
-          <button class="btn-save" [disabled]="!nuevoItem.estado || (tipoEdicion === 'antenas' && !nuevoItem.nombre)" (click)="guardar()">
-            Agregar Elemento
-          </button>
+        <div *ngIf="tipoEdicion === 'abonados'" class="form-group">
+          <label>Segmentación de Cartera</label>
+          <select [(ngModel)]="nuevoItem.segmentacion_elegida" class="custom-select">
+            <option value="" disabled selected>Seleccione segmentación</option>
+            <option value="3G">3G</option>
+            <option value="4G">4G</option>
+            <option value="5G">5G</option>
+          </select>
+        </div>
+
+        <div *ngIf="tipoEdicion !== 'antenas' && tipoEdicion !== 'ninguno'" class="form-group">
+          <label>Cantidad Total en este Estado</label>
+          <input type="number" [(ngModel)]="nuevoItem.cantidad" placeholder="Ej: 1500">
         </div>
       </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="mostrarForm = false">Cancelar</button>
+        <button class="btn-save" [disabled]="!nuevoItem.estado || (tipoEdicion === 'antenas' && !nuevoItem.nombre)"
+          (click)="guardar()">
+          Agregar Elemento
+        </button>
+      </div>
     </div>
+  </div>

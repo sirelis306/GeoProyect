@@ -40,29 +40,29 @@ export class Map implements AfterViewInit {
   // Mapeo completo de Estados por Región
   private REGION_POR_ESTADO: any = {
     // Región Capital
-    'Distrito Capital': 'Capital', 'Miranda': 'Capital', 'Vargas': 'Capital', 'La Guaira': 'Capital',
-    
+    'Distrito Capital': 'Capital', 'Miranda': 'Capital', 'La Guaira': 'Capital',
+
     // Región Central
-    'Aragua': 'Central', 'Carabobo': 'Central', 'Cojedes': 'Central',
-    
+    'Aragua': 'Central', 'Carabobo': 'Central',
+
     // Región de los Llanos
-    'Guárico': 'Los Llanos', 'Apure': 'Los Llanos',
-    
+    'Guárico': 'Los Llanos', 'Apure': 'Los Llanos', 'Barinas': 'Los Llanos', 'Portuguesa': 'Los Llanos', 'Cojedes': 'Los Llanos',
+
     // Región Centro Occidental
-    'Falcón': 'Centro Occidental', 'Lara': 'Centro Occidental', 'Portuguesa': 'Centro Occidental', 'Yaracuy': 'Centro Occidental',
-    
+    'Falcón': 'Centro Occidental', 'Lara': 'Centro Occidental', 'Yaracuy': 'Centro Occidental',
+
     // Región Zuliana
     'Zulia': 'Zuliana',
-    
+
     // Región Andina
-    'Mérida': 'Los Andes', 'Táchira': 'Los Andes', 'Trujillo': 'Los Andes', 'Barinas': 'Los Andes',
-    
+    'Mérida': 'Los Andes', 'Táchira': 'Los Andes', 'Trujillo': 'Los Andes',
+
     // Región Nororiental
     'Anzoátegui': 'Nororiental', 'Monagas': 'Nororiental', 'Sucre': 'Nororiental',
-    
+
     // Región Insular
     'Nueva Esparta': 'Insular', 'Dependencias Federales': 'Insular',
-    
+
     // Región de Guayana
     'Bolívar': 'Guayana', 'Amazonas': 'Guayana', 'Delta Amacuro': 'Guayana'
   };
@@ -75,19 +75,19 @@ export class Map implements AfterViewInit {
       const oficinas = this.gis.oficinasSignal();
       const abonados = this.gis.abonadosSignal();
       const agentes = this.gis.agentesSignal();
-      
+
       if (this.map && this.capaGeoJsonRegiones) {
         if (estado.regiones) {
           this.capaGeoJsonRegiones.addTo(this.map);
-          
+
           // Obtenemos las regiones a marcar
           const regionesActivas = this.gis.getRegionesConDatos();
-    
+
           this.capaGeoJsonRegiones.setStyle((feature: any) => {
             const nombreEstado = feature.properties.estado || feature.properties.name;
             const region = this.REGION_POR_ESTADO[nombreEstado];
             const tieneDatos = regionesActivas.includes(region);
-    
+
             return {
               fillColor: tieneDatos ? (this.COLORES_REGIONES[region] || '#DEE2E6') : 'transparent',
               weight: tieneDatos ? 1.5 : 0,
@@ -99,7 +99,7 @@ export class Map implements AfterViewInit {
         } else {
           this.map.removeLayer(this.capaGeoJsonRegiones);
         }
-    
+
         // --- LÓGICA CAPA 2 ---
         if (this.map) {
           // Limpiamos todas las capas de marcadores
@@ -119,10 +119,20 @@ export class Map implements AfterViewInit {
             switch (estado.detalleCap2) {
               case 'antenas':
                 const iconA = crearPinIcon('pin-antena');
-                antenas.forEach((a: RadioBase) => {
+                const terminoAntena = this.gis.busquedaAntena().toLowerCase();
+
+                let antenasFiltradas = antenas;
+                if (terminoAntena) {
+                  antenasFiltradas = antenas.filter(a =>
+                    (a.nombre && a.nombre.toLowerCase().includes(terminoAntena)) ||
+                    (a.direccion && a.direccion.toLowerCase().includes(terminoAntena))
+                  );
+                }
+
+                antenasFiltradas.forEach((a: RadioBase) => {
                   const lat = Number(a.latitud);
                   const lng = Number(a.longitud);
-                  const colorActividad = a.actividad === 'Operativa' ? 'green' : a.actividad === 'Falla' ? 'red' : 'orange';
+                  const colorActividad = a.actividad === 'Operativa' ? 'green' : a.actividad === 'Vandalizada' ? 'red' : 'orange';
                   L.marker([lat, lng], { icon: iconA })
                     .bindPopup(`<b>Antena:</b> ${a.nombre}<br><b>Ubicación:</b> ${a.estado} (${a.region})<br> <b>Coordenadas:</b> ${lat.toFixed(4)}, ${lng.toFixed(4)}<br> <b>Tecnología:</b> ${a.tecnologia}<br> ${a.actividad ? `<b>Estado:</b> <span style="color:${colorActividad}; font-weight: bold;">${a.actividad}</span>` : ''} ${a.direccion ? `<b>Dirección:</b> ${a.direccion}<br>` : ''}`)
                     .addTo(this.radioBases);
@@ -138,7 +148,7 @@ export class Map implements AfterViewInit {
 
                   // Filtramos todos los registros que pertenecen al mismo estado para sumar sus segmentaciones
                   const abonadosDelEstado = abonados.filter(item => item.estado === ab.estado);
-                  
+
                   const total3G = abonadosDelEstado
                     .filter(item => item.segmentacion === '3G')
                     .reduce((acc, curr) => acc + (Number(curr.cantidad) || 0), 0);
@@ -253,7 +263,7 @@ export class Map implements AfterViewInit {
     if (!this.mapContainer || !this.mapContainer.nativeElement) {
       console.error("Error: No se encontró el contenedor del mapa en el DOM.");
       return;
-    } 
+    }
     // Crea el mapa
     this.map = L.map(this.mapContainer.nativeElement, {
       center: [7.1291, -66.1818],
@@ -265,7 +275,7 @@ export class Map implements AfterViewInit {
         [-15, -85],      // Suroeste (lat, lng)
         [20, -55]        // Noreste (lat, lng)
       ],
-      maxBoundsViscosity: 1.0 
+      maxBoundsViscosity: 1.0
     });
 
     // Muestra los demas paises
@@ -278,12 +288,12 @@ export class Map implements AfterViewInit {
         style: (feature: any) => {
           const nombreEstado = feature.properties.estado || feature.properties.name;
           const region = this.REGION_POR_ESTADO[nombreEstado];
-          
+
           // Lógica de filtrado:
           const regionesActivas = this.gis.getRegionesConDatos();
           const estaActiva = regionesActivas.includes(region);
           const colorRegion = estaActiva ? (this.COLORES_REGIONES[region] || '#DEE2E6') : 'transparent';
-    
+
           return {
             fillColor: colorRegion,
             weight: estaActiva ? 1.5 : 0.5, // Más delgado si no tiene datos
@@ -293,7 +303,7 @@ export class Map implements AfterViewInit {
           };
         }
       });
-    
+
       // Forzamos al effect a revisar el estado inicial:
       if (this.gis.capasVisibles().regiones) {
         this.capaGeoJsonRegiones.addTo(this.map);

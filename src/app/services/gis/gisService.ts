@@ -76,6 +76,8 @@ export class Gis {
   abonadosSignal = signal<Abonado[]>([]);
   agentesSignal = signal<Agente[]>([]);
 
+  busquedaAntena = signal<string>('');
+
   constructor() {
   }
 
@@ -107,6 +109,70 @@ export class Gis {
       },
       error: (err) => console.error('Error conectando al backend:', err)
     });
+  }
+
+  async construirYValidarElemento(tipoEdicion: TipoElementoCap2, nuevoItem: any): Promise<any> {
+    const itemFinal: any = {
+      estado: nuevoItem.estado,
+      region: this.obtenerRegion(nuevoItem.estado),
+      tipo: tipoEdicion,
+      direccion: nuevoItem.direccion || '',
+      cantidad: Number(nuevoItem.cantidad) || 0
+    };
+
+    if (tipoEdicion === 'antenas') {
+      let lat = nuevoItem.latitud;
+      let lng = nuevoItem.longitud;
+
+      if (!lat || !lng) {
+        if (!itemFinal.direccion) {
+          throw new Error("Para antenas debe colocar coordenadas o una dirección válida.");
+        }
+        const coordsAuto = await this.obtenerCoordsDesdeDireccion(itemFinal.direccion);
+        if (coordsAuto) {
+          lat = coordsAuto.lat;
+          lng = coordsAuto.lng;
+        } else {
+          throw new Error("No se pudo encontrar la ubicación por dirección. Intente colocar coordenadas manualmente.");
+        }
+      }
+
+      const latNum = Number(lat);
+      const lngNum = Number(lng);
+      if (latNum < 0.6 || latNum > 12.2 || lngNum < -73.3 || lngNum > -59.7) {
+        throw new Error("Error: Las coordenadas están fuera de los límites de Venezuela.");
+      }
+
+      itemFinal.nombre = nuevoItem.nombre;
+      itemFinal.latitud = latNum;
+      itemFinal.longitud = lngNum;
+      itemFinal.tecnologia = (nuevoItem.tecnologia || []).join(' / ');
+      if (!itemFinal.tecnologia) itemFinal.tecnologia = 'LTE';
+      itemFinal.actividad = nuevoItem.actividad || 'Operativa';
+      itemFinal.cantidad = 1;
+
+    } else {
+      const coords = this.getCoordsCentrales(nuevoItem.estado);
+
+      if (tipoEdicion === 'abonados') {
+        itemFinal.segmentacion = nuevoItem.segmentacion_elegida || '4G';
+        itemFinal.nombre = `Abonados ${itemFinal.segmentacion} ${nuevoItem.estado}`;
+      } else {
+        itemFinal.nombre = `${tipoEdicion.toUpperCase()} - ${nuevoItem.estado}`;
+        itemFinal.segmentacion = null;
+      }
+
+      itemFinal.latitud = coords ? coords.lat : 0;
+      itemFinal.longitud = coords ? coords.lng : 0;
+      itemFinal.tecnologia = null;
+      itemFinal.actividad = null;
+    }
+
+    if (!itemFinal.estado || (tipoEdicion !== 'antenas' && itemFinal.cantidad <= 0)) {
+      throw new Error("Por favor, rellene el estado y una cantidad válida.");
+    }
+
+    return itemFinal;
   }
 
   agregarElemento(tipo: TipoElementoCap2, data: any) {
