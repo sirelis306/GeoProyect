@@ -1,27 +1,72 @@
 <div class="usuarios-container">
   <div class="header-section">
-    <h2>Gestión de Accesos</h2>
-    <button class="btn-save" (click)="abrirModalCrear()">+ Nuevo Usuario</button>
+    <div>
+      <h2 class="page-title">Gestión de Accesos</h2>
+      <p class="page-subtitle">Administra usuarios y permisos del sistema</p>
+    </div>
+    <button class="btn-primary" (click)="irCrearUsuario()">
+      <i class="fas fa-plus"></i> Nuevo Usuario
+    </button>
   </div>
 
-  <table class="custom-table">
-    <thead>
-      <tr>
-        <th>Usuario</th>
-        <th>Rol</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let user of listaUsuarios">
-        <td>{{ user.username }}</td>
-        <td><span class="badge">{{ user.rol }}</span></td>
-        <td>
-          <button class="btn-icon delete" (click)="borrar(user.id)">
-            <i class="fas fa-trash"></i>
-          </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="content-card">
+    <div class="table-toolbar">
+      <div class="toolbar-left">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Buscar usuario...">
+        </div>
+        <div class="filter-dropdown">
+          <select>
+            <option>Todos los roles</option>
+          </select>
+        </div>
+      </div>
+
+    </div>
+
+    <table class="custom-table">
+      <thead>
+        <tr>
+          <th>USUARIO</th>
+          <th>ROL</th>
+          <th>ACCIONES</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of listaUsuarios">
+          <td>
+            <div class="user-info">
+
+              <div class="user-details">
+                <span class="user-name">{{ user.username }}</span>
+                <span class="user-email">{{ user.email }}</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="badge" [ngClass]="getRoleClass(user.rol)">
+              <i class="fa" [ngClass]="getRoleIcon(user.rol)" style="margin-right:2px; font-size:10px;"></i>
+              {{ user.rol }}
+            </span>
+          </td>
+
+          <td>
+            <button class="btn-icon delete" (click)="borrar(user.id)" title="Eliminar">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="table-footer">
+      <div class="showing-text">Mostrando {{ listaUsuarios.length }} de {{ listaUsuarios.length }} usuarios</div>
+      <div class="pagination">
+        <button class="page-btn active">1</button>
+        <button class="page-btn">2</button>
+        <button class="page-btn">3</button>
+      </div>
+    </div>
+  </div>
 </div>

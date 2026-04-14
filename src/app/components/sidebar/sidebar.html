@@ -2,7 +2,7 @@
   <div class="sidebar-main-content">
     <div class="brand">
       <div class="brand-icon">
-        <i class="fas fa-map"></i> <!-- Usa FontAwesome para el ícono de mapa -->
+        <i class="fas fa-map"></i>
       </div>
       <div class="brand-text">
         <strong>STERIÁ</strong>
@@ -11,12 +11,12 @@
     <hr class="header-divider">
     <div class="section-label" *ngIf="esAdmin">ADMIN</div>
     <button class="layer-item" *ngIf="esAdmin" routerLink="/usuarios" routerLinkActive="active">
-      <span class="dot" style="background: #6366f1;"></span> Gestión de Usuarios
+      <i class="fas fa-users layer-icon" style="color: #3240A5;"></i> Gestión de Usuarios
     </button>
 
     <div class="section-label">MAPA</div>
     <button class="layer-item" routerLink="/mapa" routerLinkActive="active">
-      <span class="dot" style="background: #6366f1;"></span> Visualización General
+      <i class="fas fa-globe-americas layer-icon" style="color: #3240A5;"></i> Visualización General
     </button>
 
     <ng-container *ngIf="router.url === '/mapa'">
@@ -24,7 +24,7 @@
       <div class="layer-list">
         <!-- Capa 1: Regiones -->
         <button class="layer-item" [class.active]="gis.capasVisibles().regiones" (click)="toggle('regiones')">
-          <span class="dot orange"></span> Capa 1: Regiones
+          <i class="fas fa-layer-group layer-icon" style="color: #3240A5;"></i> Capa 1: Regiones
         </button>
 
         <!-- Leyenda de Regiones (solo visible cuando Capa 1 está activa) -->
@@ -40,7 +40,7 @@
 
         <!-- Capa 2: Operaciones (principal) -->
         <button class="layer-item" [class.active]="gis.capasVisibles().operaciones" (click)="toggle('operaciones')">
-          <span class="dot blue"></span> Capa 2: Operaciones
+          <i class="fas fa-network-wired layer-icon" style="color: #3240A5;"></i> Capa 2: Operaciones
         </button>
 
         <!-- Subcapas de Operaciones (solo visibles cuando Capa 2 está activa) -->
@@ -51,7 +51,7 @@
           <div class="subcapa-group">
             <button class="subcapa-item" [class.active]="gis.capasVisibles().detalleCap2 === 'antenas'"
               (click)="setDetalle('antenas')">
-              <span class="dot" style="background: #FF1493;"></span> Radio Bases (Antenas)
+              <i class="fas fa-broadcast-tower layer-icon" style="color: #FF1493;"></i> Radio Bases
             </button>
             <button class="add-item-btn" (click)="abrirModal('antenas')">+</button>
           </div>
@@ -60,7 +60,8 @@
           <div class="subcapa-search" *ngIf="gis.capasVisibles().detalleCap2 === 'antenas'">
             <div class="search-input-wrapper">
               <i class="fas fa-search search-icon"></i>
-              <input type="text" placeholder="Buscar por nombre o dirección..." [ngModel]="gis.busquedaAntena()" (ngModelChange)="gis.busquedaAntena.set($event)" class="search-input">
+              <input type="text" placeholder="Buscar por nombre o dirección..." [ngModel]="gis.busquedaAntena()"
+                (ngModelChange)="gis.busquedaAntena.set($event)" class="search-input">
             </div>
           </div>
 
@@ -68,7 +69,7 @@
           <div class="subcapa-group">
             <button class="subcapa-item" [class.active]="gis.capasVisibles().detalleCap2 === 'abonados'"
               (click)="setDetalle('abonados')">
-              <span class="dot" style="background: #00BFFF;"></span> Abonados
+              <i class="fas fa-user-check layer-icon" style="color: #00BFFF;"></i> Abonados
             </button>
             <button class="add-item-btn" (click)="abrirModal('abonados')">+</button>
           </div>
@@ -77,7 +78,7 @@
           <div class="subcapa-group">
             <button class="subcapa-item" [class.active]="gis.capasVisibles().detalleCap2 === 'oficinas'"
               (click)="setDetalle('oficinas')">
-              <span class="dot" style="background: #32CD32;"></span> Oficinas Comerciales
+              <i class="fas fa-building layer-icon" style="color: #32CD32;"></i> Oficinas Comerciales
             </button>
             <button class="add-item-btn" (click)="abrirModal('oficinas')">+</button>
           </div>
@@ -86,7 +87,7 @@
           <div class="subcapa-group">
             <button class="subcapa-item" [class.active]="gis.capasVisibles().detalleCap2 === 'agentes'"
               (click)="setDetalle('agentes')">
-              <span class="dot" style="background: #FF8C00;"></span> Agentes Autorizados
+              <i class="fas fa-store layer-icon" style="color: #FF8C00;"></i> Agentes Autorizados
             </button>
             <button class="add-item-btn" (click)="abrirModal('agentes')">+</button>
           </div>
@@ -178,7 +179,7 @@
           <div class="form-row">
             <div class="form-group">
               <label>Estado de Actividad</label>
-              <select [(ngModel)]="nuevoItem.actividad" class="custom-select">
+              <select [(ngModel)]="nuevoItem.actividad">
                 <option value="Operativa">Operativa</option>
                 <option value="Mantenimiento">Mantenimiento</option>
                 <option value="Vandalizada">Vandalizada</option>
@@ -200,8 +201,8 @@
 
         <div *ngIf="tipoEdicion === 'abonados'" class="form-group">
           <label>Segmentación de Cartera</label>
-          <select [(ngModel)]="nuevoItem.segmentacion_elegida" class="custom-select">
-            <option value="" disabled selected>Seleccione segmentación</option>
+          <select [(ngModel)]="nuevoItem.segmentacion_elegida">
+            <option value="" disabled selected hidden>Seleccione segmentación</option>
             <option value="3G">3G</option>
             <option value="4G">4G</option>
             <option value="5G">5G</option>

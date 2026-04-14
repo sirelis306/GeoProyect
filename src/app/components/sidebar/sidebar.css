@@ -19,33 +19,28 @@
 
 .btn-logout {
   margin-top: auto;
-  padding: 12px;
-  background-color: #fae1e1;
-  color: #b91c1c;
-  border: 1px solid #f76666;
-  border-radius: 8px;
+  padding: 16px 20px;
+  background: transparent;
+  color: #ef4444;
+  border: none;
+  border-top: 1px solid #f1f5f9;
   cursor: pointer;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 500;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  transition: all 0.3s ease;
+  justify-content: flex-start;
+  gap: 12px;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.btn-logout i {
+  font-size: 16px;
 }
 
 .btn-logout:hover {
-  background-color: #ffb5b5;
-  color: #b91c1c;
-  border-color: #ef4444;
-}
-
-.custom-select {
-  width: 100%;
-  padding: 4px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: white;
-  margin-top: 5px;
+  background-color: #fef2f2;
 }
 
 /* Línea divisora sutil */
@@ -130,20 +125,12 @@
   box-shadow: 0 2px 8px rgba(0, 102, 204, 0.1);
 }
 
-.dot {
+.layer-icon {
   display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  margin-right: 12px;
-}
-
-.orange {
-  background: #008D36;
-}
-
-.blue {
-  background: #3240A5;
+  width: 18px;
+  text-align: center;
+  margin-right: 10px;
+  font-size: 15px;
 }
 
 .subcapas-container {
@@ -207,9 +194,9 @@
   margin-bottom: 0
 }
 
-.subcapa-item .dot {
-  width: 8px;
-  height: 8px;
+.subcapa-item .layer-icon {
+  font-size: 13px;
+  width: 16px;
 }
 
 /* Buscador de Antena */
@@ -383,22 +370,32 @@
 /* Estilos comunes para Inputs y Selects */
 .form-group input,
 .form-group select {
-  padding: 14px;
+  padding: 13px 14px;
   border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  background: #f8f9fa;
+  border-radius: 8px;
+  /* Mas redondeado */
+  background: #ffffff;
   font-size: 14px;
   color: #495057;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-/* Efecto Focus para Inputs y Selects */
+.form-group select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 14px;
+  padding-right: 36px;
+}
+
 .form-group input:focus,
 .form-group select:focus {
   outline: none;
-  border-color: #3240A5;
+  border-color: #4155e9;
   background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(50, 64, 165, 0.1);
+  box-shadow: 0 0 0 3px rgba(65, 85, 233, 0.1);
 }
 
 /* Estilo para campos de solo lectura */
@@ -498,7 +495,7 @@
   font-weight: normal;
 }
 
-/* --- Suavizado visual del Select (para quitar lo "tieso") --- */
+/* --- Suavizado visual del Select --- */
 ::ng-deep .custom-ng-select .ng-select-container {
   border-radius: 10px !important;
   border: 1px solid #e0e0e0 !important;
