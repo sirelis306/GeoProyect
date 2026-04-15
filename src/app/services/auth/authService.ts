@@ -26,7 +26,12 @@ export class AuthService {
     const userJson = localStorage.getItem('user_geo');
     if (userJson) {
       const user = JSON.parse(userJson);
-      return user.rol;
+      if (user.roles) {
+        if (user.roles.rol_super_administrador) return 'super_admin';
+        if (user.roles.rol_administrador) return 'admin';
+        if (user.roles.rol_analista) return 'analista';
+        if (user.roles.rol_regular) return 'regular';
+      }
     }
     return 'invitado';
   }

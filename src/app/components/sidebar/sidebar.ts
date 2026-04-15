@@ -28,6 +28,7 @@ export class Sidebar {
     'Distrito Capital', 'Falcón', 'Guárico', 'La Guaira', 'Lara', 'Mérida', 'Miranda', 'Monagas', 'Nueva Esparta', 'Portuguesa',
     'Sucre', 'Táchira', 'Trujillo', 'Yaracuy', 'Zulia', 'Dependencias Federales'];
 
+  listaActividad = ['Operativa', 'Mantenimiento', 'Vandalizada'];
   opcionesTecnologia = [
     { value: 'GSM', label: 'GSM' },
     { value: 'UMTS', label: 'UMTS' },
@@ -53,11 +54,7 @@ export class Sidebar {
 
   get esAdmin(): boolean {
     const rol = this.auth.getUserRol();
-    //console.log("Tu rol actual es:", rol); 
-    // Temporalmente, cambia esto a 'true' para ver si el botón aparece físicamente
-    //return true; 
-
-    return this.auth.getUserRol() === 'admin';
+    return rol === 'admin' || rol === 'super_admin';
   }
 
   constructor(public router: Router) { }

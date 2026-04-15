@@ -23,16 +23,13 @@ export class Users implements OnInit {
   obtenerUsuarios() {
     this.http.get<any[]>('http://localhost:3000/api/users/listado').subscribe({
       next: (res) => {
-        this.listaUsuarios = res.map(user => {
-          let tempUser = { ...user };
-          if (!tempUser.email) {
-            tempUser.email = `${tempUser.username.replace(/\s+/g, '.').toLowerCase()}@empresa.com`;
-          }
-          return tempUser;
-        });
+        // El res ya viene con la estructura: { primerNombre, primerApellido, email, roles: {...} }
+        this.listaUsuarios = res;
         this.cdr.detectChanges();
       },
-      error: (err) => console.error("Error cargando usuarios:", err)
+      error: (err) => {
+        console.error("Error cargando usuarios:", err);
+      }
     });
   }
 
@@ -49,22 +46,22 @@ export class Users implements OnInit {
   }
 
   getPrincipalRole(roles: any): string {
-    if (roles.ROLE_SUPER_ADMINISTRADOR) return 'Super Admin';
-    if (roles.ROLE_ADMINISTRADOR) return 'Administrador';
-    if (roles.ROLE_ANALISTA) return 'Analista';
+    if (roles.rol_super_administrador) return 'Super Admin';
+    if (roles.rol_administrador) return 'Administrador';
+    if (roles.rol_analista) return 'Analista';
     return 'Regular';
   }
 
   getRoleClass(roles: any): string {
-    if (roles.ROLE_SUPER_ADMINISTRADOR || roles.ROLE_ADMINISTRADOR) return 'badge-admin';
-    if (roles.ROLE_ANALISTA) return 'badge-editor'; // O badge-analista
+    if (roles.rol_super_administrador || roles.rol_administrador) return 'badge-admin';
+    if (roles.rol_analista) return 'badge-editor'; // O badge-analista
     return 'badge-viewer';
   }
 
   getRoleIcon(roles: any): string {
-    if (roles.ROLE_SUPER_ADMINISTRADOR) return 'fa-crown';
-    if (roles.ROLE_ADMINISTRADOR) return 'fa-shield-alt';
-    if (roles.ROLE_ANALISTA) return 'fa-chart-line';
+    if (roles.rol_super_administrador) return 'fa-crown';
+    if (roles.rol_administrador) return 'fa-shield-alt';
+    if (roles.rol_analista) return 'fa-chart-line';
     return 'fa-user';
   }
 }

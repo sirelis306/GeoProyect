@@ -37,17 +37,16 @@
         <tr *ngFor="let user of listaUsuarios">
           <td>
             <div class="user-info">
-
               <div class="user-details">
-                <span class="user-name">{{ user.username }}</span>
+                <span class="user-name">{{ user.primerNombre }} {{ user.primerApellido }}</span>
                 <span class="user-email">{{ user.email }}</span>
               </div>
             </div>
           </td>
           <td>
-            <span class="badge" [ngClass]="getRoleClass(user.rol)">
-              <i class="fa" [ngClass]="getRoleIcon(user.rol)" style="margin-right:2px; font-size:10px;"></i>
-              {{ user.rol }}
+            <span class="badge" [ngClass]="getRoleClass(user.roles)">
+              <i class="fa" [ngClass]="getRoleIcon(user.roles)" style="margin-right:2px; font-size:10px;"></i>
+              {{ getPrincipalRole(user.roles) }}
             </span>
           </td>
 

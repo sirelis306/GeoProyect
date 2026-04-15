@@ -22,21 +22,21 @@ export class AddUser {
     segundoNombre: '',
     primerApellido: '',
     segundoApellido: '',
-    tipoDocumento: '',
+    tipoDocumento: null,
     documento: '',
     fechaNacimiento: '',
-    pais: '',
-    estado: '',
-    ciudad: '',
+    pais: null,
+    estado: null,
+    ciudad: null,
     direccion: '',
-    sexo: '',
+    sexo: null,
     email: '',
-    cargo: '',
+    cargo: null,
     roles: {
-      ROLE_ADMINISTRADOR: false,
-      ROLE_ANALISTA: false,
-      ROLE_REGULAR: false,
-      ROLE_SUPER_ADMINISTRADOR: false
+      rol_super_administrador: false,
+      rol_administrador: false,
+      rol_analista: false,
+      rol_regular: false
     }
   };
 
@@ -49,9 +49,56 @@ export class AddUser {
   ];
 
   cargos = [
-    { label: 'Gerente', value: 'gerente' },
-    { label: 'Analista', value: 'analista' },
-    { label: 'Especialista', value: 'especialista' }
+    { label: 'Adjunto', value: 'Adjunto' },
+    { label: 'Agente comercial', value: 'Agente comercial' },
+    { label: 'Almacenista', value: 'Almacenista' },
+    { label: 'Analista', value: 'Analista' },
+    { label: 'Analista de Atención de Canales', value: 'Analista de Atención de Canales' },
+    { label: 'Apoyo Administrativo', value: 'Apoyo Administrativo' },
+    { label: 'Apoyo Especializado', value: 'Apoyo Especializado' },
+    { label: 'Apoyo Especializado de Operaciones de la Red', value: 'Apoyo Especializado de Operaciones de la Red' },
+    { label: 'Apoyo Especializado II', value: 'Apoyo Especializado II' },
+    { label: 'Apoyo Técnico', value: 'Apoyo Técnico' },
+    { label: 'Apoyo Técnico Comercial', value: 'Apoyo Técnico Comercial' },
+    { label: 'Apoyo Técnico de Administración', value: 'Apoyo Técnico de Administración' },
+    { label: 'Apoyo Técnico de Servicios Logísticos', value: 'Apoyo Técnico de Servicios Logísticos' },
+    { label: 'Asesor', value: 'Asesor' },
+    { label: 'Asistente', value: 'Asistente' },
+    { label: 'Asistente Administrativo', value: 'Asistente Administrativo' },
+    { label: 'Asistente de Operación y Mantenimiento', value: 'Asistente de Operación y Mantenimiento' },
+    { label: 'Asistente de Optimización y Desempeño', value: 'Asistente de Optimización y Desempeño' },
+    { label: 'Asistente de Tecnología de la Información', value: 'Asistente de Tecnología de la Información' },
+    { label: 'Auxiliar de cocina', value: 'Auxiliar de cocina' },
+    { label: 'Ayudante', value: 'Ayudante' },
+    { label: 'Ayudante de seguridad integral', value: 'Ayudante de seguridad integral' },
+    { label: 'Ayudante de Servicio de Logística', value: 'Ayudante de Servicio de Logística' },
+    { label: 'Chofer', value: 'Chofer' },
+    { label: 'Cocinero', value: 'Cocinero' },
+    { label: 'Cocinero jefe', value: 'Cocinero jefe' },
+    { label: 'Consultor I', value: 'Consultor I' },
+    { label: 'Coordinador', value: 'Coordinador' },
+    { label: 'Ejecutivo', value: 'Ejecutivo' },
+    { label: 'Enfermero', value: 'Enfermero' },
+    { label: 'Especialista soporte servicio en mensajería', value: 'Especialista soporte servicio en mensajería' },
+    { label: 'Experto', value: 'Experto' },
+    { label: 'Experto I', value: 'Experto I' },
+    { label: 'Experto II', value: 'Experto II' },
+    { label: 'Externo', value: 'Externo' },
+    { label: 'Gerente', value: 'Gerente' },
+    { label: 'Gerente de Linea', value: 'Gerente de Linea' },
+    { label: 'Gerente General', value: 'Gerente General' },
+    { label: 'Ingeniero de Monitoreo y Control', value: 'Ingeniero de Monitoreo y Control' },
+    { label: 'Jurista I', value: 'Jurista I' },
+    { label: 'Juristas II', value: 'Juristas II' },
+    { label: 'Juristas III', value: 'Juristas III' },
+    { label: 'Líder', value: 'Líder' },
+    { label: 'Médico', value: 'Médico' },
+    { label: 'Mensajero', value: 'Mensajero' },
+    { label: 'Presidente', value: 'Presidente' },
+    { label: 'Supervisor', value: 'Supervisor' },
+    { label: 'Teleoperador', value: 'Teleoperador' },
+    { label: 'Teleoperador 0800 Activar', value: 'Teleoperador 0800 Activar' },
+    { label: 'Vicepresidente', value: 'Vicepresidente' }
   ];
 
   estados = [
@@ -90,8 +137,8 @@ export class AddUser {
   ciudadesDisponibles: string[] = [];
 
   onEstadoChange() {
-    this.user.ciudad = '';
-    this.ciudadesDisponibles = this.ciudadesMap[this.user.estado] || [];
+    this.user.ciudad = null;
+    this.ciudadesDisponibles = this.user.estado ? this.ciudadesMap[this.user.estado] || [] : [];
   }
 
   guardar(form: NgForm) {

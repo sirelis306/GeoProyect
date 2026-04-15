@@ -36,7 +36,7 @@
         <!-- Fila 3 -->
         <div class="form-group form-group-split">
           <div class="flex-1">
-            <ng-select class="ng-modern" [(ngModel)]="user.tipoDocumento" name="tipoDocumento" required
+            <ng-select class="select-simple" [(ngModel)]="user.tipoDocumento" name="tipoDocumento" required
               placeholder="Tipo *" [clearable]="false" [searchable]="false" [items]="tiposDocumento">
             </ng-select>
           </div>
@@ -51,20 +51,20 @@
 
         <!-- Fila 4 -->
         <div class="form-group">
-          <ng-select class="ng-modern" [(ngModel)]="user.pais" name="pais" required placeholder="País *"
+          <ng-select class="select-simple" [(ngModel)]="user.pais" name="pais" required placeholder="País *"
             [clearable]="false" [searchable]="false" [items]="paises">
           </ng-select>
         </div>
         <div class="form-group">
-          <ng-select class="ng-modern " [(ngModel)]="user.estado" name="estado" required (change)="onEstadoChange()"
-            placeholder="Estado *" [clearable]="false" [searchable]="true" [items]="estados">
+          <ng-select class="select-simple" [(ngModel)]="user.estado" name="estado" required (change)="onEstadoChange()"
+            placeholder="Estado *" [clearable]="false" [searchable]="false" [items]="estados">
           </ng-select>
         </div>
 
         <!-- Fila 5 -->
         <div class="form-group">
-          <ng-select class="ng-modern" [(ngModel)]="user.ciudad" name="ciudad" required [disabled]="!user.estado"
-            placeholder="Ciudad *" [clearable]="false" [items]="ciudadesDisponibles">
+          <ng-select class="select-simple" [(ngModel)]="user.ciudad" name="ciudad" required [disabled]="!user.estado"
+            placeholder="Ciudad *" [clearable]="false" [searchable]="false" [items]="ciudadesDisponibles">
           </ng-select>
         </div>
         <div class="form-group">
@@ -74,7 +74,7 @@
 
         <!-- Fila 6 -->
         <div class="form-group">
-          <ng-select class="ng-modern" [(ngModel)]="user.sexo" name="sexo" required placeholder="Sexo *"
+          <ng-select class="select-simple" [(ngModel)]="user.sexo" name="sexo" required placeholder="Sexo *"
             [clearable]="false" [searchable]="false" [items]="sexos" bindLabel="label" bindValue="value">
           </ng-select>
         </div>
@@ -88,7 +88,7 @@
 
         <div class="form-group" style="grid-column: span 2;">
           <div style="width: calc(50% - 20px);">
-            <ng-select class="ng-modern" [(ngModel)]="user.cargo" name="cargo" required placeholder="Cargo *"
+            <ng-select class="select-simple" [(ngModel)]="user.cargo" name="cargo" required placeholder="Cargo *"
               [clearable]="false" [searchable]="true" [items]="cargos" bindLabel="label" bindValue="value">
             </ng-select>
           </div>
@@ -99,24 +99,23 @@
         <div class="roles-title">Roles</div>
         <div class="roles-grid">
           <label class="checkbox-label">
-            <input type="checkbox" class="circular-checkbox" [(ngModel)]="user.roles.ROLE_ADMINISTRADOR"
+            <input type="checkbox" class="circular-checkbox" [(ngModel)]="user.roles.rol_super_administrador"
+              name="role_super_admin" />
+            Súper Administrador
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" class="circular-checkbox" [(ngModel)]="user.roles.rol_administrador"
               name="role_admin" />
             Administrador
           </label>
           <label class="checkbox-label">
-            <input type="checkbox" class="circular-checkbox" [(ngModel)]="user.roles.ROLE_ANALISTA"
-              name="role_analista" />
+            <input type="checkbox" class="circular-checkbox" [(ngModel)]="user.roles.rol_analista"
+              name="rol_analista" />
             Analista
           </label>
           <label class="checkbox-label">
-            <input type="checkbox" class="circular-checkbox" [(ngModel)]="user.roles.ROLE_REGULAR"
-              name="role_regular" />
+            <input type="checkbox" class="circular-checkbox" [(ngModel)]="user.roles.rol_regular" name="rol_regular" />
             Regular
-          </label>
-          <label class="checkbox-label">
-            <input type="checkbox" class="circular-checkbox" [(ngModel)]="user.roles.ROLE_SUPER_ADMINISTRADOR"
-              name="role_super_admin" />
-            Súper Administrador
           </label>
         </div>
       </div>

@@ -1,8 +1,8 @@
 export interface Roles {
-    ROLE_ADMINISTRADOR: boolean;
-    ROLE_ANALISTA: boolean;
-    ROLE_REGULAR: boolean;
-    ROLE_SUPER_ADMINISTRADOR: boolean;
+    rol_administrador: boolean;
+    rol_analista: boolean;
+    rol_regular: boolean;
+    rol_super_administrador: boolean;
 }
 
 export interface User {
@@ -10,16 +10,16 @@ export interface User {
     segundoNombre: string;
     primerApellido: string;
     segundoApellido?: string;
-    tipoDocumento: string;
+    tipoDocumento: string | null;
     documento: string;
     fechaNacimiento: string;
-    pais: string;
-    estado: string;
-    ciudad: string;
+    pais: string | null;
+    estado: string | null;
+    ciudad: string | null;
     direccion: string;
-    sexo: string;
+    sexo: string | null;
     email: string;
     estructura?: string;
-    cargo: string;
+    cargo: string | null;
     roles: Roles;
 }

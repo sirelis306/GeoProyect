@@ -606,9 +606,7 @@
 ::ng-deep .custom-ng-select .ng-value-container {
   display: grid !important;
   grid-template-columns: repeat(2, 1fr) !important;
-  /* Crea 2 columnas iguales */
   gap: 4px !important;
-  /* Espacio entre los chips */
   padding: 5px !important;
   align-items: center !important;
 }
@@ -618,7 +616,7 @@
   margin: 0 !important;
   display: flex !important;
   justify-content: space-between !important;
-  font-size: 11px !important;
+  font-size: 15px !important;
 }
 
 /* Forzar al placeholder a ignorar alineaciones previas */
@@ -636,6 +634,47 @@
   transform: translateY(-50%) !important;
   display: flex !important;
   align-items: center !important;
+}
+
+/*Estilos selct simple*/
+::ng-deep .select-simple .ng-select-container {
+  min-height: 48px !important;
+  height: 48px !important;
+  border-radius: 10px !important;
+  border: 1px solid #e0e0e0 !important;
+  background-color: #f8f9fa !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Forzamos el uso de Flexbox para centrar el texto único */
+::ng-deep .select-simple .ng-value-container {
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 14px !important;
+  height: 100% !important;
+}
+
+/* Alineación del texto seleccionado */
+::ng-deep .select-simple .ng-value {
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Placeholder centrado */
+::ng-deep .select-simple .ng-placeholder {
+  position: absolute !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  padding-left: 0 !important;
+  margin: 0 !important;
+  color: #6b7280 !important;
+}
+
+/* Ocultar placeholder al seleccionar */
+::ng-deep .select-simple.ng-has-value .ng-placeholder {
+  display: none !important;
 }
 
 .dir-group-fixed {

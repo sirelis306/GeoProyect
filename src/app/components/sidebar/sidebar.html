@@ -179,11 +179,9 @@
           <div class="form-row">
             <div class="form-group">
               <label>Estado de Actividad</label>
-              <select [(ngModel)]="nuevoItem.actividad">
-                <option value="Operativa">Operativa</option>
-                <option value="Mantenimiento">Mantenimiento</option>
-                <option value="Vandalizada">Vandalizada</option>
-              </select>
+              <ng-select [(ngModel)]="nuevoItem.actividad" [items]="listaActividad" bindLabel="label" bindValue="value"
+                [clearable]="false" [searchable]="false" placeholder="Seleccione un estado" class="select-simple">
+              </ng-select>
             </div>
 
             <div class="form-group dir-group-fixed" style="margin-top: 16px;">
@@ -201,12 +199,12 @@
 
         <div *ngIf="tipoEdicion === 'abonados'" class="form-group">
           <label>Segmentación de Cartera</label>
-          <select [(ngModel)]="nuevoItem.segmentacion_elegida">
-            <option value="" disabled selected hidden>Seleccione segmentación</option>
-            <option value="3G">3G</option>
-            <option value="4G">4G</option>
-            <option value="5G">5G</option>
-          </select>
+          <ng-select [(ngModel)]="nuevoItem.segmentacion_elegida" class="select-simple" [clearable]="false"
+            [searchable]="false" placeholder="Seleccione segmentación">
+            <ng-option value="3G">3G</ng-option>
+            <ng-option value="4G">4G</ng-option>
+            <ng-option value="5G">5G</ng-option>
+          </ng-select>
         </div>
 
         <div *ngIf="tipoEdicion !== 'antenas' && tipoEdicion !== 'ninguno'" class="form-group">

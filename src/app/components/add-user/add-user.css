@@ -72,50 +72,84 @@
   width: 100%;
 }
 
-/* Ng-Select overrides completos y corregidos */
-.ng-modern ::ng-deep .ng-select-container {
-  min-height: 44px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #374151;
-  font-size: 14px;
-  box-shadow: none;
-  transition: all 0.2s ease;
+/*Estilos selct simple*/
+
+::ng-deep .select-simple .ng-select-container {
+
+  min-height: 48px !important;
+
+  height: 48px !important;
+
+  border-radius: 10px !important;
+
+  border: 1px solid #e0e0e0 !important;
+
+  background-color: #f8f9fa !important;
+
+  display: flex !important;
+
+  align-items: center !important;
+
 }
 
-.ng-modern.ng-select-focused ::ng-deep .ng-select-container {
-  border-color: #4155e9;
-  box-shadow: 0 0 0 3px rgba(65, 85, 233, 0.1);
+
+
+/* Forzamos el uso de Flexbox para centrar el texto único */
+
+::ng-deep .select-simple .ng-value-container {
+
+  display: flex !important;
+
+  align-items: center !important;
+
+  padding: 0 14px !important;
+
+  height: 100% !important;
+
 }
 
-/* Aseguramos que el placeholder sea visible SOLO cuando el select está vacío */
-.ng-modern ::ng-deep .ng-select-container .ng-placeholder {
-  color: #9ca3af !important;
-  display: block !important;
+
+
+/* Alineación del texto seleccionado */
+
+::ng-deep .select-simple .ng-value {
+
+  margin: 0 !important;
+
+  display: flex !important;
+
+  align-items: center !important;
+
 }
 
-/* Cuando el select tiene un valor, ocultamos el placeholder */
-.ng-modern.ng-select--has-value ::ng-deep .ng-select-container .ng-placeholder {
+
+
+/* Placeholder centrado */
+
+::ng-deep .select-simple .ng-placeholder {
+
+  position: absolute !important;
+
+  top: 50% !important;
+
+  transform: translateY(-50%) !important;
+
+  padding-left: 0 !important;
+
+  margin: 0 !important;
+
+  color: #6b7280 !important;
+
+}
+
+
+
+/* Ocultar placeholder al seleccionar */
+
+::ng-deep .select-simple.ng-has-value .ng-placeholder {
+
   display: none !important;
-}
 
-/* Aseguramos que el valor seleccionado sea visible */
-.ng-modern ::ng-deep .ng-value {
-  color: #374151;
-}
-
-.ng-modern ::ng-deep .ng-select-container:hover {
-  border-color: #9ca3af;
-}
-
-.ng-modern.ng-select-disabled ::ng-deep .ng-select-container {
-  background-color: #f9fafb;
-  border-color: #e5e7eb;
-}
-
-.ng-modern.ng-select-disabled ::ng-deep .ng-value-label {
-  color: #d1d5db;
 }
 
 .flex-1 {
