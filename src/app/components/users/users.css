@@ -288,6 +288,12 @@
   color: #ef4444;
 }
 
+.btn-icon.deactivate:hover {
+  background: #fff7ed;
+  color: #f59e0b;
+}
+
+
 .table-footer {
   display: flex;
   justify-content: space-between;

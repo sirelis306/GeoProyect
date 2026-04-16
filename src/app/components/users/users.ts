@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 
 @Component({
@@ -20,10 +20,14 @@ export class Users implements OnInit {
     this.obtenerUsuarios();
   }
 
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token_geo');
+    return new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+  }
+
   obtenerUsuarios() {
-    this.http.get<any[]>('http://localhost:3000/api/users/listado').subscribe({
+    this.http.get<any[]>('http://localhost:3000/api/users/listado', { headers: this.getHeaders() }).subscribe({
       next: (res) => {
-        // El res ya viene con la estructura: { primerNombre, primerApellido, email, roles: {...} }
         this.listaUsuarios = res;
         this.cdr.detectChanges();
       },
@@ -37,10 +41,11 @@ export class Users implements OnInit {
     this.router.navigate(['/usuarios/nuevo']);
   }
 
-  borrar(id: number) {
-    if (confirm('¿Estás seguro?')) {
-      this.http.delete(`http://localhost:3000/api/users/eliminar/${id}`).subscribe(() => {
-        this.obtenerUsuarios();
+  desactivar(id: number) {
+    if (confirm('¿Estás seguro de que deseas desactivar este usuario? Perderá acceso al sistema.')) {
+      this.http.put(`http://localhost:3000/api/users/desactivar/${id}`, {}, { headers: this.getHeaders() }).subscribe({
+        next: () => this.obtenerUsuarios(),
+        error: (err) => alert(err.error?.mensaje || 'Error al desactivar el usuario')
       });
     }
   }
@@ -54,7 +59,7 @@ export class Users implements OnInit {
 
   getRoleClass(roles: any): string {
     if (roles.rol_super_administrador || roles.rol_administrador) return 'badge-admin';
-    if (roles.rol_analista) return 'badge-editor'; // O badge-analista
+    if (roles.rol_analista) return 'badge-editor';
     return 'badge-viewer';
   }
 

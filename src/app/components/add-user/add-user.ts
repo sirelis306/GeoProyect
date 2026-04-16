@@ -1,8 +1,10 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { AuthService } from '../../services/auth/authService';
 import { User } from '../../models/user';
 
 @Component({
@@ -12,10 +14,16 @@ import { User } from '../../models/user';
   templateUrl: './add-user.html',
   styleUrl: './add-user.css'
 })
-export class AddUser {
+export class AddUser implements OnInit {
   private router = inject(Router);
+  private http = inject(HttpClient);
+  private auth = inject(AuthService);
 
   showErrors = false;
+  cargando = false;
+  errorMsg = '';
+  passwordTemporal = ''; // Se muestra tras crear el usuario exitosamente
+  esSuperAdmin = false;
 
   user: User = {
     primerNombre: '',
@@ -136,23 +144,45 @@ export class AddUser {
 
   ciudadesDisponibles: string[] = [];
 
+  ngOnInit() {
+    const rol = this.auth.getUserRol();
+    this.esSuperAdmin = rol === 'super_admin';
+  }
+
   onEstadoChange() {
     this.user.ciudad = null;
     this.ciudadesDisponibles = this.user.estado ? this.ciudadesMap[this.user.estado] || [] : [];
   }
 
   guardar(form: NgForm) {
+    this.errorMsg = '';
     if (form.invalid) {
       this.showErrors = true;
       return;
     }
     const tieneRol = Object.values(this.user.roles).some(rol => rol === true);
     if (!tieneRol) {
-      alert('Debe seleccionar al menos un rol para el usuario.');
+      this.errorMsg = 'Debe seleccionar al menos un rol para el usuario.';
       return;
     }
 
-    console.log('Usuario a guardar:', this.user);
+    this.cargando = true;
+    const token = localStorage.getItem('token_geo');
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+
+    this.http.post<any>('http://localhost:3000/api/users/crear', this.user, { headers }).subscribe({
+      next: (res) => {
+        this.cargando = false;
+        this.passwordTemporal = res.passwordTemporal;
+      },
+      error: (err) => {
+        this.cargando = false;
+        this.errorMsg = err.error?.mensaje || 'Error al crear el usuario. Intenta de nuevo.';
+      }
+    });
+  }
+
+  cerrarYRegresar() {
     this.router.navigate(['/usuarios']);
   }
 

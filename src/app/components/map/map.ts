@@ -221,18 +221,20 @@ export class Map implements AfterViewInit {
 
               case 'agentes':
                 const iconAg = crearPinIcon('pin-agente');
-                agentes.forEach((ag: Agente) => {
+                agentes.forEach((ag: any) => {
                   const lat = Number(ag.latitud);
                   const lng = Number(ag.longitud);
                   L.marker([lat, lng], { icon: iconAg })
                     .bindPopup(`
-                      <div style="min-width: 160px;">
-                        <h3 style="margin: 0; color: #FF8C00; font-size: 16px;">Agente Autorizado</h3>
+                      <div style="min-width: 180px; font-family: sans-serif;">
+                        <h3 style="margin: 0; color: #FF8C00; font-size: 16px;">${ag.nombre || 'Agente Autorizado'}</h3>
                         <hr style="margin: 8px 0; border: 0; border-top: 1px solid #eee;">
-                        <b>Ubicación:</b> ${ag.estado} (${ag.region})<br>
-                        <div style="background-color: #fff9f2; padding: 10px; border-radius: 6px; margin-top: 8px; text-align: center; border: 1px solid #ffebcc;">
-                          <span style="display: block; font-size: 11px; color: #555; text-transform: uppercase;">Total Agentes</span>
-                          <strong style="font-size: 20px; color: #e67e00;">${ag.cantidad || 0}</strong>
+                        <div style="font-size: 13px; line-height: 1.5;">
+                          <b>Código Dealer:</b> ${ag.codigo_dealer || 'N/A'}<br>
+                          <b>Clasificación:</b> ${ag.clasificacion || 'N/A'}<br>
+                          <b>Región:</b> ${ag.region}<br>
+                          <b>Estado:</b> ${ag.estado}<br>
+                          ${ag.direccion ? `<b>Dirección:</b> ${ag.direccion}` : ''}
                         </div>
                       </div>
                     `)

@@ -66,90 +66,58 @@
   color: #767883;
 }
 
-/* -- Select Wrapper Cleanup since we moved to ng-select -- */
 .select-wrapper {
   position: relative;
   width: 100%;
 }
 
 /*Estilos selct simple*/
-
 ::ng-deep .select-simple .ng-select-container {
-
   min-height: 48px !important;
-
   height: 48px !important;
-
   border-radius: 10px !important;
-
   border: 1px solid #e0e0e0 !important;
-
   background-color: #f8f9fa !important;
-
   display: flex !important;
-
   align-items: center !important;
 
 }
 
-
+::ng-deep .select-simple .ng-input {
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  display: flex !important;
+  align-items: center !important;
+}
 
 /* Forzamos el uso de Flexbox para centrar el texto único */
-
 ::ng-deep .select-simple .ng-value-container {
-
   display: flex !important;
-
   align-items: center !important;
-
   padding: 0 14px !important;
-
   height: 100% !important;
-
 }
-
-
 
 /* Alineación del texto seleccionado */
-
 ::ng-deep .select-simple .ng-value {
-
   margin: 0 !important;
-
   display: flex !important;
-
   align-items: center !important;
-
 }
-
-
 
 /* Placeholder centrado */
-
 ::ng-deep .select-simple .ng-placeholder {
-
   position: absolute !important;
-
   top: 50% !important;
-
   transform: translateY(-50%) !important;
-
   padding-left: 0 !important;
-
   margin: 0 !important;
-
   color: #6b7280 !important;
-
 }
 
-
-
 /* Ocultar placeholder al seleccionar */
-
 ::ng-deep .select-simple.ng-has-value .ng-placeholder {
-
   display: none !important;
-
 }
 
 .flex-1 {
@@ -268,4 +236,63 @@
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* Panel de éxito - contraseña temporal */
+.success-panel {
+  background: white;
+  border-radius: 12px;
+  padding: 40px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #d1fae5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  text-align: center;
+}
+
+.success-icon {
+  font-size: 52px;
+  color: #10b981;
+}
+
+.success-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 6px;
+}
+
+.success-desc {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.password-display {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  padding: 14px 20px;
+}
+
+.password-label {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.password-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: 2px;
+  font-family: 'Courier New', monospace;
+  background: #e5e7eb;
+  padding: 6px 14px;
+  border-radius: 6px;
 }

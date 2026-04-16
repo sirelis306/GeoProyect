@@ -373,7 +373,7 @@
   padding: 13px 14px;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
-  /* Mas redondeado */
+
   background: #ffffff;
   font-size: 14px;
   color: #495057;
@@ -478,7 +478,7 @@
   border-color: #4f46e5;
 }
 
-/* Para anular los estilos default del hover/selección en ng-select si interfieren (SOLO para multiselect con la clase custom-dropdown-panel) */
+/* Para anular los estilos default del hover/selección en ng-select si interfieren */
 ::ng-deep .custom-dropdown-panel .ng-option {
   padding: 0 !important;
   border-bottom: 1px solid transparent;

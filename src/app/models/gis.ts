@@ -50,4 +50,6 @@ export interface Agente {
   longitud: number;
   cantidad?: number;
   direccion?: string;
+  codigoDealer?: string;
+  clasificacion?: string;
 }

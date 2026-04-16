@@ -29,6 +29,8 @@ export class Sidebar {
     'Sucre', 'Táchira', 'Trujillo', 'Yaracuy', 'Zulia', 'Dependencias Federales'];
 
   listaActividad = ['Operativa', 'Mantenimiento', 'Vandalizada'];
+  clasificaciones = ['AA', 'ACI', 'PYME', 'Compartida'];
+  enviando = false;
   opcionesTecnologia = [
     { value: 'GSM', label: 'GSM' },
     { value: 'UMTS', label: 'UMTS' },
@@ -70,7 +72,9 @@ export class Sidebar {
       longitud: null,
       direccion: '',
       actividad: 'Operativa',
-      tecnologia: []
+      tecnologia: [],
+      codigoDealer: '',
+      clasificacion: null
     };
   }
 
@@ -102,17 +106,26 @@ export class Sidebar {
 
   async guardar() {
     try {
+      this.enviando = true;
       // Construir e inspeccionar los datos en el servicio
       const itemFinal = await this.gis.construirYValidarElemento(this.tipoEdicion, this.nuevoItem);
 
       // Si pasaron todas las validaciones sin lanzar error, se inserta
-      this.gis.agregarElemento(this.tipoEdicion, itemFinal);
-
-      // Limpieza de Interfaz
-      this.mostrarForm = false;
-      this.resetearFormulario();
+      this.gis.agregarElemento(this.tipoEdicion, itemFinal).subscribe({
+        next: (res: any) => {
+          this.gis.cargarDatos();
+          this.mostrarForm = false;
+          this.resetearFormulario();
+          this.enviando = false;
+        },
+        error: (err) => {
+          this.enviando = false;
+          const mensaje = err.error?.mensaje || 'Error al guardar en la base de datos';
+          alert(mensaje);
+        }
+      });
     } catch (error: any) {
-      // 4. Si el servicio tiró un throw new Error(), lo atrapamos y se lo mostramos al usuario
+      this.enviando = false;
       alert(error.message);
     }
   }
@@ -146,7 +159,8 @@ export class Sidebar {
   resetearFormulario() {
     this.nuevoItem = {
       nombre: '', estado: null, latitud: null, longitud: null,
-      cantidad: null, tecnologia: [], segmentacion_elegida: '', direccion: ''
+      cantidad: null, tecnologia: [], segmentacion_elegida: '', direccion: '',
+      codigoDealer: '', clasificacion: null
     };
   }
 
@@ -182,7 +196,7 @@ export class Sidebar {
   }
 
   setDetalle(tipo: TipoElementoCap2) {
-    // Si ya está activo, lo desactivamos (opcional)
+    // Si ya está activo, lo desactivamos
     if (this.gis.capasVisibles().detalleCap2 === tipo) {
       this.gis.setDetalleCap2('ninguno');
     } else {

@@ -15,7 +15,7 @@ export class Login {
   private auth = inject(AuthService);
   private router = inject(Router);
 
-  creds = { username: '', password: '' };
+  creds = { email: '', password: '' };
   error = '';
   cargando = false;
 

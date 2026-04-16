@@ -125,13 +125,32 @@
           </div>
         </div>
 
-        <div class="form-group" *ngIf="tipoEdicion === 'antenas'">
+        <!-- Campos comunes para elementos individuales (Antenas y Agentes) -->
+        <ng-container *ngIf="tipoEdicion === 'antenas' || tipoEdicion === 'agentes'">
           <div class="form-row">
             <div class="form-group">
-              <label>Nombre</label>
-              <input type="text" [(ngModel)]="nuevoItem.nombre" placeholder="">
+              <label>{{ tipoEdicion === 'agentes' ? 'Razón Social *' : 'Nombre *' }}</label>
+              <input type="text" [(ngModel)]="nuevoItem.nombre"
+                [placeholder]="tipoEdicion === 'agentes' ? 'Razón Social del Agente' : 'Nombre de la Antena'" required>
             </div>
+            <div class="form-group">
+              <label>Dirección</label>
+              <div class="input-with-action">
+                <input type="text" [(ngModel)]="nuevoItem.direccion" placeholder="Ej: Av. Francisco de Miranda"
+                  class="full-width-input">
+                <button type="button" class="action-btn" (click)="guardar()" title="Validar ubicación">
+                  <i class="fas fa-search-location"></i>
+                </button>
+              </div>
+              <small class="text-blue" *ngIf="tipoEdicion === 'agentes'">
+                <i class="fas fa-info-circle"></i> Ubicación automática o centro del estado.
+              </small>
+            </div>
+          </div>
+        </ng-container>
 
+        <div class="form-group" *ngIf="tipoEdicion === 'antenas'">
+          <div class="form-row">
             <div class="form-group">
               <label>Tecnología</label>
               <ng-select [(ngModel)]="nuevoItem.tecnologia" [items]="opcionesTecnologia" bindLabel="label"
@@ -160,6 +179,13 @@
                 </ng-template>
               </ng-select>
             </div>
+
+            <div class="form-group">
+              <label>Estado de Actividad</label>
+              <ng-select [(ngModel)]="nuevoItem.actividad" [items]="listaActividad" bindLabel="label" bindValue="value"
+                [clearable]="false" [searchable]="false" placeholder="Seleccione" class="select-simple">
+              </ng-select>
+            </div>
           </div>
 
           <div class="form-row">
@@ -175,26 +201,6 @@
           <small class="text-danger" *ngIf="nuevoItem.latitud && (nuevoItem.latitud < 0.6 || nuevoItem.latitud > 12.2)">
             Latitud fuera de Venezuela
           </small>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Estado de Actividad</label>
-              <ng-select [(ngModel)]="nuevoItem.actividad" [items]="listaActividad" bindLabel="label" bindValue="value"
-                [clearable]="false" [searchable]="false" placeholder="Seleccione un estado" class="select-simple">
-              </ng-select>
-            </div>
-
-            <div class="form-group dir-group-fixed" style="margin-top: 16px;">
-              <label>Dirección</label>
-              <div class="input-with-action">
-                <input type="text" [(ngModel)]="nuevoItem.direccion" placeholder="Ej: Av. Francisco de Miranda"
-                  class="full-width-input">
-                <button type="button" class="action-btn" (click)="guardar()" title="Validar ubicación">
-                  <i class="fas fa-search-location"></i>
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
 
         <div *ngIf="tipoEdicion === 'abonados'" class="form-group">
@@ -207,7 +213,24 @@
           </ng-select>
         </div>
 
-        <div *ngIf="tipoEdicion !== 'antenas' && tipoEdicion !== 'ninguno'" class="form-group">
+        <!-- Campos específicos para Agentes Autorizados -->
+        <div *ngIf="tipoEdicion === 'agentes'">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Código Dealer *</label>
+              <input type="text" [(ngModel)]="nuevoItem.codigoDealer" placeholder="Ej: AA001" required>
+            </div>
+            <div class="form-group">
+              <label>Clasificación *</label>
+              <ng-select [(ngModel)]="nuevoItem.clasificacion" [items]="clasificaciones" [clearable]="false"
+                [searchable]="false" placeholder="Seleccione..." class="select-simple" required>
+              </ng-select>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="tipoEdicion !== 'antenas' && tipoEdicion !== 'agentes' && tipoEdicion !== 'ninguno'"
+          class="form-group">
           <label>Cantidad Total en este Estado</label>
           <input type="number" [(ngModel)]="nuevoItem.cantidad" placeholder="Ej: 1500">
         </div>
@@ -215,9 +238,11 @@
 
       <div class="modal-footer">
         <button class="btn-cancel" (click)="mostrarForm = false">Cancelar</button>
-        <button class="btn-save" [disabled]="!nuevoItem.estado || (tipoEdicion === 'antenas' && !nuevoItem.nombre)"
+        <button class="btn-save"
+          [disabled]="enviando || !nuevoItem.estado || (tipoEdicion === 'antenas' && !nuevoItem.nombre) || (tipoEdicion === 'agentes' && (!nuevoItem.nombre || !nuevoItem.codigoDealer))"
           (click)="guardar()">
-          Agregar Elemento
+          <span *ngIf="!enviando">Agregar Elemento</span>
+          <span *ngIf="enviando"><i class="fas fa-spinner fa-spin"></i> Guardando...</span>
         </button>
       </div>
     </div>

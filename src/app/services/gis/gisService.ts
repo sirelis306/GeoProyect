@@ -38,25 +38,25 @@ export class Gis {
 
   public obtenerRegion(estado: string): string {
     const mapeo: any = {
-    // Región Capital
-    'Distrito Capital': 'Capital','Miranda': 'Capital','La Guaira': 'Capital',
-    // Región Central
-    'Carabobo': 'Central', 'Aragua': 'Central', 'Cojedes': 'Central',
-    // Región de los Llanos
-    'Guárico': 'Los Llanos', 'Apure': 'Los Llanos',
-    // Región Centro Occidental
-    'Falcón': 'Centro Occidental', 'Lara': 'Centro Occidental', 'Portuguesa': 'Centro Occidental', 'Yaracuy': 'Centro Occidental',
-    // Región Zuliana
-    'Zulia': 'Zuliana',
-    // Región de los Andes
-    'Mérida': 'Los Andes', 'Táchira': 'Los Andes', 'Trujillo': 'Los Andes', 'Barinas': 'Los Andes',
-    // Región Nororiental
-    'Anzoátegui': 'Nororiental', 'Monagas': 'Nororiental', 'Sucre': 'Nororiental',
-    // Región Insular
-    'Nueva Esparta': 'Insular', 'Dependencias Federales': 'Insular',
-    // Región Guayana
-    'Bolívar': 'Guayana', 'Amazonas': 'Guayana', 'Delta Amacuro': 'Guayana'
-  };
+      // Región Capital
+      'Distrito Capital': 'Capital', 'Miranda': 'Capital', 'La Guaira': 'Capital',
+      // Región Central
+      'Carabobo': 'Central', 'Aragua': 'Central', 'Cojedes': 'Central',
+      // Región de los Llanos
+      'Guárico': 'Los Llanos', 'Apure': 'Los Llanos',
+      // Región Centro Occidental
+      'Falcón': 'Centro Occidental', 'Lara': 'Centro Occidental', 'Portuguesa': 'Centro Occidental', 'Yaracuy': 'Centro Occidental',
+      // Región Zuliana
+      'Zulia': 'Zuliana',
+      // Región de los Andes
+      'Mérida': 'Los Andes', 'Táchira': 'Los Andes', 'Trujillo': 'Los Andes', 'Barinas': 'Los Andes',
+      // Región Nororiental
+      'Anzoátegui': 'Nororiental', 'Monagas': 'Nororiental', 'Sucre': 'Nororiental',
+      // Región Insular
+      'Nueva Esparta': 'Insular', 'Dependencias Federales': 'Insular',
+      // Región Guayana
+      'Bolívar': 'Guayana', 'Amazonas': 'Guayana', 'Delta Amacuro': 'Guayana'
+    };
     return mapeo[estado] || '';
   }
 
@@ -66,11 +66,11 @@ export class Gis {
 
   capasVisibles = signal<CapasEstado>({
     regiones: true,
-    operaciones: false, 
+    operaciones: false,
     detalleCap2: 'ninguno'
   });
 
- // Iniciamos los signals vacíos
+  // Iniciamos los signals vacíos
   radioBasesSignal = signal<RadioBase[]>([]);
   oficinasSignal = signal<Oficina[]>([]);
   abonadosSignal = signal<Abonado[]>([]);
@@ -101,11 +101,11 @@ export class Gis {
   cargarDatos() {
     this.http.get<any[]>(`${this.API_URL}/elementos`).subscribe({
       next: (data) => {
-      // Separamos los datos por tipo y actualizamos los signals
-      this.radioBasesSignal.set(data.filter(i => i.tipo === 'antenas'));
-      this.oficinasSignal.set(data.filter(i => i.tipo === 'oficinas'));
-      this.abonadosSignal.set(data.filter(i => i.tipo === 'abonados'));
-      this.agentesSignal.set(data.filter(i => i.tipo === 'agentes'));
+        // Separamos los datos por tipo y actualizamos los signals
+        this.radioBasesSignal.set(data.filter(i => i.tipo === 'antenas'));
+        this.oficinasSignal.set(data.filter(i => i.tipo === 'oficinas'));
+        this.abonadosSignal.set(data.filter(i => i.tipo === 'abonados'));
+        this.agentesSignal.set(data.filter(i => i.tipo === 'agentes'));
       },
       error: (err) => console.error('Error conectando al backend:', err)
     });
@@ -120,18 +120,24 @@ export class Gis {
       cantidad: Number(nuevoItem.cantidad) || 0
     };
 
-    if (tipoEdicion === 'antenas') {
+    if (tipoEdicion === 'antenas' || tipoEdicion === 'agentes') {
       let lat = nuevoItem.latitud;
       let lng = nuevoItem.longitud;
 
       if (!lat || !lng) {
-        if (!itemFinal.direccion) {
+        if (!nuevoItem.direccion && tipoEdicion === 'antenas') {
           throw new Error("Para antenas debe colocar coordenadas o una dirección válida.");
         }
-        const coordsAuto = await this.obtenerCoordsDesdeDireccion(itemFinal.direccion);
+
+        const coordsAuto = await this.obtenerCoordsDesdeDireccion(nuevoItem.direccion);
         if (coordsAuto) {
           lat = coordsAuto.lat;
           lng = coordsAuto.lng;
+        } else if (tipoEdicion === 'agentes') {
+          // Si la geocodificación falla, usar centro del estado
+          const coordsEstado = this.getCoordsCentrales(nuevoItem.estado);
+          lat = coordsEstado ? coordsEstado.lat : 0;
+          lng = coordsEstado ? coordsEstado.lng : 0;
         } else {
           throw new Error("No se pudo encontrar la ubicación por dirección. Intente colocar coordenadas manualmente.");
         }
@@ -139,17 +145,29 @@ export class Gis {
 
       const latNum = Number(lat);
       const lngNum = Number(lng);
-      if (latNum < 0.6 || latNum > 12.2 || lngNum < -73.3 || lngNum > -59.7) {
-        throw new Error("Error: Las coordenadas están fuera de los límites de Venezuela.");
-      }
 
       itemFinal.nombre = nuevoItem.nombre;
       itemFinal.latitud = latNum;
       itemFinal.longitud = lngNum;
-      itemFinal.tecnologia = (nuevoItem.tecnologia || []).join(' / ');
-      if (!itemFinal.tecnologia) itemFinal.tecnologia = 'LTE';
-      itemFinal.actividad = nuevoItem.actividad || 'Operativa';
       itemFinal.cantidad = 1;
+
+      if (tipoEdicion === 'antenas') {
+        itemFinal.tecnologia = (nuevoItem.tecnologia || []).join(' / ');
+        if (!itemFinal.tecnologia) itemFinal.tecnologia = 'LTE';
+        itemFinal.actividad = nuevoItem.actividad || 'Operativa';
+        itemFinal.cantidad = 1;
+
+        if (latNum < 0.6 || latNum > 12.2 || lngNum < -73.3 || lngNum > -59.7) {
+          throw new Error("Error: Las coordenadas están fuera de los límites de Venezuela.");
+        }
+      } else {
+        // Campos específicos para Agentes
+        itemFinal.codigoDealer = nuevoItem.codigoDealer;
+        itemFinal.clasificacion = nuevoItem.clasificacion;
+        itemFinal.cantidad = 1; // Aseguramos que tenga cantidad para pasar la validación
+        itemFinal.tecnologia = null;
+        itemFinal.actividad = null;
+      }
 
     } else {
       const coords = this.getCoordsCentrales(nuevoItem.estado);
@@ -168,22 +186,21 @@ export class Gis {
       itemFinal.actividad = null;
     }
 
-    if (!itemFinal.estado || (tipoEdicion !== 'antenas' && itemFinal.cantidad <= 0)) {
-      throw new Error("Por favor, rellene el estado y una cantidad válida.");
+    // Validación final simplificada
+    if (!itemFinal.estado || itemFinal.cantidad < 0) {
+      throw new Error("Por favor, seleccione un estado válido.");
+    }
+    
+    if (tipoEdicion !== 'antenas' && tipoEdicion !== 'agentes' && itemFinal.cantidad <= 0) {
+       throw new Error("Por favor, ingrese una cantidad válida.");
     }
 
     return itemFinal;
   }
 
   agregarElemento(tipo: TipoElementoCap2, data: any) {
-    const nuevoItem = { ...data, tipo }; 
-    
-    this.http.post(`${this.API_URL}/elementos`, data).subscribe({ 
-      next: () => {
-        this.cargarDatos();
-    },
-      error: (err) => alert('Error al guardar en la base de datos')
-    });
+    const nuevoItem = { ...data, tipo };
+    return this.http.post(`${this.API_URL}/elementos`, data);
   }
 
   // Lógica para determinar qué regiones tienen datos
@@ -195,23 +212,23 @@ export class Gis {
     // Función auxiliar para extraer regiones de cualquier lista de datos
     const extraerDe = (lista: any[]) => lista.forEach(item => {
       if (item.region) regiones.add(item.region);
-  });
+    });
 
-  if (estado.operaciones && direccion !== 'ninguno') {
-    // Si la Capa 2 está activa, extraemos regiones solo del tipo seleccionado
-    if (direccion === 'antenas') extraerDe(this.radioBasesSignal());
-    else if (direccion === 'oficinas') extraerDe(this.oficinasSignal());
-    else if (direccion === 'abonados') extraerDe(this.abonadosSignal());
-    else if (direccion === 'agentes') extraerDe(this.agentesSignal());
-  } else {
-    // Si solo la Capa 1 está activa, extraemos regiones de TODOS los datos
-    extraerDe(this.radioBasesSignal());
-    extraerDe(this.oficinasSignal());
-    extraerDe(this.abonadosSignal());
-    extraerDe(this.agentesSignal());
-  }
+    if (estado.operaciones && direccion !== 'ninguno') {
+      // Si la Capa 2 está activa, extraemos regiones solo del tipo seleccionado
+      if (direccion === 'antenas') extraerDe(this.radioBasesSignal());
+      else if (direccion === 'oficinas') extraerDe(this.oficinasSignal());
+      else if (direccion === 'abonados') extraerDe(this.abonadosSignal());
+      else if (direccion === 'agentes') extraerDe(this.agentesSignal());
+    } else {
+      // Si solo la Capa 1 está activa, extraemos regiones de TODOS los datos
+      extraerDe(this.radioBasesSignal());
+      extraerDe(this.oficinasSignal());
+      extraerDe(this.abonadosSignal());
+      extraerDe(this.agentesSignal());
+    }
 
-  return Array.from(regiones);
+    return Array.from(regiones);
   }
 
   enviarAlServidor(datos: any) {
@@ -223,13 +240,13 @@ export class Gis {
     });
   }
 
-  async obtenerCoordsDesdeDireccion(direccion: string | null | undefined): Promise<{lat: number, lng: number} | null> {
+  async obtenerCoordsDesdeDireccion(direccion: string | null | undefined): Promise<{ lat: number, lng: number } | null> {
     if (!direccion) return null; // Resuelve el error 2345 al asegurar que hay un string
-    
+
     try {
       const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(direccion)}, Venezuela`;
       const res: any = await this.http.get(url).toPromise();
-      
+
       if (res && res.length > 0) {
         return {
           lat: parseFloat(res[0].lat),

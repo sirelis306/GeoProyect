@@ -11,7 +11,7 @@
     <form (submit)="ingresar()">
       <div class="form-group">
         <label>Usuario</label>
-        <input type="text" name="user" [(ngModel)]="creds.username" placeholder="Nombre de usuario" required>
+        <input type="text" name="user" [(ngModel)]="creds.email" placeholder="Correo electrónico" required>
       </div>
 
       <div class="form-group">
@@ -27,7 +27,7 @@
         {{ cargando ? 'Verificando...' : 'Acceder al Sistema' }}
       </button>
     </form>
-    
+
     <!-- <p class="footer-text">© 2026 Sistema de Gestión de Redes</p> -->
   </div>
 </div>

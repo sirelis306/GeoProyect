@@ -6,9 +6,31 @@
     <span class="breadcrumb-current">Crear Usuario</span>
   </div>
 
-  <div class="form-card">
-    <div *ngIf="showErrors && !userForm.valid" class="error-message-box">
-      <i class="fas fa-exclamation-circle"></i> Por favor complete todos los campos requeridos marcados con (*).
+  <!-- Panel de éxito: muestra la contraseña temporal -->
+  <div *ngIf="passwordTemporal" class="success-panel">
+    <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+    <div class="success-content">
+      <div class="success-title">¡Usuario creado exitosamente!</div>
+      <p class="success-desc">Comparte esta contraseña temporal con el usuario. Deberá cambiarla en su primer acceso.
+      </p>
+      <div class="password-display">
+        <span class="password-label">Contraseña temporal:</span>
+        <code class="password-value">{{ passwordTemporal }}</code>
+      </div>
+    </div>
+    <button class="btn btn-primary" (click)="cerrarYRegresar()">
+      Volver a Usuarios <i class="fas fa-arrow-right"></i>
+    </button>
+  </div>
+
+  <!-- Formulario (se oculta tras crear) -->
+  <div class="form-card" *ngIf="!passwordTemporal">
+
+    <div *ngIf="showErrors && errorMsg" class="error-message-box">
+      <i class="fas fa-exclamation-circle"></i> {{ errorMsg }}
+    </div>
+    <div *ngIf="errorMsg && !showErrors" class="error-message-box">
+      <i class="fas fa-exclamation-circle"></i> {{ errorMsg }}
     </div>
 
     <form #userForm="ngForm" (ngSubmit)="guardar(userForm)">
@@ -19,8 +41,8 @@
             name="primerNombre" required />
         </div>
         <div class="form-group">
-          <input type="text" class="input-modern" placeholder="Segundo Nombre *" [(ngModel)]="user.segundoNombre"
-            name="segundoNombre" required />
+          <input type="text" class="input-modern" placeholder="Segundo Nombre" [(ngModel)]="user.segundoNombre"
+            name="segundoNombre" />
         </div>
 
         <!-- Fila 2 -->
@@ -57,14 +79,14 @@
         </div>
         <div class="form-group">
           <ng-select class="select-simple" [(ngModel)]="user.estado" name="estado" required (change)="onEstadoChange()"
-            placeholder="Estado *" [clearable]="false" [searchable]="false" [items]="estados">
+            placeholder="Estado *" [clearable]="false" [searchable]="true" [items]="estados">
           </ng-select>
         </div>
 
         <!-- Fila 5 -->
         <div class="form-group">
           <ng-select class="select-simple" [(ngModel)]="user.ciudad" name="ciudad" required [disabled]="!user.estado"
-            placeholder="Ciudad *" [clearable]="false" [searchable]="false" [items]="ciudadesDisponibles">
+            placeholder="Ciudad *" [clearable]="false" [searchable]="true" [items]="ciudadesDisponibles">
           </ng-select>
         </div>
         <div class="form-group">
@@ -83,9 +105,7 @@
             required />
         </div>
 
-        <!-- Fila 7 -->
-        <div class="form-group" style="display:none;"></div>
-
+        <!-- Fila 7 - Cargo -->
         <div class="form-group" style="grid-column: span 2;">
           <div style="width: calc(50% - 20px);">
             <ng-select class="select-simple" [(ngModel)]="user.cargo" name="cargo" required placeholder="Cargo *"
@@ -95,19 +115,22 @@
         </div>
       </div>
 
+      <!-- Sección de Roles -->
       <div class="roles-section">
         <div class="roles-title">Roles</div>
         <div class="roles-grid">
-          <label class="checkbox-label">
+          <!-- Solo el Super Admin puede asignar estos roles -->
+          <label class="checkbox-label" *ngIf="esSuperAdmin">
             <input type="checkbox" class="circular-checkbox" [(ngModel)]="user.roles.rol_super_administrador"
               name="role_super_admin" />
             Súper Administrador
           </label>
-          <label class="checkbox-label">
+          <label class="checkbox-label" *ngIf="esSuperAdmin">
             <input type="checkbox" class="circular-checkbox" [(ngModel)]="user.roles.rol_administrador"
               name="role_admin" />
             Administrador
           </label>
+          <!-- Todos pueden asignar estos -->
           <label class="checkbox-label">
             <input type="checkbox" class="circular-checkbox" [(ngModel)]="user.roles.rol_analista"
               name="rol_analista" />
@@ -124,8 +147,9 @@
         <button type="button" class="btn btn-secondary" (click)="regresar()">
           Regresar <i class="fas fa-home"></i>
         </button>
-        <button type="submit" class="btn btn-primary">
-          Guardar <i class="fas fa-save"></i>
+        <button type="submit" class="btn btn-primary" [disabled]="cargando">
+          <span *ngIf="!cargando">Guardar <i class="fas fa-save"></i></span>
+          <span *ngIf="cargando"><i class="fas fa-spinner fa-spin"></i> Guardando...</span>
         </button>
       </div>
     </form>
