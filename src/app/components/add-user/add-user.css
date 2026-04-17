@@ -6,7 +6,8 @@
 }
 
 .breadcrumb {
-  margin-bottom: 24px;
+  margin-top: 20px;
+  margin-bottom: 36px;
   font-size: 18px;
   color: #6b7280;
   display: flex;
@@ -26,7 +27,7 @@
 
 .form-card {
   background: white;
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 40px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   border: 1px solid #f3f4f6;

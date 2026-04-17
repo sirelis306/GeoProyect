@@ -78,7 +78,28 @@ export class Gis {
 
   busquedaAntena = signal<string>('');
 
+  public readonly COLORES_REGIONES: any = {
+    'Zuliana': '#7ab8fc',
+    'Los Andes': '#ac7cf8',
+    'Central': '#f8ab6b',
+    'Capital': '#ce5461',
+    'Los Llanos': '#ffda6b',
+    'Centro Occidental': '#e0679f',
+    'Nororiental': '#53c7a4',
+    'Guayana': '#55aa69',
+    'Insular': '#59afbd'
+  };
+
   constructor() {
+  }
+
+  // Centralizamos la obtención de regiones con sus colores para uso en Sidebar y Map
+  public getRegionesConColores() {
+    const nombresActivos = this.getRegionesConDatos();
+    return nombresActivos.map(nombre => ({
+      nombre: nombre,
+      color: this.COLORES_REGIONES[nombre] || '#DEE2E6'
+    }));
   }
 
   get totalAbonadosSum() {
@@ -134,10 +155,11 @@ export class Gis {
           lat = coordsAuto.lat;
           lng = coordsAuto.lng;
         } else if (tipoEdicion === 'agentes') {
-          // Si la geocodificación falla, usar centro del estado
+          // Si la geocodificación falla, usar centro del estado con un pequeño margen aleatorio (jitter)
           const coordsEstado = this.getCoordsCentrales(nuevoItem.estado);
-          lat = coordsEstado ? coordsEstado.lat : 0;
-          lng = coordsEstado ? coordsEstado.lng : 0;
+          const jitter = () => (Math.random() - 0.5) * 0.04; // Aproximadamente 4-5km de dispersión
+          lat = coordsEstado ? coordsEstado.lat + jitter() : 0;
+          lng = coordsEstado ? coordsEstado.lng + jitter() : 0;
         } else {
           throw new Error("No se pudo encontrar la ubicación por dirección. Intente colocar coordenadas manualmente.");
         }
@@ -190,9 +212,9 @@ export class Gis {
     if (!itemFinal.estado || itemFinal.cantidad < 0) {
       throw new Error("Por favor, seleccione un estado válido.");
     }
-    
+
     if (tipoEdicion !== 'antenas' && tipoEdicion !== 'agentes' && itemFinal.cantidad <= 0) {
-       throw new Error("Por favor, ingrese una cantidad válida.");
+      throw new Error("Por favor, ingrese una cantidad válida.");
     }
 
     return itemFinal;
@@ -241,23 +263,67 @@ export class Gis {
   }
 
   async obtenerCoordsDesdeDireccion(direccion: string | null | undefined): Promise<{ lat: number, lng: number } | null> {
-    if (!direccion) return null; // Resuelve el error 2345 al asegurar que hay un string
+    if (!direccion) return null;
 
-    try {
-      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(direccion)}, Venezuela`;
-      const res: any = await this.http.get(url).toPromise();
+    // Limpiamos ruidos genéricos
+    const direccionLimpia = this.limpiarDireccionParaBusqueda(direccion);
 
-      if (res && res.length > 0) {
-        return {
-          lat: parseFloat(res[0].lat),
-          lng: parseFloat(res[0].lon)
-        };
+    // Dividimos por comas para reintentar desde lo más general si falla lo específico
+    const partes = direccionLimpia.split(',').map(p => p.trim()).filter(p => p.length > 2);
+
+    // Máximo 4 intentos para no saturar el API
+    const maxIntentos = Math.min(partes.length, 4);
+
+    for (let i = 0; i < maxIntentos; i++) {
+      const queryActual = partes.slice(i).join(', ');
+
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(queryActual)}, ${this.contextoPais}`;
+        const res: any = await this.http.get(url).toPromise();
+
+        if (res && res.length > 0) {
+          console.log(`Geocodificación exitosa tras ${i + 1} intento(s) con: "${queryActual}"`);
+          return {
+            lat: parseFloat(res[0].lat),
+            lng: parseFloat(res[0].lon)
+          };
+        }
+      } catch (error) {
+        console.error('Error en geocodificación:', error);
       }
-      return null;
-    } catch (error) {
-      console.error("Error en geocodificación:", error);
-      return null;
+
+      // Pequeña espera (300ms) para respetar políticas de Nominatim solo si vamos a reintentar
+      if (i < maxIntentos - 1) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
     }
+
+    return null;
+  }
+
+  private contextoPais = 'Venezuela';
+
+  private limpiarDireccionParaBusqueda(dir: string): string {
+    // Convertimos a mayúsculas para facilitar el reemplazo
+    let limpia = dir.toUpperCase();
+
+    // Palabras que suelen confundir a los buscadores de calles/sectores
+    const ruidos = [
+      /LOCAL\s+(NRO\.?|N°?|NUMERO)?\s*\d+/gi, // Maneja "LOCAL NRO. 2", "LOCAL 5", "LOCAL N°3"
+      /NIVEL\s+\w+/gi, /PISO\s+\d+/gi, /PB/gi, /P\.B/gi,
+      /EDIFICIO\s+\w+/gi, /EDIF\.\s+\w+/gi, /APT\s+\d+/gi, /APTO\s+\d+/gi,
+      /C.C\s+\w+/gi, /CENTRO COMERCIAL\s+\w+/gi, /BASEMENT/gi, /PLANTA BAJA/gi,
+      /ESTADO\s+/gi // Remueve la palabra "ESTADO" para dejar solo el nombre (ej: MERIDA)
+    ];
+
+    ruidos.forEach(regex => {
+      limpia = limpia.replace(regex, '');
+    });
+
+    // Limpiar comas dobles o espacios extra que queden
+    limpia = limpia.replace(/, ,/g, ',').replace(/\s+/g, ' ').trim();
+
+    return limpia;
   }
 
   toggleCapa(nombre: keyof CapasEstado) {

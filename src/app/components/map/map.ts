@@ -1,6 +1,7 @@
 import { Component, AfterViewInit, inject, ElementRef, ViewChild, effect } from '@angular/core';
-import { Gis } from '../../services/gis/gisService';
+import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { Gis } from '../../services/gis/gisService';
 import { RadioBase, Oficina, Abonado, Agente } from '../../models/gis';
 import * as L from 'leaflet';
 import { Totales } from "../totales/totales";
@@ -8,12 +9,12 @@ import { Totales } from "../totales/totales";
 @Component({
   selector: 'app-map',
   standalone: true,
-  imports: [Totales],
+  imports: [CommonModule, Totales],
   templateUrl: './map.html',
   styleUrl: './map.css',
 })
 export class Map implements AfterViewInit {
-  private gis = inject(Gis);
+  public gis = inject(Gis);
   private http = inject(HttpClient);
   private capaGeoJsonRegiones: L.GeoJSON | null = null;
   @ViewChild('mapContainer') mapContainer!: ElementRef;
@@ -25,17 +26,6 @@ export class Map implements AfterViewInit {
   private oficinas = L.layerGroup();
   private agentes = L.layerGroup();
 
-  private COLORES_REGIONES: any = {
-    'Zuliana': '#7ab8fc',
-    'Los Andes': '#ac7cf8',
-    'Central': '#f8ab6b',
-    'Capital': '#ce5461',
-    'Los Llanos': '#ffda6b',
-    'Centro Occidental': '#e0679f',
-    'Nororiental': '#53c7a4',
-    'Guayana': '#55aa69',
-    'Insular': '#59afbd'
-  };
 
   // Mapeo completo de Estados por Región
   private REGION_POR_ESTADO: any = {
@@ -89,7 +79,7 @@ export class Map implements AfterViewInit {
             const tieneDatos = regionesActivas.includes(region);
 
             return {
-              fillColor: tieneDatos ? (this.COLORES_REGIONES[region] || '#DEE2E6') : 'transparent',
+              fillColor: tieneDatos ? (this.gis.COLORES_REGIONES[region] || '#DEE2E6') : 'transparent',
               weight: tieneDatos ? 1.5 : 0,
               opacity: tieneDatos ? 1 : 0,
               color: '#FFFFFF',
@@ -294,7 +284,7 @@ export class Map implements AfterViewInit {
           // Lógica de filtrado:
           const regionesActivas = this.gis.getRegionesConDatos();
           const estaActiva = regionesActivas.includes(region);
-          const colorRegion = estaActiva ? (this.COLORES_REGIONES[region] || '#DEE2E6') : 'transparent';
+          const colorRegion = estaActiva ? (this.gis.COLORES_REGIONES[region] || '#DEE2E6') : 'transparent';
 
           return {
             fillColor: colorRegion,
@@ -316,11 +306,4 @@ export class Map implements AfterViewInit {
     this.gis.cargarDatos();
   }
 
-  get regionesFiltradas() {
-    const nombresActivos = this.gis.getRegionesConDatos();
-    return nombresActivos.map(nombre => ({
-      nombre: nombre,
-      color: this.COLORES_REGIONES[nombre]
-    }));
-  }
 }

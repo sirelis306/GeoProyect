@@ -1,4 +1,4 @@
-import { Component, inject, ViewChild } from '@angular/core';
+import { Component, inject, ViewChild, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Gis } from '../../services/gis/gisService';
 import { FormsModule, ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
@@ -20,7 +20,7 @@ export class Sidebar {
   public auth = inject(AuthService);
   @ViewChild('selectTech') selectTech: any;
 
-  mostrarForm = false;
+  mostrarForm = signal(false);
   tipoEdicion: TipoElementoCap2 = 'ninguno';
   nuevoItem: any = { nombre: '', estado: '', region: '', latitud: null, longitud: null, tecnologia: [] };
   busquedaAntena: string = '';
@@ -64,7 +64,7 @@ export class Sidebar {
   abrirModal(tipo: TipoElementoCap2) {
     console.log('Abriendo modal para:', tipo);
     this.tipoEdicion = tipo;
-    this.mostrarForm = true;
+    this.mostrarForm.set(true);
     this.nuevoItem = {
       nombre: '',
       estado: null,
@@ -114,7 +114,7 @@ export class Sidebar {
       this.gis.agregarElemento(this.tipoEdicion, itemFinal).subscribe({
         next: (res: any) => {
           this.gis.cargarDatos();
-          this.mostrarForm = false;
+          this.mostrarForm.set(false);
           this.resetearFormulario();
           this.enviando = false;
         },
@@ -169,23 +169,6 @@ export class Sidebar {
     this.router.navigate(['/login']);
   }
 
-  // Lista de regiones con sus colores
-  get regionesFiltradas() {
-    // Obtenemos los nombres de las regiones que tienen datos según el tipo seleccionado
-    const nombresActivos = this.gis.getRegionesConDatos();
-
-    // Lista maestra de colores para mapear
-    const colores: any = {
-      'Zuliana': '#007bff', 'Los Andes': '#6610f2', 'Central': '#fd7e14',
-      'Capital': '#dc3545', 'Los Llanos': '#ffc107', 'Centro Occidental': '#e83e8c',
-      'Nororiental': '#20c997', 'Guayana': '#28a745', 'Insular': '#17a2b8',
-    };
-
-    return nombresActivos.map(nombre => ({
-      nombre: nombre,
-      color: colores[nombre] || '#DEE2E6'
-    }));
-  }
 
   toggle(capa: keyof CapasEstado) {
     this.gis.toggleCapa(capa);
