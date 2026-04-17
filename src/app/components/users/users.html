@@ -30,7 +30,9 @@
       <thead>
         <tr>
           <th>USUARIO</th>
+          <th>CARGO</th>
           <th>ROL</th>
+          <th>ESTADO</th>
           <th>ACCIONES</th>
         </tr>
       </thead>
@@ -45,10 +47,19 @@
             </div>
           </td>
           <td>
+            <span class="user-cargo">{{ user.cargo || 'Sin cargo' }}</span>
+          </td>
+          <td>
             <span class="badge" [ngClass]="getRoleClass(user.roles)">
               <i class="fa" [ngClass]="getRoleIcon(user.roles)" style="margin-right:2px; font-size:10px;"></i>
               {{ getPrincipalRole(user.roles) }}
             </span>
+          </td>
+          <td>
+            <div class="status-indicator" [ngClass]="{'inactive-text': !user.activo}">
+              <span class="status-dot" [ngClass]="user.activo ? 'active' : 'inactive'"></span>
+              {{ user.activo ? 'Activo' : 'Inactivo' }}
+            </div>
           </td>
 
           <td>

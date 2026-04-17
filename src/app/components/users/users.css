@@ -240,6 +240,12 @@
   margin-top: 2px;
 }
 
+.user-cargo {
+  font-size: 14px;
+  color: #4b5563;
+  font-weight: 500;
+}
+
 .badge {
   display: inline-flex;
   align-items: center;
