@@ -22,7 +22,7 @@ export class AddUser implements OnInit {
   showErrors = false;
   cargando = false;
   errorMsg = '';
-  passwordTemporal = ''; // Se muestra tras crear el usuario exitosamente
+  passwordTemporal = '';
   esSuperAdmin = false;
 
   user: User = {
