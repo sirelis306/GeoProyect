@@ -26,7 +26,8 @@ export class Users implements OnInit {
   }
 
   obtenerUsuarios() {
-    this.http.get<any[]>('http://localhost:3000/api/users/listado', { headers: this.getHeaders() }).subscribe({
+    // this.http.get<any[]>('http://localhost:3000/api/users/listado', { headers: this.getHeaders() }).subscribe({
+    this.http.get<any[]>('https://geobackend-api.onrender.com/api/users/listado', { headers: this.getHeaders() }).subscribe({
       next: (res) => {
         this.listaUsuarios = res;
         this.cdr.detectChanges();
@@ -43,7 +44,8 @@ export class Users implements OnInit {
 
   desactivar(id: number) {
     if (confirm('¿Estás seguro de que deseas desactivar este usuario? Perderá acceso al sistema.')) {
-      this.http.put(`http://localhost:3000/api/users/desactivar/${id}`, {}, { headers: this.getHeaders() }).subscribe({
+      // this.http.put(`http://localhost:3000/api/users/desactivar/${id}`, {}, { headers: this.getHeaders() }).subscribe({
+      this.http.put(`https://geobackend-api.onrender.com/api/users/desactivar/${id}`, {}, { headers: this.getHeaders() }).subscribe({
         next: () => this.obtenerUsuarios(),
         error: (err) => alert(err.error?.mensaje || 'Error al desactivar el usuario')
       });

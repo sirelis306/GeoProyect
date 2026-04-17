@@ -7,7 +7,8 @@ import { HttpClient } from '@angular/common/http';
 })
 export class Gis {
   private http = inject(HttpClient);
-  private API_URL = 'http://localhost:3000/api';
+  // private API_URL = 'http://localhost:3000/api';
+  private API_URL = 'https://geobackend-api.onrender.com/api';
 
   private readonly COORD_CENTRALES: any = {
     'Amazonas': { lat: 3.4167, lng: -65.5000 },
@@ -254,7 +255,8 @@ export class Gis {
   }
 
   enviarAlServidor(datos: any) {
-    this.http.post('http://localhost:3000/api/elementos', datos).subscribe({
+    // this.http.post('http://localhost:3000/api/elementos', datos).subscribe({
+    this.http.post('https://geobackend-api.onrender.com/api/elementos', datos).subscribe({
       next: (res) => {
         alert("Elemento guardado con éxito");
       },
