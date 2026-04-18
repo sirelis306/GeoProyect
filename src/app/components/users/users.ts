@@ -26,16 +26,40 @@ export class Users implements OnInit {
   }
 
   obtenerUsuarios() {
-    // this.http.get<any[]>('http://localhost:3000/api/users/listado', { headers: this.getHeaders() }).subscribe({
-    this.http.get<any[]>('https://geobackend-api.onrender.com/api/users/listado', { headers: this.getHeaders() }).subscribe({
-      next: (res) => {
-        this.listaUsuarios = res;
-        this.cdr.detectChanges();
+    // Lista de usuarios "quemada" para simular el funcionamiento sin backend
+    this.listaUsuarios = [
+      {
+        id: 1,
+        primerNombre: 'Kevin',
+        primerApellido: 'Mendoza',
+        email: 'kevinmendoza@gmail.com',
+        cargo: 'Analista',
+        roles: { rol_super_administrador: true, rol_administrador: true, rol_analista: true, rol_regular: true }
       },
-      error: (err) => {
-        console.error("Error cargando usuarios:", err);
+      {
+        id: 2,
+        primerNombre: 'Sirelis',
+        primerApellido: 'Sarmiento',
+        email: 'sirelissarmiento@gmail.com',
+        cargo: 'Apoyo Técnico',
+        roles: { rol_super_administrador: false, rol_administrador: false, rol_analista: true, rol_regular: true }
       }
-    });
+    ];
+
+    // Incluir al usuario que inició sesión actualmente
+    const currentUserJson = localStorage.getItem('user_geo');
+    if (currentUserJson) {
+      const currentUser = JSON.parse(currentUserJson);
+      if (!this.listaUsuarios.find(u => u.email === currentUser.email)) {
+        this.listaUsuarios.push({
+          ...currentUser,
+          primerNombre: currentUser.nombre?.split(' ')[0] || 'Usuario',
+          primerApellido: currentUser.nombre?.split(' ')[1] || 'QA',
+          cargo: 'QA'
+        });
+      }
+    }
+    this.cdr.detectChanges();
   }
 
   irCrearUsuario() {

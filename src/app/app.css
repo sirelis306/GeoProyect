@@ -36,9 +36,24 @@
     flex-shrink: 0;
     border-right: 1px solid #eee;
     background: white;
-    z-index: 10;
-    margin: 0; /* Asegurar que no tenga margen */
+    z-index: 2000; /* Aumentado para que el modal esté sobre los totales */
+    margin: 0;
     padding: 0; 
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .sidebar-aside.collapsed {
+    width: 80px;
+    overflow: hidden !important;
+  }
+
+  /* Ocultar scrollbars en todos los navegadores */
+  .sidebar-aside::-webkit-scrollbar {
+    display: none !important;
+  }
+  .sidebar-aside {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
   }
   
   .map-view {

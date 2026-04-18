@@ -12,20 +12,33 @@
   box-sizing: border-box;
 }
 
+/* Ocultar scrollbar en todos los navegadores */
+.sidebar,
+.sidebar-main-content {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.sidebar::-webkit-scrollbar,
+.sidebar-main-content::-webkit-scrollbar {
+  display: none !important;
+}
+
 .sidebar-main-content {
   flex: 1;
   overflow-y: auto;
 }
 
-.btn-logout {
+.btn-logout,
+.btn-collapse {
   margin-top: auto;
   padding: 16px 20px;
   background: transparent;
-  color: #ef4444;
+  color: #64748b;
   border: none;
   border-top: 1px solid #f1f5f9;
   cursor: pointer;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   display: flex;
   align-items: center;
@@ -35,15 +48,27 @@
   width: 100%;
 }
 
-.btn-logout i {
+.btn-logout {
+  margin-top: 0;
+  color: #ef4444;
+}
+
+.btn-logout i,
+.btn-collapse i {
   font-size: 16px;
+  width: 20px;
+  text-align: center;
 }
 
 .btn-logout:hover {
   background-color: #fef2f2;
 }
 
-/* Línea divisora sutil */
+.btn-collapse:hover {
+  background-color: #f8fafc;
+  color: #3240A5;
+}
+
 .header-divider {
   border: 0;
   border-top: 1px solid #f1f5f9;
@@ -140,7 +165,6 @@
   animation: slideDown 0.3s ease;
 }
 
-/* Estilos para la leyenda de regiones */
 .legend-container {
   margin: 10px 0 20px 10px;
   padding: 15px;
@@ -176,7 +200,6 @@
   font-weight: 500;
 }
 
-/* Ajuste para los botones de subcapa */
 .subcapa-group {
   display: flex;
   align-items: center;
@@ -185,21 +208,6 @@
   margin-bottom: 8px;
 }
 
-.subcapa-item {
-  padding: 10px 15px;
-  font-size: 13px;
-  background: #fafafa;
-  border-color: #e8e8e8;
-  flex: 1;
-  margin-bottom: 0
-}
-
-.subcapa-item .layer-icon {
-  font-size: 13px;
-  width: 16px;
-}
-
-/* Buscador de Antena */
 .subcapa-search {
   margin: 0 0 12px 0;
   padding: 0;
@@ -271,7 +279,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 99999 !important;
+  z-index: 999999 !important;
   opacity: 0;
   visibility: hidden;
   transition: all 0.3s ease-in-out;
@@ -299,12 +307,10 @@
   transition: transform 0.3s ease-in-out;
 }
 
-/* Animación de entrada de la tarjeta */
 .modal-overlay.active .modal-content {
   transform: translateY(0);
 }
 
-/* Cabecera del Modal */
 .modal-header {
   display: flex;
   justify-content: space-between;
@@ -325,7 +331,6 @@
   font-size: 0.9rem;
 }
 
-/* Botón 'X' de cerrar */
 .close-x {
   background: none;
   border: none;
@@ -340,12 +345,10 @@
   color: #3240A5;
 }
 
-/* Cuerpo del Modal (Formulario) */
 .modal-body {
   margin-bottom: 24px;
 }
 
-/* Disposición en filas de los campos */
 .form-row {
   display: flex;
   gap: 16px;
@@ -359,7 +362,6 @@
   margin-bottom: 12px;
 }
 
-/* Estilos de las Etiquetas (Labels) */
 .form-group label {
   font-weight: 600;
   font-size: 14px;
@@ -367,13 +369,11 @@
   margin-bottom: 6px;
 }
 
-/* Estilos comunes para Inputs y Selects */
 .form-group input,
 .form-group select {
   padding: 13px 14px;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
-
   background: #ffffff;
   font-size: 14px;
   color: #495057;
@@ -398,7 +398,6 @@
   box-shadow: 0 0 0 3px rgba(65, 85, 233, 0.1);
 }
 
-/* Estilo para campos de solo lectura */
 .form-group input[readonly] {
   background: #f1f3f5;
   color: #6c757d;
@@ -406,18 +405,15 @@
   border-color: #e8e8e8;
 }
 
-/* Limitar el alto de la lista desplegada */
-.ng-dropdown-panel .ng-dropdown-panel-items {
+::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items {
   max-height: 150px !important;
 }
 
-/* Estilo de cada opción de la lista */
-.ng-dropdown-panel .ng-option {
+::ng-deep .ng-dropdown-panel .ng-option {
   font-size: 13px !important;
   padding: 8px 12px !important;
 }
 
-/* Pie del Modal (Botones) */
 .modal-footer {
   display: flex;
   justify-content: flex-end;
@@ -425,7 +421,6 @@
   margin-top: 32px;
 }
 
-/* Estilos para Ng-Select Personalizado estilo Radio/Checkbox */
 .custom-option {
   display: flex;
   align-items: center;
@@ -443,7 +438,6 @@
 
 .custom-option.active-row {
   background: #f6f5ff;
-  /* Fondo ligeramente morado casi blanco */
   color: #1a1a1a;
 }
 
@@ -453,7 +447,6 @@
   padding: 10px 12px;
 }
 
-/* El círculo (checkbox simulado) */
 .custom-checkbox {
   width: 18px;
   height: 18px;
@@ -471,20 +464,17 @@
   color: white;
 }
 
-/* Estado seleccionado o parcial */
 .custom-checkbox.selected,
 .custom-checkbox.partial {
   background: #4f46e5;
   border-color: #4f46e5;
 }
 
-/* Para anular los estilos default del hover/selección en ng-select si interfieren */
 ::ng-deep .custom-dropdown-panel .ng-option {
   padding: 0 !important;
   border-bottom: 1px solid transparent;
 }
 
-/* Evitar que el ng-select coloree por default las opciones */
 ::ng-deep .custom-dropdown-panel .ng-option.ng-option-marked,
 ::ng-deep .custom-dropdown-panel .ng-option.ng-option-selected {
   background-color: transparent !important;
@@ -495,7 +485,6 @@
   font-weight: normal;
 }
 
-/* --- Suavizado visual del Select --- */
 ::ng-deep .custom-ng-select .ng-select-container {
   border-radius: 10px !important;
   border: 1px solid #e0e0e0 !important;
@@ -519,9 +508,9 @@
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
   margin-top: 6px !important;
   overflow: hidden !important;
+  z-index: 1000001 !important;
 }
 
-/* Botón Cancelar (Gris, texto oscuro) */
 .btn-cancel {
   background: #f1f3f5;
   color: #1a1a1a;
@@ -537,7 +526,6 @@
   background: #e9ecef;
 }
 
-/* Botón Guardar (Azul fuerte, texto blanco) */
 .btn-save {
   background: #3240A5;
   color: #ffffff;
@@ -555,30 +543,11 @@
   box-shadow: 0 6px 15px rgba(50, 64, 165, 0.3);
 }
 
-/* Botón deshabilitado */
 .btn-save:disabled {
   background: #adb5bd;
   color: #e8e8e8;
   cursor: not-allowed;
   box-shadow: none;
-}
-
-@keyframes modalFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Asegura que el sidebar no corte el modal */
-:host {
-  display: block;
-  position: relative;
 }
 
 @keyframes slideDown {
@@ -593,7 +562,6 @@
   }
 }
 
-/* Estilos de campo con boton asimetrico */
 ::ng-deep .custom-ng-select .ng-select-container .ng-value-container {
   display: flex !important;
   align-items: center !important;
@@ -611,15 +579,16 @@
   align-items: center !important;
 }
 
-/* Ajustamos los chips para que no tengan márgenes raros que rompan el grid */
 ::ng-deep .custom-ng-select .ng-value {
   margin: 0 !important;
   display: flex !important;
-  justify-content: space-between !important;
-  font-size: 15px !important;
+  align-items: center !important;
+  font-size: 11px !important;
+  background: #f0f2ff !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
 }
 
-/* Forzar al placeholder a ignorar alineaciones previas */
 ::ng-deep .custom-ng-select .ng-placeholder {
   grid-column: span 2;
   position: absolute !important;
@@ -636,7 +605,6 @@
   align-items: center !important;
 }
 
-/*Estilos selct simple*/
 ::ng-deep .select-simple .ng-select-container {
   min-height: 48px !important;
   height: 48px !important;
@@ -647,7 +615,6 @@
   align-items: center !important;
 }
 
-/* Forzamos el uso de Flexbox para centrar el texto único */
 ::ng-deep .select-simple .ng-value-container {
   display: flex !important;
   align-items: center !important;
@@ -655,14 +622,12 @@
   height: 100% !important;
 }
 
-/* Alineación del texto seleccionado */
 ::ng-deep .select-simple .ng-value {
   margin: 0 !important;
   display: flex !important;
   align-items: center !important;
 }
 
-/* Placeholder centrado */
 ::ng-deep .select-simple .ng-placeholder {
   position: absolute !important;
   top: 50% !important;
@@ -672,17 +637,10 @@
   color: #6b7280 !important;
 }
 
-/* Ocultar placeholder al seleccionar */
 ::ng-deep .select-simple.ng-has-value .ng-placeholder {
   display: none !important;
 }
 
-.dir-group-fixed {
-  margin-top: -3px !important;
-  width: 100%;
-}
-
-/* Para que no se vea asimétrico, vamos a unir el input con el botón como una sola pieza */
 .input-with-action {
   display: flex;
   align-items: stretch;
@@ -691,9 +649,9 @@
   border-radius: 10px;
   overflow: hidden;
   height: 48px;
-  gap: 0 !important;
-  height: 48px;
   margin-top: 4px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .full-width-input {
@@ -701,12 +659,105 @@
   background: transparent !important;
   height: 100% !important;
   padding: 0 14px !important;
+  flex: 1;
+  width: 0;
+  min-width: 0;
+  outline: none;
 }
 
 .action-btn {
   border: none !important;
   border-radius: 0 !important;
   height: 100% !important;
+  width: 40px;
   background: #3240A5 !important;
   color: white !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* --- ESTILOS PARA MODO COLAPSADO (80px) --- */
+:host.collapsed .sidebar {
+  padding: 5px 2px !important;
+  overflow: hidden !important;
+  /* Forzar sin scroll */
+}
+
+:host.collapsed .sidebar-main-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden !important;
+}
+
+:host.collapsed .brand {
+  justify-content: center;
+  margin-right: 0;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+:host.collapsed .brand-icon {
+  margin-right: 0;
+  width: 42px !important;
+  height: 42px !important;
+}
+
+:host.collapsed .layer-item,
+:host.collapsed .btn-logout,
+:host.collapsed .btn-collapse {
+  justify-content: center !important;
+  padding: 0 !important;
+  gap: 0 !important;
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 10px !important;
+  margin: 0 auto 6px !important; /* Aumentado un poco */
+}
+
+:host.collapsed .subcapa-item {
+  justify-content: center !important;
+  padding: 0 !important;
+  gap: 0 !important;
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 8px !important;
+  margin: 0 auto 2px !important; /* Reducido de 4px a 2px */
+}
+
+:host.collapsed .layer-icon {
+  margin-right: 0 !important;
+  font-size: 16px !important;
+}
+
+:host.collapsed .subcapas-container {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+  border-left: none !important;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 4px !important; /* Reducido de 8px a 4px */
+}
+
+:host.collapsed .subcapa-group {
+  justify-content: center !important;
+  width: 100%;
+  margin-bottom: 0 !important;
+  /* Asegurar sin margen inferior en el grupo */
+}
+
+:host.collapsed .section-label,
+:host.collapsed .add-item-btn,
+:host.collapsed .subcapa-search {
+  display: none !important;
+}
+
+:host.collapsed .header-divider {
+  width: 30px;
+  margin: 10px auto;
 }

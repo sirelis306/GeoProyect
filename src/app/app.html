@@ -1,5 +1,7 @@
 <div class="dashboard-wrapper">
-  <app-sidebar class="sidebar-aside" *ngIf="auth.estaLogueado()"></app-sidebar>
+  <app-sidebar class="sidebar-aside" 
+               [class.collapsed]="gis.sidebarColapsado()"
+               *ngIf="auth.estaLogueado()"></app-sidebar>
 
   <main class="main-content">
     <router-outlet></router-outlet>

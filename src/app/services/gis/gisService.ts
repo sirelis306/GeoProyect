@@ -78,6 +78,7 @@ export class Gis {
   agentesSignal = signal<Agente[]>([]);
 
   busquedaAntena = signal<string>('');
+  sidebarColapsado = signal<boolean>(false);
 
   public readonly COLORES_REGIONES: any = {
     'Zuliana': '#7ab8fc',
@@ -121,9 +122,42 @@ export class Gis {
   }
 
   cargarDatos() {
+    // Datos "quemados" para simular el sistema poblado
+    const mockData: any[] = [
+      // Antenas
+      { id: 101, nombre: 'Antena Caracas Centro', latitud: 10.5000, longitud: -66.9167, tipo: 'antenas', region: 'Capital', estado: 'Distrito Capital', tecnologia: 'UMTS / LTE', actividad: 'Operativa' },
+      { id: 102, nombre: 'Antena Maracaibo Norte', latitud: 10.6667, longitud: -71.6125, tipo: 'antenas', region: 'Zuliana', estado: 'Zulia', tecnologia: 'GSM / UMTS', actividad: 'Operativa' },
+      { id: 103, nombre: 'Antena Valencia Sur', latitud: 10.1620, longitud: -68.0070, tipo: 'antenas', region: 'Central', estado: 'Carabobo', tecnologia: 'GSM', actividad: 'Mantenimiento' },
+      { id: 104, nombre: 'Antena Puerto La Cruz', latitud: 10.2167, longitud: -64.6333, tipo: 'antenas', region: 'Nororiental', estado: 'Anzoátegui', tecnologia: 'UMTS', actividad: 'Operativa' },
+      { id: 105, nombre: 'Antena Pto Ordaz', latitud: 8.3000, longitud: -62.7000, tipo: 'antenas', region: 'Guayana', estado: 'Bolívar', tecnologia: 'LTE', actividad: 'Operativa' },
+
+      // Oficinas
+      { id: 201, nombre: 'Oficina Comercial Caracas', latitud: 10.4806, longitud: -66.9036, tipo: 'oficinas', region: 'Capital', estado: 'Distrito Capital', cantidad: 5 },
+      { id: 202, nombre: 'Oficina Barquisimeto', latitud: 10.0667, longitud: -69.3333, tipo: 'oficinas', region: 'Centro Occidental', estado: 'Lara', cantidad: 3 },
+      { id: 203, nombre: 'Oficina Margarita', latitud: 10.9500, longitud: -63.8500, tipo: 'oficinas', region: 'Insular', estado: 'Nueva Esparta', cantidad: 2 },
+
+      // Abonados
+      { id: 301, nombre: 'Abonados Caracas 4G', latitud: 10.5000, longitud: -66.9167, tipo: 'abonados', region: 'Capital', estado: 'Distrito Capital', cantidad: 2500, segmentacion: '4G' },
+      { id: 302, nombre: 'Abonados Zulia 3G', latitud: 10.6667, longitud: -71.6125, tipo: 'abonados', region: 'Zuliana', estado: 'Zulia', cantidad: 500, segmentacion: '3G' },
+      { id: 303, nombre: 'Abonados Zulia 4G', latitud: 10.6667, longitud: -71.6125, tipo: 'abonados', region: 'Zuliana', estado: 'Zulia', cantidad: 300, segmentacion: '4G' },
+      { id: 304, nombre: 'Abonados Mérida 4G', latitud: 8.5833, longitud: -71.1333, tipo: 'abonados', region: 'Los Andes', estado: 'Mérida', cantidad: 3000, segmentacion: '4G' },
+      { id: 305, nombre: 'Abonados Mérida 3G', latitud: 8.5833, longitud: -71.1333, tipo: 'abonados', region: 'Los Andes', estado: 'Mérida', cantidad: 800, segmentacion: '3G' },
+
+      // Agentes
+      { id: 401, nombre: 'Agente Autorizado San Cristóbal', latitud: 7.7667, longitud: -72.2333, tipo: 'agentes', region: 'Los Andes', estado: 'Táchira', cantidad: 1, codigoDealer: 'D001', clasificacion: 'AA' },
+      { id: 402, nombre: 'Agente Autorizado Coro', latitud: 11.4167, longitud: -69.6667, tipo: 'agentes', region: 'Centro Occidental', estado: 'Falcón', cantidad: 1, codigoDealer: 'D002', clasificacion: 'ACI' },
+    ];
+
+    // Actualizamos los signals con los datos quemados
+    this.radioBasesSignal.set(mockData.filter(i => i.tipo === 'antenas'));
+    this.oficinasSignal.set(mockData.filter(i => i.tipo === 'oficinas'));
+    this.abonadosSignal.set(mockData.filter(i => i.tipo === 'abonados'));
+    this.agentesSignal.set(mockData.filter(i => i.tipo === 'agentes'));
+
+    /*
+    // Comentado: Carga real desde el servidor
     this.http.get<any[]>(`${this.API_URL}/elementos`).subscribe({
       next: (data) => {
-        // Separamos los datos por tipo y actualizamos los signals
         this.radioBasesSignal.set(data.filter(i => i.tipo === 'antenas'));
         this.oficinasSignal.set(data.filter(i => i.tipo === 'oficinas'));
         this.abonadosSignal.set(data.filter(i => i.tipo === 'abonados'));
@@ -131,6 +165,7 @@ export class Gis {
       },
       error: (err) => console.error('Error conectando al backend:', err)
     });
+    */
   }
 
   async construirYValidarElemento(tipoEdicion: TipoElementoCap2, nuevoItem: any): Promise<any> {

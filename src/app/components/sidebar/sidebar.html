@@ -4,53 +4,62 @@
       <div class="brand-icon">
         <i class="fas fa-map"></i>
       </div>
-      <div class="brand-text">
+      <div class="brand-text" *ngIf="!gis.sidebarColapsado()">
         <strong>STERIÁ</strong>
       </div>
     </div>
     <hr class="header-divider">
-    <div class="section-label" *ngIf="esAdmin">ADMIN</div>
-    <button class="layer-item" *ngIf="esAdmin" routerLink="/usuarios" routerLinkActive="active">
-      <i class="fas fa-users layer-icon" style="color: #3240A5;"></i> Gestión de Usuarios
+
+    <div class="section-label" *ngIf="esAdmin && !gis.sidebarColapsado()">ADMIN</div>
+    <button class="layer-item" *ngIf="esAdmin" routerLink="/usuarios" routerLinkActive="active"
+      [title]="gis.sidebarColapsado() ? 'Gestión de Usuarios' : ''">
+      <i class="fas fa-users layer-icon" style="color: #3240A5;"></i>
+      <span *ngIf="!gis.sidebarColapsado()">Gestión de Usuarios</span>
     </button>
 
-    <div class="section-label">MAPA</div>
-    <button class="layer-item" routerLink="/mapa" routerLinkActive="active">
-      <i class="fas fa-globe-americas layer-icon" style="color: #3240A5;"></i> Visualización General
+    <div class="section-label" *ngIf="!gis.sidebarColapsado()">MAPA</div>
+    <button class="layer-item" routerLink="/mapa" routerLinkActive="active"
+      [title]="gis.sidebarColapsado() ? 'Visualización General' : ''">
+      <i class="fas fa-globe-americas layer-icon" style="color: #3240A5;"></i>
+      <span *ngIf="!gis.sidebarColapsado()">Visualización General</span>
     </button>
 
     <ng-container *ngIf="router.url === '/mapa'">
-      <div class="section-label">CONTROL DE CAPAS</div>
+      <div class="section-label" *ngIf="!gis.sidebarColapsado()">CONTROL DE CAPAS</div>
       <div class="layer-list">
         <!-- Capa 1: Regiones -->
-        <button class="layer-item" [class.active]="gis.capasVisibles().regiones" (click)="toggle('regiones')">
-          <i class="fas fa-layer-group layer-icon" style="color: #3240A5;"></i> Regiones
+        <button class="layer-item" [class.active]="gis.capasVisibles().regiones" (click)="toggle('regiones')"
+          [title]="gis.sidebarColapsado() ? 'Regiones' : ''">
+          <i class="fas fa-layer-group layer-icon" style="color: #3240A5;"></i>
+          <span *ngIf="!gis.sidebarColapsado()">Regiones</span>
         </button>
 
-
         <!-- Capa 2: Operaciones (principal) -->
-        <button class="layer-item" [class.active]="gis.capasVisibles().operaciones" (click)="toggle('operaciones')">
-          <i class="fas fa-network-wired layer-icon" style="color: #3240A5;"></i> Operaciones
+        <button class="layer-item" [class.active]="gis.capasVisibles().operaciones" (click)="toggle('operaciones')"
+          [title]="gis.sidebarColapsado() ? 'Operaciones' : ''">
+          <i class="fas fa-network-wired layer-icon" style="color: #3240A5;"></i>
+          <span *ngIf="!gis.sidebarColapsado()">Operaciones</span>
         </button>
 
         <!-- Subcapas de Operaciones (solo visibles cuando Capa 2 está activa) -->
         <div class="subcapas-container" *ngIf="gis.capasVisibles().operaciones">
-          <div class="section-label">TIPO DE ELEMENTO</div>
+          <div class="section-label" *ngIf="!gis.sidebarColapsado()">TIPO DE ELEMENTO</div>
 
           <!-- Grupo: Radio Bases -->
           <div class="subcapa-group">
             <button class="subcapa-item" [class.active]="gis.capasVisibles().detalleCap2 === 'antenas'"
-              (click)="setDetalle('antenas')">
-              <i class="fas fa-broadcast-tower layer-icon" style="color: #FF1493;"></i> Radio Bases
+              (click)="setDetalle('antenas')" [title]="gis.sidebarColapsado() ? 'Radio Bases' : ''">
+              <i class="fas fa-broadcast-tower layer-icon" style="color: #FF1493;"></i>
+              <span *ngIf="!gis.sidebarColapsado()">Radio Bases</span>
             </button>
-            <button class="add-item-btn" (click)="abrirModal('antenas')">+</button>
+            <button class="add-item-btn" (click)="abrirModal('antenas')" *ngIf="!gis.sidebarColapsado()">+</button>
           </div>
 
           <!-- Buscador de Radio Bases -->
-          <div class="subcapa-search" *ngIf="gis.capasVisibles().detalleCap2 === 'antenas'">
+          <div class="subcapa-search" *ngIf="gis.capasVisibles().detalleCap2 === 'antenas' && !gis.sidebarColapsado()">
             <div class="search-input-wrapper">
               <i class="fas fa-search search-icon"></i>
-              <input type="text" placeholder="Buscar por nombre o dirección..." [ngModel]="gis.busquedaAntena()"
+              <input type="text" placeholder="Buscar..." [ngModel]="gis.busquedaAntena()"
                 (ngModelChange)="gis.busquedaAntena.set($event)" class="search-input">
             </div>
           </div>
@@ -58,36 +67,46 @@
           <!-- Grupo: Abonados -->
           <div class="subcapa-group">
             <button class="subcapa-item" [class.active]="gis.capasVisibles().detalleCap2 === 'abonados'"
-              (click)="setDetalle('abonados')">
-              <i class="fas fa-user-check layer-icon" style="color: #00BFFF;"></i> Abonados
+              (click)="setDetalle('abonados')" [title]="gis.sidebarColapsado() ? 'Abonados' : ''">
+              <i class="fas fa-user-check layer-icon" style="color: #00BFFF;"></i>
+              <span *ngIf="!gis.sidebarColapsado()">Abonados</span>
             </button>
-            <button class="add-item-btn" (click)="abrirModal('abonados')">+</button>
+            <button class="add-item-btn" (click)="abrirModal('abonados')" *ngIf="!gis.sidebarColapsado()">+</button>
           </div>
 
           <!-- Grupo: Oficinas -->
           <div class="subcapa-group">
             <button class="subcapa-item" [class.active]="gis.capasVisibles().detalleCap2 === 'oficinas'"
-              (click)="setDetalle('oficinas')">
-              <i class="fas fa-building layer-icon" style="color: #32CD32;"></i> Oficinas Comerciales
+              (click)="setDetalle('oficinas')" [title]="gis.sidebarColapsado() ? 'Oficinas Comerciales' : ''">
+              <i class="fas fa-building layer-icon" style="color: #32CD32;"></i>
+              <span *ngIf="!gis.sidebarColapsado()">Oficinas</span>
             </button>
-            <button class="add-item-btn" (click)="abrirModal('oficinas')">+</button>
+            <button class="add-item-btn" (click)="abrirModal('oficinas')" *ngIf="!gis.sidebarColapsado()">+</button>
           </div>
 
           <!-- Grupo: Agentes -->
           <div class="subcapa-group">
             <button class="subcapa-item" [class.active]="gis.capasVisibles().detalleCap2 === 'agentes'"
-              (click)="setDetalle('agentes')">
-              <i class="fas fa-store layer-icon" style="color: #FF8C00;"></i> Agentes Autorizados
+              (click)="setDetalle('agentes')" [title]="gis.sidebarColapsado() ? 'Agentes Autorizados' : ''">
+              <i class="fas fa-store layer-icon" style="color: #FF8C00;"></i>
+              <span *ngIf="!gis.sidebarColapsado()">Agentes</span>
             </button>
-            <button class="add-item-btn" (click)="abrirModal('agentes')">+</button>
+            <button class="add-item-btn" (click)="abrirModal('agentes')" *ngIf="!gis.sidebarColapsado()">+</button>
           </div>
         </div>
       </div>
     </ng-container>
   </div>
 
+  <button class="btn-collapse" (click)="gis.sidebarColapsado.set(!gis.sidebarColapsado())">
+    <i class="fas" [class.fa-chevron-left]="!gis.sidebarColapsado()"
+      [class.fa-chevron-right]="gis.sidebarColapsado()"></i>
+    <span *ngIf="!gis.sidebarColapsado()">Cerrar Menú</span>
+  </button>
+
   <button class="btn-logout" (click)="salir()">
-    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+    <i class="fas fa-sign-out-alt"></i>
+    <span *ngIf="!gis.sidebarColapsado()">Cerrar Sesión</span>
   </button>
 
   <!-- Overlay del Modal -->
@@ -115,7 +134,6 @@
           </div>
         </div>
 
-        <!-- Campos comunes para elementos individuales (Antenas y Agentes) -->
         <ng-container *ngIf="tipoEdicion === 'antenas' || tipoEdicion === 'agentes'">
           <div class="form-row">
             <div class="form-group">
@@ -132,9 +150,6 @@
                   <i class="fas fa-search-location"></i>
                 </button>
               </div>
-              <small class="text-blue" *ngIf="tipoEdicion === 'agentes'">
-                <i class="fas fa-info-circle"></i> Ubicación automática o centro del estado.
-              </small>
             </div>
           </div>
         </ng-container>
@@ -188,9 +203,6 @@
               <input type="number" [(ngModel)]="nuevoItem.latitud">
             </div>
           </div>
-          <small class="text-danger" *ngIf="nuevoItem.latitud && (nuevoItem.latitud < 0.6 || nuevoItem.latitud > 12.2)">
-            Latitud fuera de Venezuela
-          </small>
         </div>
 
         <div *ngIf="tipoEdicion === 'abonados'" class="form-group">
@@ -203,7 +215,6 @@
           </ng-select>
         </div>
 
-        <!-- Campos específicos para Agentes Autorizados -->
         <div *ngIf="tipoEdicion === 'agentes'">
           <div class="form-row">
             <div class="form-group">
@@ -221,19 +232,18 @@
 
         <div *ngIf="tipoEdicion !== 'antenas' && tipoEdicion !== 'agentes' && tipoEdicion !== 'ninguno'"
           class="form-group">
-          <label>Cantidad Total en este Estado</label>
+          <label>Cantidad Total</label>
           <input type="number" [(ngModel)]="nuevoItem.cantidad" placeholder="Ej: 1500">
         </div>
       </div>
 
       <div class="modal-footer">
         <button class="btn-cancel" (click)="mostrarForm.set(false)">Cancelar</button>
-        <button class="btn-save"
-          [disabled]="enviando || !nuevoItem.estado || (tipoEdicion === 'antenas' && !nuevoItem.nombre) || (tipoEdicion === 'agentes' && (!nuevoItem.nombre || !nuevoItem.codigoDealer))"
-          (click)="guardar()">
-          <span *ngIf="!enviando">Agregar Elemento</span>
-          <span *ngIf="enviando"><i class="fas fa-spinner fa-spin"></i> Guardando...</span>
+        <button class="btn-save" [disabled]="enviando" (click)="guardar()">
+          <span *ngIf="!enviando">Guardar</span>
+          <span *ngIf="enviando">...</span>
         </button>
       </div>
     </div>
   </div>
+</div>
