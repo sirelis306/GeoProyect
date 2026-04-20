@@ -106,8 +106,8 @@
         </div>
 
         <!-- Fila 7 - Cargo -->
-        <div class="form-group" style="grid-column: span 2;">
-          <div style="width: calc(50% - 20px);">
+        <div class="form-group tw-col-span-1 lg:tw-col-span-2">
+          <div class="tw-w-full lg:tw-w-1/2 lg:tw-pr-[15px]">
             <ng-select class="select-simple" [(ngModel)]="user.cargo" name="cargo" required placeholder="Cargo *"
               [clearable]="false" [searchable]="true" [items]="cargos" bindLabel="label" bindValue="value">
             </ng-select>

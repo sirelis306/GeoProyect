@@ -1,5 +1,6 @@
 .page-container {
-  padding: 15px 20px; /* Reducido */
+  padding: 15px 20px;
+  /* Reducido */
   background: transparent;
   min-height: 100vh;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -7,7 +8,8 @@
 
 .breadcrumb {
   margin-top: 10px;
-  margin-bottom: 20px; /* Reducido */
+  margin-bottom: 20px;
+  /* Reducido */
   font-size: 16px;
   color: #6b7280;
   display: flex;
@@ -28,23 +30,39 @@
 .form-card {
   background: white;
   border-radius: 12px;
-  padding: 24px 30px; /* Reducido significativamente */
+  padding: 24px 30px;
+  /* Reducido significativamente */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   border: 1px solid #f3f4f6;
-  max-width: 900px; /* Limitar ancho para que no se vea gigante */
+  max-width: 900px;
+  /* Limitar ancho para que no se vea gigante */
   margin: 0 auto;
 }
 
 .form-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px 30px; /* Reducido */
+  grid-template-columns: 1fr;
+  /* Móvil por defecto */
+  gap: 15px 30px;
   margin-bottom: 20px;
+}
+
+@media (min-width: 1024px) {
+  .form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .form-group-split {
   display: flex;
+  flex-direction: column;
   gap: 16px;
+}
+
+@media (min-width: 1024px) {
+  .form-group-split {
+    flex-direction: row;
+  }
 }
 
 .input-modern {
@@ -74,7 +92,7 @@
   width: 100%;
 }
 
-/*Estilos selct simple*/
+/*Estilos select simple*/
 ::ng-deep .select-simple .ng-select-container {
   min-height: 48px !important;
   height: 48px !important;

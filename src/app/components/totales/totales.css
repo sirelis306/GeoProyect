@@ -2,15 +2,70 @@
   position: absolute;
   top: 20px;
   left: 50%;
-  transform: translateX(-40%);
+  transform: translateX(-50%);
+  /* Centrado correcto */
   z-index: 1100;
   display: flex;
   align-items: center;
   background: white;
   padding: 10px 30px;
-  border-radius: 15px; /* Bordes redondeados más rectos según la imagen */
+  border-radius: 15px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   gap: 10px;
+  width: max-content;
+}
+
+@media (max-width: 768px) {
+  .stats-floating-bar {
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: 90vw;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px 15px;
+    padding: 10px 15px;
+    border-radius: 12px;
+  }
+  .divider {
+    display: none;
+  }
+  .stat-item {
+    gap: 8px;
+    padding: 4px 5px;
+  }
+  .icon-circle {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+  .value {
+    font-size: 16px;
+  }
+  .label {
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-floating-bar {
+    max-width: 85vw;
+    gap: 6px 10px;
+    padding: 8px 12px;
+  }
+  .stat-item {
+    padding: 2px;
+  }
+  .icon-circle {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+  .value {
+    font-size: 14px;
+  }
+  .label {
+    font-size: 8px;
+  }
 }
 
 .stat-item {
@@ -22,21 +77,39 @@
 
 /* Forzar círculo perfecto */
 .icon-circle {
-  width: 42px;  /* Tamaño ajustado */
-  height: 42px; /* Debe ser igual al width */
+  width: 42px;
+  /* Tamaño ajustado */
+  height: 42px;
+  /* Debe ser igual al width */
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0; /* Evita que se deforme */
+  flex-shrink: 0;
+  /* Evita que se deforme */
   font-size: 18px;
 }
 
 /* Colores de fondo suaves e iconos fuertes */
-.pink { background-color: #fff0f0; color: #FF1493; }
-.blue { background-color: #e8f2ff; color: #00BFFF; }
-.green { background-color: #e8fcf0; color: #32CD32; }
-.orange { background-color: #fff4e6; color: #FF8C00; }
+.pink {
+  background-color: #fff0f0;
+  color: #FF1493;
+}
+
+.blue {
+  background-color: #e8f2ff;
+  color: #00BFFF;
+}
+
+.green {
+  background-color: #e8fcf0;
+  color: #32CD32;
+}
+
+.orange {
+  background-color: #fff4e6;
+  color: #FF8C00;
+}
 
 .stat-texts {
   display: flex;
@@ -48,7 +121,8 @@
   font-size: 10px;
   font-weight: 700;
   font-family: 'Poppins', sans-serif;
-  color: #95a5a6; /* Gris de la imagen */
+  color: #95a5a6;
+  /* Gris de la imagen */
   letter-spacing: 0.5px;
   line-height: 1.2;
 }

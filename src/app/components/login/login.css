@@ -89,3 +89,26 @@ button:disabled { background: #94a3b8; cursor: not-allowed; }
 }
 
 .footer-text { margin-top: 30px; font-size: 11px; color: #94a3b8; }
+
+@media (max-width: 640px) {
+  .login-card {
+    width: 85%;
+    max-width: 320px;
+    padding: 24px 20px;
+  }
+  
+  .brand-icon {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+    border-radius: 10px;
+  }
+  
+  .header h2 { font-size: 18px; margin-top: 8px; }
+  .header p { margin-bottom: 16px; font-size: 12px; }
+  
+  .form-group label { font-size: 13px; margin-bottom: 6px; }
+  input { padding: 8px 10px; font-size: 13px; }
+  button { padding: 10px; font-size: 13px; margin-top: 5px; }
+  .form-group { margin-bottom: 14px; }
+}

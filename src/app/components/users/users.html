@@ -12,7 +12,7 @@
 
   <div class="content-card">
     <div class="table-toolbar">
-      <div class="toolbar-left">
+      <div class="toolbar-left tw-flex-col sm:tw-flex-row tw-w-full md:tw-w-auto">
         <div class="search-box">
           <i class="fas fa-search"></i>
           <input type="text" placeholder="Buscar usuario...">
@@ -26,6 +26,7 @@
 
     </div>
 
+    <div class="table-responsive-wrapper">
     <table class="custom-table">
       <thead>
         <tr>
@@ -70,8 +71,9 @@
         </tr>
       </tbody>
     </table>
+    </div>
 
-    <div class="table-footer">
+    <div class="table-footer tw-flex-col sm:tw-flex-row tw-gap-4">
       <div class="showing-text">Mostrando {{ listaUsuarios.length }} de {{ listaUsuarios.length }} usuarios</div>
       <div class="pagination">
         <button class="page-btn active">1</button>
