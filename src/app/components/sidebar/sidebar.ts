@@ -24,9 +24,14 @@ export class Sidebar {
   tipoEdicion: TipoElementoCap2 = 'ninguno';
   nuevoItem: any = { nombre: '', estado: '', region: '', latitud: null, longitud: null, tecnologia: [] };
   busquedaAntena: string = '';
-  listaEstados = ['Amazonas', 'Anzoátegui', 'Apure', 'Aragua', 'Barinas', 'Bolívar', 'Carabobo', 'Cojedes', 'Delta Amacuro',
-    'Distrito Capital', 'Falcón', 'Guárico', 'La Guaira', 'Lara', 'Mérida', 'Miranda', 'Monagas', 'Nueva Esparta', 'Portuguesa',
-    'Sucre', 'Táchira', 'Trujillo', 'Yaracuy', 'Zulia', 'Dependencias Federales'];
+  get listaEstados(): string[] {
+    const estadosDeDB = this.gis.estadosSignal().map(e => e.nombre);
+    return estadosDeDB.length > 0 ? estadosDeDB : [
+      'Amazonas', 'Anzoátegui', 'Apure', 'Aragua', 'Barinas', 'Bolívar', 'Carabobo', 'Cojedes', 'Delta Amacuro',
+      'Distrito Capital', 'Falcón', 'Guárico', 'La Guaira', 'Lara', 'Mérida', 'Miranda', 'Monagas', 'Nueva Esparta', 'Portuguesa',
+      'Sucre', 'Táchira', 'Trujillo', 'Yaracuy', 'Zulia', 'Dependencias Federales'
+    ];
+  }
 
   listaActividad = ['Operativa', 'Mantenimiento', 'Vandalizada'];
   clasificaciones = ['AA', 'ACI', 'PYME', 'Compartida'];
@@ -65,17 +70,7 @@ export class Sidebar {
     console.log('Abriendo modal para:', tipo);
     this.tipoEdicion = tipo;
     this.mostrarForm.set(true);
-    this.nuevoItem = {
-      nombre: '',
-      estado: null,
-      latitud: null,
-      longitud: null,
-      direccion: '',
-      actividad: 'Operativa',
-      tecnologia: [],
-      codigoDealer: '',
-      clasificacion: null
-    };
+    this.resetearFormulario();
   }
 
   abrirMenuTech() {
@@ -158,9 +153,17 @@ export class Sidebar {
   // Función auxiliar para limpiar 
   resetearFormulario() {
     this.nuevoItem = {
-      nombre: '', estado: null, latitud: null, longitud: null,
-      cantidad: null, tecnologia: [], segmentacion_elegida: '', direccion: '',
-      codigoDealer: '', clasificacion: null
+      nombre: '',
+      estado: null,
+      latitud: null,
+      longitud: null,
+      direccion: '',
+      cantidad: null,
+      actividad: 'Operativa',
+      tecnologia: [],
+      segmentacion_elegida: '4G',
+      codigoDealer: '',
+      clasificacion: null
     };
   }
 

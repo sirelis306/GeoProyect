@@ -1,5 +1,5 @@
-import { inject, Injectable, signal } from '@angular/core';
-import { CapasEstado, TipoElementoCap2, RadioBase, Abonado, Oficina, Agente } from '../../models/gis';
+import { inject, Injectable, signal, computed } from '@angular/core';
+import { CapasEstado, TipoElementoCap2, RadioBase, Abonado, Oficina, Agente, Estado, Region } from '../../models/gis';
 import { HttpClient } from '@angular/common/http';
 
 @Injectable({
@@ -9,6 +9,27 @@ export class Gis {
   private http = inject(HttpClient);
   // private API_URL = 'http://localhost:3000/api';
   private API_URL = 'https://geobackend-api.onrender.com/api';
+
+  // Signals para configuración geográfica dinámica
+  estadosSignal = signal<Estado[]>([]);
+
+  // Computed para la lista de regiones (usada en la leyenda)
+  regionesSignal = computed<Region[]>(() => {
+    const unique = new Map<string, string>();
+    this.estadosSignal().forEach(e => {
+      if (e.nombre_region && e.color_region) {
+        unique.set(e.nombre_region, e.color_region);
+      }
+    });
+    return Array.from(unique.entries()).map(([nombre, color]) => ({ nombre, color }));
+  });
+
+  // Computed para el mapeo de colores (mantiene compatibilidad con código existente)
+  COLORES_REGIONES_SIGNAL = computed(() => {
+    const mapping: any = {};
+    this.regionesSignal().forEach(r => mapping[r.nombre] = r.color);
+    return mapping;
+  });
 
   private readonly COORD_CENTRALES: any = {
     'Amazonas': { lat: 3.4167, lng: -65.5000 },
@@ -37,9 +58,12 @@ export class Gis {
     'Zulia': { lat: 10.3333, lng: -72.0000 }
   };
 
-  public obtenerRegion(estado: string): string {
-    const mapeo: any = {
-      // Región Capital
+  public obtenerRegion(nombreEstado: string): string {
+    const found = this.estadosSignal().find(e => e.nombre === nombreEstado);
+    if (found) return found.nombre_region;
+
+    // Fallback mapeo estático temporal (Opcional: eliminar cuando la BD esté madura)
+    const mapeoEstatico: any = {
       'Distrito Capital': 'Capital', 'Miranda': 'Capital', 'La Guaira': 'Capital',
       // Región Central
       'Carabobo': 'Central', 'Aragua': 'Central', 'Cojedes': 'Central',
@@ -58,11 +82,13 @@ export class Gis {
       // Región Guayana
       'Bolívar': 'Guayana', 'Amazonas': 'Guayana', 'Delta Amacuro': 'Guayana'
     };
-    return mapeo[estado] || '';
+    return mapeoEstatico[nombreEstado] || '';
   }
 
-  public getCoordsCentrales(estado: string) {
-    return this.COORD_CENTRALES[estado];
+  public getCoordsCentrales(nombreEstado: string) {
+    const found = this.estadosSignal().find(e => e.nombre === nombreEstado);
+    if (found) return { lat: found.latitud, lng: found.longitud };
+    return this.COORD_CENTRALES[nombreEstado];
   }
 
   capasVisibles = signal<CapasEstado>({
@@ -93,14 +119,27 @@ export class Gis {
   };
 
   constructor() {
+    this.cargarConfiguracionGeografica();
+  }
+
+  cargarConfiguracionGeografica() {
+    this.http.get<Estado[]>(`${this.API_URL}/estados`).subscribe({
+      next: (data) => {
+        this.estadosSignal.set(data);
+        console.log('Configuración geográfica cargada:', data.length, 'estados');
+      },
+      error: (err) => console.error('Error cargando configuración geográfica:', err)
+    });
   }
 
   // Centralizamos la obtención de regiones con sus colores para uso en Sidebar y Map
   public getRegionesConColores() {
     const nombresActivos = this.getRegionesConDatos();
+    const coloresMapping = this.COLORES_REGIONES_SIGNAL();
+
     return nombresActivos.map(nombre => ({
       nombre: nombre,
-      color: this.COLORES_REGIONES[nombre] || '#DEE2E6'
+      color: coloresMapping[nombre] || this.COLORES_REGIONES[nombre] || '#DEE2E6'
     }));
   }
 
@@ -125,27 +164,31 @@ export class Gis {
     // Datos "quemados" para simular el sistema poblado
     const mockData: any[] = [
       // Antenas
-      { id: 101, nombre: 'Antena Caracas Centro', latitud: 10.5000, longitud: -66.9167, tipo: 'antenas', region: 'Capital', estado: 'Distrito Capital', tecnologia: 'UMTS / LTE', actividad: 'Operativa' },
-      { id: 102, nombre: 'Antena Maracaibo Norte', latitud: 10.6667, longitud: -71.6125, tipo: 'antenas', region: 'Zuliana', estado: 'Zulia', tecnologia: 'GSM / UMTS', actividad: 'Operativa' },
-      { id: 103, nombre: 'Antena Valencia Sur', latitud: 10.1620, longitud: -68.0070, tipo: 'antenas', region: 'Central', estado: 'Carabobo', tecnologia: 'GSM', actividad: 'Mantenimiento' },
-      { id: 104, nombre: 'Antena Puerto La Cruz', latitud: 10.2167, longitud: -64.6333, tipo: 'antenas', region: 'Nororiental', estado: 'Anzoátegui', tecnologia: 'UMTS', actividad: 'Operativa' },
-      { id: 105, nombre: 'Antena Pto Ordaz', latitud: 8.3000, longitud: -62.7000, tipo: 'antenas', region: 'Guayana', estado: 'Bolívar', tecnologia: 'LTE', actividad: 'Operativa' },
+      { id: 101, nombre: 'Ospino', latitud: 9.3034, longitud: -69.4510, tipo: 'antenas', region: 'Centro Occidental', estado: 'Portuguesa', tecnologia: 'GSM / UMTS / LTE', actividad: 'Operativa' },
+      { id: 102, nombre: 'Zuata', latitud: 10.1871830, longitud: -67.37695, tipo: 'antenas', region: 'Central', estado: 'Aragua', tecnologia: 'GSM / UMTS', actividad: 'Operativa' },
+      { id: 103, nombre: 'Calabozo Industrial', latitud: 8.89609478912229, longitud: -67.4624255505939, tipo: 'antenas', region: 'Los Llanos', estado: 'Guárico', tecnologia: 'GSM / UMTS / LTE', actividad: 'Operativa' },
+      { id: 104, nombre: 'Guri', latitud: 7.770964, longitud: -63.047719, tipo: 'antenas', region: 'Guayana', estado: 'Bolívar', tecnologia: 'GSM / UMTS', actividad: 'Operativa' },
 
       // Oficinas
-      { id: 201, nombre: 'Oficina Comercial Caracas', latitud: 10.4806, longitud: -66.9036, tipo: 'oficinas', region: 'Capital', estado: 'Distrito Capital', cantidad: 5 },
-      { id: 202, nombre: 'Oficina Barquisimeto', latitud: 10.0667, longitud: -69.3333, tipo: 'oficinas', region: 'Centro Occidental', estado: 'Lara', cantidad: 3 },
-      { id: 203, nombre: 'Oficina Margarita', latitud: 10.9500, longitud: -63.8500, tipo: 'oficinas', region: 'Insular', estado: 'Nueva Esparta', cantidad: 2 },
+      { id: 201, nombre: 'Oficina de Servicio Tibisay', latitud: 8.5896488, longitud: -71.156224, tipo: 'oficinas', region: 'Los Andes', estado: 'Mérida', cantidad: 1 },
+      { id: 202, nombre: 'Oficina de Servicio Plaza Mayor', latitud: 10.18116, longitud: -64.6828, tipo: 'oficinas', region: 'Nororiental', estado: 'Anzoátegui', cantidad: 1 },
+      { id: 203, nombre: 'Oficina de Servicio Porlamar', latitud: 10.98703, longitud: -63.81752, tipo: 'oficinas', region: 'Insular', estado: 'Nueva Esparta', cantidad: 1 },
+      { id: 204, nombre: 'Oficina de Servicio CCCT', latitud: 10.48544, longitud: -66.85448, tipo: 'oficinas', region: 'Capital', estado: 'Miranda', cantidad: 1 },
+
 
       // Abonados
-      { id: 301, nombre: 'Abonados Caracas 4G', latitud: 10.5000, longitud: -66.9167, tipo: 'abonados', region: 'Capital', estado: 'Distrito Capital', cantidad: 2500, segmentacion: '4G' },
-      { id: 302, nombre: 'Abonados Zulia 3G', latitud: 10.6667, longitud: -71.6125, tipo: 'abonados', region: 'Zuliana', estado: 'Zulia', cantidad: 500, segmentacion: '3G' },
-      { id: 303, nombre: 'Abonados Zulia 4G', latitud: 10.6667, longitud: -71.6125, tipo: 'abonados', region: 'Zuliana', estado: 'Zulia', cantidad: 300, segmentacion: '4G' },
-      { id: 304, nombre: 'Abonados Mérida 4G', latitud: 8.5833, longitud: -71.1333, tipo: 'abonados', region: 'Los Andes', estado: 'Mérida', cantidad: 3000, segmentacion: '4G' },
-      { id: 305, nombre: 'Abonados Mérida 3G', latitud: 8.5833, longitud: -71.1333, tipo: 'abonados', region: 'Los Andes', estado: 'Mérida', cantidad: 800, segmentacion: '3G' },
+      { id: 301, nombre: 'Abonados Amazonas 3G', latitud: 3.4167, longitud: -65.5, tipo: 'abonados', region: 'Guayana', estado: 'Amazonas', cantidad: 8470, segmentacion: '3G' },
+      { id: 302, nombre: 'Abonados Amazonas 4G', latitud: 3.4167, longitud: -65.5, tipo: 'abonados', region: 'Guayana', estado: 'Amazonas', cantidad: 33813, segmentacion: '4G' },
+      { id: 303, nombre: 'Abonados Zulia 3G', latitud: 10.3333, longitud: -72, tipo: 'abonados', region: 'Zuliana', estado: 'Zulia', cantidad: 36048, segmentacion: '3G' },
+      { id: 304, nombre: 'Abonados Zulia 4G', latitud: 10.3333, longitud: -72, tipo: 'abonados', region: 'Zuliana', estado: 'Zulia', cantidad: 78583, segmentacion: '4G' },
+      { id: 305, nombre: 'Abonados Mérida 3G', latitud: 8.5, longitud: -71.1667, tipo: 'abonados', region: 'Los Andes', estado: 'Mérida', cantidad: 143903, segmentacion: '3G' },
+      { id: 306, nombre: 'Abonados Mérida 4G', latitud: 8.5, longitud: -71.1667, tipo: 'abonados', region: 'Los Andes', estado: 'Mérida', cantidad: 270518, segmentacion: '4G' },
 
       // Agentes
-      { id: 401, nombre: 'Agente Autorizado San Cristóbal', latitud: 7.7667, longitud: -72.2333, tipo: 'agentes', region: 'Los Andes', estado: 'Táchira', cantidad: 1, codigoDealer: 'D001', clasificacion: 'AA' },
-      { id: 402, nombre: 'Agente Autorizado Coro', latitud: 11.4167, longitud: -69.6667, tipo: 'agentes', region: 'Centro Occidental', estado: 'Falcón', cantidad: 1, codigoDealer: 'D002', clasificacion: 'ACI' },
+      { id: 401, nombre: 'COMERCIAL NOFA, C.A.', latitud: 10.1656, longitud: -66.8856, tipo: 'agentes', region: 'Capital', estado: 'Miranda', cantidad: 1, codigoDealer: '0088M', clasificacion: 'AA', direccion: 'CALLE JOSE MARIA CARREÑO LOCAL MINICOZZI N° PB SECTOR CASCO CENTRAL CUA MIRANDA' },
+      { id: 402, nombre: 'VARIEDADES MOTOCENTRO, C.A.', latitud: 9.3146, longitud: -70.6044, tipo: 'agentes', region: 'Los Andes', estado: 'Trujillo', cantidad: 1, codigoDealer: '704AA', clasificacion: 'ACI', direccion: 'CALLE 7, ENTRE AV BOLIVAR Y CALLE 9, LOCAL MOTO CENTRO, SECTOR CENTRO VALERA, EDO TRUJILLO' },
+      { id: 403, nombre: 'DISTRIBUIDORA ATRACHE, C.A.', latitud: 8.9248, longitud: -67.4287, tipo: 'agentes', region: 'Los Llanos', estado: 'Apure', cantidad: 1, codigoDealer: '336AA', clasificacion: 'ACI', direccion: 'EDIFICIO ATRACHE, CARRETERA 11 ENTRE 7 Y 8, NIVEL PB, CALABOZO EDO GUARICO.' },
+      { id: 404, nombre: 'GRUPO RC, C.A.', latitud: 9.9272, longitud: -69.6201, tipo: 'agentes', region: 'Centro Occidental', estado: 'Lara', cantidad: 1, codigoDealer: '699AA', clasificacion: 'AA', direccion: 'CARRERA 10  CON C.ALLE BOLIVAR, ZONA CENTRO, EDIF SALAMANC.A, PB.' },
     ];
 
     // Actualizamos los signals con los datos quemados

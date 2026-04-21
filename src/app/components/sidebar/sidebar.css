@@ -801,6 +801,7 @@
 
 /* Reglas responsivas adicionales para el modo colapsado en moviles */
 @media (max-width: 768px) {
+
   :host.collapsed .layer-item,
   :host.collapsed .btn-logout,
   :host.collapsed .btn-collapse {
@@ -822,4 +823,4 @@
   :host.collapsed .layer-icon {
     font-size: 14px !important;
   }
-}
+}

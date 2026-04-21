@@ -134,12 +134,13 @@
           </div>
         </div>
 
-        <ng-container *ngIf="tipoEdicion === 'antenas' || tipoEdicion === 'agentes'">
+        <ng-container *ngIf="tipoEdicion === 'antenas' || tipoEdicion === 'agentes' || tipoEdicion === 'oficinas'">
           <div class="form-row">
             <div class="form-group">
               <label>{{ tipoEdicion === 'agentes' ? 'Razón Social *' : 'Nombre *' }}</label>
               <input type="text" [(ngModel)]="nuevoItem.nombre"
-                [placeholder]="tipoEdicion === 'agentes' ? 'Razón Social del Agente' : 'Nombre de la Antena'" required>
+                [placeholder]="tipoEdicion === 'agentes' ? 'Razón Social del Agente' : 'Nombre de la Antena/Oficina'"
+                required>
             </div>
             <div class="form-group">
               <label>Dirección</label>
@@ -192,15 +193,18 @@
               </ng-select>
             </div>
           </div>
+        </div>
 
+        <div class="form-group"
+          *ngIf="tipoEdicion === 'antenas' || tipoEdicion === 'agentes' || tipoEdicion === 'oficinas'">
           <div class="form-row">
             <div class="form-group">
               <label>Longitud</label>
-              <input type="number" [(ngModel)]="nuevoItem.longitud">
+              <input type="number" [(ngModel)]="nuevoItem.longitud" placeholder="" step="any">
             </div>
             <div class="form-group">
               <label>Latitud</label>
-              <input type="number" [(ngModel)]="nuevoItem.latitud">
+              <input type="number" [(ngModel)]="nuevoItem.latitud" placeholder="" step="any">
             </div>
           </div>
         </div>
@@ -230,8 +234,7 @@
           </div>
         </div>
 
-        <div *ngIf="tipoEdicion !== 'antenas' && tipoEdicion !== 'agentes' && tipoEdicion !== 'ninguno'"
-          class="form-group">
+        <div *ngIf="tipoEdicion === 'abonados'" class="form-group">
           <label>Cantidad Total</label>
           <input type="number" [(ngModel)]="nuevoItem.cantidad" placeholder="Ej: 1500">
         </div>

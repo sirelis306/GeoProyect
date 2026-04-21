@@ -53,3 +53,18 @@ export interface Agente {
   codigoDealer?: string;
   clasificacion?: string;
 }
+
+export interface Estado {
+  id: number;
+  nombre: string;
+  latitud: number;
+  longitud: number;
+  nombre_region: string;
+  color_region: string;
+}
+
+export interface Region {
+  id?: number;
+  nombre: string;
+  color: string;
+}

@@ -27,40 +27,17 @@ export class Map implements AfterViewInit {
   private agentes = L.layerGroup();
 
 
-  // Mapeo completo de Estados por Región
-  private REGION_POR_ESTADO: any = {
-    // Región Capital
-    'Distrito Capital': 'Capital', 'Miranda': 'Capital', 'La Guaira': 'Capital',
 
-    // Región Central
-    'Aragua': 'Central', 'Carabobo': 'Central',
-
-    // Región de los Llanos
-    'Guárico': 'Los Llanos', 'Apure': 'Los Llanos', 'Barinas': 'Los Llanos', 'Portuguesa': 'Los Llanos', 'Cojedes': 'Los Llanos',
-
-    // Región Centro Occidental
-    'Falcón': 'Centro Occidental', 'Lara': 'Centro Occidental', 'Yaracuy': 'Centro Occidental',
-
-    // Región Zuliana
-    'Zulia': 'Zuliana',
-
-    // Región Andina
-    'Mérida': 'Los Andes', 'Táchira': 'Los Andes', 'Trujillo': 'Los Andes',
-
-    // Región Nororiental
-    'Anzoátegui': 'Nororiental', 'Monagas': 'Nororiental', 'Sucre': 'Nororiental',
-
-    // Región Insular
-    'Nueva Esparta': 'Insular', 'Dependencias Federales': 'Insular',
-
-    // Región de Guayana
-    'Bolívar': 'Guayana', 'Amazonas': 'Guayana', 'Delta Amacuro': 'Guayana'
-  };
 
   constructor() {
     // Creamos un efecto que reaccione a los cambios del servicio automáticamente
     effect(() => {
       const estado = this.gis.capasVisibles();
+      const configGeografica = this.gis.estadosSignal(); // Observamos los estados de la BD
+      
+      // Si la configuración dinámica aún no llega, salimos para no pintar gris/error
+      if (configGeografica.length === 0) return;
+
       const antenas = this.gis.radioBasesSignal();
       const oficinas = this.gis.oficinasSignal();
       const abonados = this.gis.abonadosSignal();
@@ -75,7 +52,7 @@ export class Map implements AfterViewInit {
 
           this.capaGeoJsonRegiones.setStyle((feature: any) => {
             const nombreEstado = feature.properties.estado || feature.properties.name;
-            const region = this.REGION_POR_ESTADO[nombreEstado];
+            const region = this.gis.obtenerRegion(nombreEstado);
             const tieneDatos = regionesActivas.includes(region);
 
             return {
@@ -194,13 +171,14 @@ export class Map implements AfterViewInit {
                   const lng = Number(o.longitud);
                   L.marker([lat, lng], { icon: iconO })
                     .bindPopup(`
-                      <div style="min-width: 160px;">
-                        <h3 style="margin: 0; color: #32CD32; font-size: 16px;">Oficina Comercial</h3>
+                      <div style="min-width: 180px; font-family: sans-serif;">
+                        <h3 style="margin: 0; color: #32CD32; font-size: 16px;">${o.nombre || 'Oficina Comercial'}</h3>
                         <hr style="margin: 8px 0; border: 0; border-top: 1px solid #eee;">
-                        <b>Ubicación:</b> ${o.estado} (${o.region})<br>
-                        <div style="background-color: #f4fff4; padding: 10px; border-radius: 6px; margin-top: 8px; text-align: center; border: 1px solid #c2ffc2;">
-                          <span style="display: block; font-size: 11px; color: #555; text-transform: uppercase;">Total Oficinas</span>
-                          <strong style="font-size: 20px; color: #28a745;">${o.cantidad || 0}</strong>
+                        <div style="font-size: 13px; line-height: 1.5;">
+                          <b>Región:</b> ${o.region}<br>
+                          <b>Estado:</b> ${o.estado}<br>
+                          ${o.direccion ? `<b>Dirección:</b> ${o.direccion}<br>` : ''}
+                          <b>Coordenadas:</b> ${lat.toFixed(4)}, ${lng.toFixed(4)}
                         </div>
                       </div>
                     `)
@@ -220,7 +198,7 @@ export class Map implements AfterViewInit {
                         <h3 style="margin: 0; color: #FF8C00; font-size: 16px;">${ag.nombre || 'Agente Autorizado'}</h3>
                         <hr style="margin: 8px 0; border: 0; border-top: 1px solid #eee;">
                         <div style="font-size: 13px; line-height: 1.5;">
-                          <b>Código Dealer:</b> ${ag.codigo_dealer || 'N/A'}<br>
+                          <b>Código Dealer:</b> ${ag.codigoDealer || 'N/A'}<br>
                           <b>Clasificación:</b> ${ag.clasificacion || 'N/A'}<br>
                           <b>Región:</b> ${ag.region}<br>
                           <b>Estado:</b> ${ag.estado}<br>
@@ -279,7 +257,7 @@ export class Map implements AfterViewInit {
       this.capaGeoJsonRegiones = L.geoJSON(data, {
         style: (feature: any) => {
           const nombreEstado = feature.properties.estado || feature.properties.name;
-          const region = this.REGION_POR_ESTADO[nombreEstado];
+          const region = this.gis.obtenerRegion(nombreEstado);
 
           // Lógica de filtrado:
           const regionesActivas = this.gis.getRegionesConDatos();
