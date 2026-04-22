@@ -34,6 +34,25 @@
           <span *ngIf="!gis.sidebarColapsado()">Regiones</span>
         </button>
 
+        <!-- Selección de elemento para Regiones (Solo si regiones está ON y operaciones está OFF) -->
+        <div class="subcapas-container mini" *ngIf="gis.capasVisibles().regiones && !gis.capasVisibles().operaciones && !gis.sidebarColapsado()">
+          <div class="section-label">MOSTRAR TOTAL DE:</div>
+          <div class="tipo-selector-grid">
+            <button class="tipo-btn" [class.active]="gis.capasVisibles().detalleCap1 === 'antenas'" (click)="setDetalleCapa1('antenas')" title="Radio Bases">
+              <i class="fas fa-broadcast-tower"></i>
+            </button>
+            <button class="tipo-btn" [class.active]="gis.capasVisibles().detalleCap1 === 'abonados'" (click)="setDetalleCapa1('abonados')" title="Abonados">
+              <i class="fas fa-user-check"></i>
+            </button>
+            <button class="tipo-btn" [class.active]="gis.capasVisibles().detalleCap1 === 'oficinas'" (click)="setDetalleCapa1('oficinas')" title="Oficinas">
+              <i class="fas fa-building"></i>
+            </button>
+            <button class="tipo-btn" [class.active]="gis.capasVisibles().detalleCap1 === 'agentes'" (click)="setDetalleCapa1('agentes')" title="Agentes">
+              <i class="fas fa-store"></i>
+            </button>
+          </div>
+        </div>
+
         <!-- Capa 2: Operaciones (principal) -->
         <button class="layer-item" [class.active]="gis.capasVisibles().operaciones" (click)="toggle('operaciones')"
           [title]="gis.sidebarColapsado() ? 'Operaciones' : ''">
@@ -47,7 +66,7 @@
 
           <!-- Grupo: Radio Bases -->
           <div class="subcapa-group">
-            <button class="subcapa-item" [class.active]="gis.capasVisibles().detalleCap2 === 'antenas'"
+            <button class="subcapa-item" [class.active]="isActive('antenas')"
               (click)="setDetalle('antenas')" [title]="gis.sidebarColapsado() ? 'Radio Bases' : ''">
               <i class="fas fa-broadcast-tower layer-icon" style="color: #FF1493;"></i>
               <span *ngIf="!gis.sidebarColapsado()">Radio Bases</span>
@@ -56,7 +75,7 @@
           </div>
 
           <!-- Buscador de Radio Bases -->
-          <div class="subcapa-search" *ngIf="gis.capasVisibles().detalleCap2 === 'antenas' && !gis.sidebarColapsado()">
+          <div class="subcapa-search" *ngIf="isActive('antenas') && !gis.sidebarColapsado()">
             <div class="search-input-wrapper">
               <i class="fas fa-search search-icon"></i>
               <input type="text" placeholder="Buscar..." [ngModel]="gis.busquedaAntena()"
@@ -66,7 +85,7 @@
 
           <!-- Grupo: Abonados -->
           <div class="subcapa-group">
-            <button class="subcapa-item" [class.active]="gis.capasVisibles().detalleCap2 === 'abonados'"
+            <button class="subcapa-item" [class.active]="isActive('abonados')"
               (click)="setDetalle('abonados')" [title]="gis.sidebarColapsado() ? 'Abonados' : ''">
               <i class="fas fa-user-check layer-icon" style="color: #00BFFF;"></i>
               <span *ngIf="!gis.sidebarColapsado()">Abonados</span>
@@ -76,7 +95,7 @@
 
           <!-- Grupo: Oficinas -->
           <div class="subcapa-group">
-            <button class="subcapa-item" [class.active]="gis.capasVisibles().detalleCap2 === 'oficinas'"
+            <button class="subcapa-item" [class.active]="isActive('oficinas')"
               (click)="setDetalle('oficinas')" [title]="gis.sidebarColapsado() ? 'Oficinas Comerciales' : ''">
               <i class="fas fa-building layer-icon" style="color: #32CD32;"></i>
               <span *ngIf="!gis.sidebarColapsado()">Oficinas</span>
@@ -86,7 +105,7 @@
 
           <!-- Grupo: Agentes -->
           <div class="subcapa-group">
-            <button class="subcapa-item" [class.active]="gis.capasVisibles().detalleCap2 === 'agentes'"
+            <button class="subcapa-item" [class.active]="isActive('agentes')"
               (click)="setDetalle('agentes')" [title]="gis.sidebarColapsado() ? 'Agentes Autorizados' : ''">
               <i class="fas fa-store layer-icon" style="color: #FF8C00;"></i>
               <span *ngIf="!gis.sidebarColapsado()">Agentes</span>

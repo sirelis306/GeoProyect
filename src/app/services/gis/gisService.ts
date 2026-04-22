@@ -7,8 +7,8 @@ import { HttpClient } from '@angular/common/http';
 })
 export class Gis {
   private http = inject(HttpClient);
-  // private API_URL = 'http://localhost:3000/api';
-  private API_URL = 'https://geobackend-api.onrender.com/api';
+  private API_URL = 'http://localhost:3000/api';
+  // private API_URL = 'https://geobackend-api.onrender.com/api';
 
   // Signals para configuración geográfica dinámica
   estadosSignal = signal<Estado[]>([]);
@@ -16,20 +16,48 @@ export class Gis {
   // Computed para la lista de regiones (usada en la leyenda)
   regionesSignal = computed<Region[]>(() => {
     const unique = new Map<string, string>();
-    this.estadosSignal().forEach(e => {
-      if (e.nombre_region && e.color_region) {
-        unique.set(e.nombre_region, e.color_region);
+    
+    // Si hay datos en la BD, los usamos
+    if (this.estadosSignal().length > 0) {
+      this.estadosSignal().forEach(e => {
+        if (e.nombre_region && e.color_region) {
+          unique.set(e.nombre_region, e.color_region);
+        }
+      });
+    }
+
+    // Si el mapa está vacío o para asegurar que todas las regiones existan:
+    this.REGIONES_FALLBACK.forEach(nombre => {
+      if (!unique.has(nombre)) {
+        unique.set(nombre, this.COLORES_REGIONES[nombre] || '#DEE2E6');
       }
     });
+
     return Array.from(unique.entries()).map(([nombre, color]) => ({ nombre, color }));
   });
 
   // Computed para el mapeo de colores (mantiene compatibilidad con código existente)
   COLORES_REGIONES_SIGNAL = computed(() => {
-    const mapping: any = {};
+    const mapping: any = { ...this.COLORES_REGIONES };
     this.regionesSignal().forEach(r => mapping[r.nombre] = r.color);
     return mapping;
   });
+
+  private readonly REGIONES_FALLBACK = [
+    'Capital', 'Central', 'Los Llanos', 'Centro Occidental', 'Zuliana', 'Los Andes', 'Nororiental', 'Insular', 'Guayana'
+  ];
+
+  private readonly COORD_REGIONES: any = {
+    'Capital': { lat: 10.4806, lng: -66.8983 },
+    'Central': { lat: 10.0000, lng: -68.0000 },
+    'Los Llanos': { lat: 8.5000, lng: -67.0000 },
+    'Centro Occidental': { lat: 10.0000, lng: -69.5000 },
+    'Zuliana': { lat: 10.3333, lng: -72.0000 },
+    'Los Andes': { lat: 8.5000, lng: -71.0000 },
+    'Nororiental': { lat: 9.5000, lng: -64.0000 },
+    'Insular': { lat: 10.9500, lng: -64.0000 },
+    'Guayana': { lat: 6.0000, lng: -63.0000 }
+  };
 
   private readonly COORD_CENTRALES: any = {
     'Amazonas': { lat: 3.4167, lng: -65.5000 },
@@ -94,8 +122,11 @@ export class Gis {
   capasVisibles = signal<CapasEstado>({
     regiones: true,
     operaciones: false,
-    detalleCap2: 'ninguno'
+    detalleCap2: [],
+    detalleCap1: 'antenas'
   });
+
+  zoomLevel = signal<number>(7);
 
   // Iniciamos los signals vacíos
   radioBasesSignal = signal<RadioBase[]>([]);
@@ -315,12 +346,21 @@ export class Gis {
       if (item.region) regiones.add(item.region);
     });
 
-    if (estado.operaciones && direccion !== 'ninguno') {
-      // Si la Capa 2 está activa, extraemos regiones solo del tipo seleccionado
-      if (direccion === 'antenas') extraerDe(this.radioBasesSignal());
-      else if (direccion === 'oficinas') extraerDe(this.oficinasSignal());
-      else if (direccion === 'abonados') extraerDe(this.abonadosSignal());
-      else if (direccion === 'agentes') extraerDe(this.agentesSignal());
+    if (estado.operaciones && estado.detalleCap2.length > 0) {
+      // Si la Capa 2 está activa, extraemos regiones de todos los tipos seleccionados
+      estado.detalleCap2.forEach(tipo => {
+        if (tipo === 'antenas') extraerDe(this.radioBasesSignal());
+        else if (tipo === 'oficinas') extraerDe(this.oficinasSignal());
+        else if (tipo === 'abonados') extraerDe(this.abonadosSignal());
+        else if (tipo === 'agentes') extraerDe(this.agentesSignal());
+      });
+    } else if (estado.regiones && estado.detalleCap1 !== 'ninguno') {
+      // Si solo la Capa 1 está activa, extraemos regiones del tipo seleccionado para Capa 1
+      const tipo = estado.detalleCap1;
+      if (tipo === 'antenas') extraerDe(this.radioBasesSignal());
+      else if (tipo === 'oficinas') extraerDe(this.oficinasSignal());
+      else if (tipo === 'abonados') extraerDe(this.abonadosSignal());
+      else if (tipo === 'agentes') extraerDe(this.agentesSignal());
     } else {
       // Si solo la Capa 1 está activa, extraemos regiones de TODOS los datos
       extraerDe(this.radioBasesSignal());
@@ -333,8 +373,8 @@ export class Gis {
   }
 
   enviarAlServidor(datos: any) {
-    // this.http.post('http://localhost:3000/api/elementos', datos).subscribe({
-    this.http.post('https://geobackend-api.onrender.com/api/elementos', datos).subscribe({
+    this.http.post('http://localhost:3000/api/elementos', datos).subscribe({
+      // this.http.post('https://geobackend-api.onrender.com/api/elementos', datos).subscribe({
       next: (res) => {
         alert("Elemento guardado con éxito");
       },
@@ -407,16 +447,94 @@ export class Gis {
   }
 
   toggleCapa(nombre: keyof CapasEstado) {
-    this.capasVisibles.update(estado => ({
-      ...estado,
-      [nombre]: !estado[nombre]
-    }));
+    this.capasVisibles.update(estado => {
+      const nuevoEstado = { ...estado, [nombre]: !estado[nombre] };
+
+      // Si desactivamos operaciones, limpiamos detalleCap2
+      if (nombre === 'operaciones' && !nuevoEstado.operaciones) {
+        nuevoEstado.detalleCap2 = [];
+      }
+
+      return nuevoEstado;
+    });
   }
 
   setDetalleCap2(tipo: TipoElementoCap2) {
+    this.capasVisibles.update(estado => {
+      let nuevosDetalles = [...estado.detalleCap2];
+
+      if (nuevosDetalles.includes(tipo)) {
+        nuevosDetalles = nuevosDetalles.filter(t => t !== tipo);
+      } else {
+        nuevosDetalles.push(tipo);
+      }
+
+      return {
+        ...estado,
+        detalleCap2: nuevosDetalles
+      };
+    });
+  }
+
+  setDetalleCap1(tipo: TipoElementoCap2) {
     this.capasVisibles.update(estado => ({
       ...estado,
-      detalleCap2: tipo
+      detalleCap1: tipo
     }));
+  }
+
+  // Helper para obtener centros de regiones
+  getCentroRegion(nombreRegion: string) {
+    const estadosDeRegion = this.estadosSignal().filter(e => e.nombre_region === nombreRegion);
+    
+    if (estadosDeRegion.length > 0) {
+      const latSum = estadosDeRegion.reduce((acc, e) => acc + e.latitud, 0);
+      const lngSum = estadosDeRegion.reduce((acc, e) => acc + e.longitud, 0);
+
+      return {
+        lat: latSum / estadosDeRegion.length,
+        lng: lngSum / estadosDeRegion.length
+      };
+    }
+
+    // Fallback a coordenadas predefinidas
+    return this.COORD_REGIONES[nombreRegion] || null;
+  }
+
+  // Obtener totales por estado para un tipo
+  getTotalesPorEstado(tipo: TipoElementoCap2) {
+    const data: any[] = this.getDataPorTipo(tipo);
+    const totales = new Map<string, number>();
+
+    data.forEach(item => {
+      const actual = totales.get(item.estado) || 0;
+      totales.set(item.estado, actual + (Number(item.cantidad) || 1));
+    });
+
+    return totales;
+  }
+
+  // Obtener totales por región para un tipo
+  getTotalesPorRegion(tipo: TipoElementoCap2) {
+    const data: any[] = this.getDataPorTipo(tipo);
+    const totales = new Map<string, number>();
+
+    data.forEach(item => {
+      const region = item.region || this.obtenerRegion(item.estado);
+      const actual = totales.get(region) || 0;
+      totales.set(region, actual + (Number(item.cantidad) || 1));
+    });
+
+    return totales;
+  }
+
+  private getDataPorTipo(tipo: TipoElementoCap2): any[] {
+    switch (tipo) {
+      case 'antenas': return this.radioBasesSignal();
+      case 'oficinas': return this.oficinasSignal();
+      case 'abonados': return this.abonadosSignal();
+      case 'agentes': return this.agentesSignal();
+      default: return [];
+    }
   }
 }

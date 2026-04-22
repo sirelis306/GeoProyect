@@ -1,10 +1,8 @@
-/* Asegurar que el contenedor principal ocupe todo el espacio */
 :host {
   display: block;
   width: 100%;
   height: 100%;
   overflow: hidden;
-  /* Evita scroll en el componente */
 }
 
 #map {
@@ -21,84 +19,166 @@
   padding: 12px !important;
 }
 
-
-
-/* Usamos ::ng-deep para que Leaflet reconozca las clases */
-::ng-deep .custom-pin-marker {
-  width: 30px;
-  height: 30px;
-  border-radius: 50% 50% 50% 0;
-  /* Crea la forma de gota invertida */
-  position: absolute;
-  transform: rotate(-45deg);
-  /* Gira la gota para que la punta mire hacia abajo */
-  left: 50%;
-  top: 50%;
-  margin: -15px 0 0 -15px;
-  box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  z-index: 1000;
-  /* Asegura que esté por encima de las regiones */
+/* ESTILOS PARA LOS BADGES AGREGADOS (TOTALES) */
+::ng-deep .custom-badge-container {
+  background: transparent !important;
+  border: none !important;
+  width: auto !important;
+  height: auto !important;
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
 }
 
-/* El círculo blanco interior */
-::ng-deep .custom-pin-marker::after {
-  content: '';
-  width: 14px;
-  height: 14px;
-  margin: 8px 0 0 8px;
-  background: #ffffff;
-  position: absolute;
+::ng-deep .badge-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+  transition: transform 0.2s;
+  pointer-events: auto;
+}
+
+::ng-deep .badge-group:hover {
+  transform: scale(1.1);
+  z-index: 5000 !important;
+}
+
+::ng-deep .badge-item {
+  background: white;
+  border-radius: 20px;
+  padding: 2px 8px 2px 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 2px solid var(--bg-color);
+  min-width: 50px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+::ng-deep .badge-item i {
+  background: var(--bg-color);
+  color: white;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  box-shadow: inset 0px 1px 1px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
 }
 
-/* Colores específicos con ::ng-deep */
-::ng-deep .pin-antena {
-  background-color: #ff1447 !important;
+::ng-deep .badge-item span {
+  font-size: 12px;
+  font-weight: 700;
+  color: #2d3748;
+  white-space: nowrap;
 }
 
-::ng-deep .pin-abonado {
-  background-color: #0084ff !important;
+/* Badge especial para Regiones */
+::ng-deep .region-badge .badge-item {
+  transform: scale(1.2);
+  padding: 4px 12px 4px 6px;
 }
 
-::ng-deep .pin-oficina {
-  background-color: #1dbb2a !important;
+::ng-deep .region-badge .badge-item i {
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
 }
 
-::ng-deep .pin-agente {
-  background-color: #e98204 !important;
+::ng-deep .region-badge .badge-item span {
+  font-size: 14px;
 }
 
-/* Evita que el contenedor invisible de Leaflet tape el diseño */
+/* POPUPS PARA TOTALES */
+::ng-deep .popup-agregado {
+  min-width: 150px;
+  padding: 5px;
+}
+
+::ng-deep .popup-agregado h3 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: #4a5568;
+}
+
+::ng-deep .popup-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+::ng-deep .popup-item i {
+  width: 16px;
+  text-align: center;
+}
+
+::ng-deep .popup-item strong {
+  margin-left: auto;
+  color: #2d3748;
+}
+
+/* PINES INDIVIDUALES */
 ::ng-deep .marker-pin-container {
   background: none !important;
   border: none !important;
 }
 
+::ng-deep .custom-pin-marker {
+  width: 24px;
+  height: 24px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  border: 2px solid white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: -12px 0 0 -12px;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+::ng-deep .custom-pin-marker i {
+  transform: rotate(45deg);
+  color: white;
+  font-size: 10px;
+}
+
+::ng-deep .pin-antenas {
+  background-color: #FF1493 !important;
+}
+
+::ng-deep .pin-oficinas {
+  background-color: #32CD32 !important;
+}
+
+::ng-deep .pin-agentes {
+  background-color: #FF8C00 !important;
+}
+
+::ng-deep .pin-abonados {
+  background-color: #00BFFF !important;
+}
+
+/* LEYENDA DEL MAPA */
 .map-legend-overlay {
   position: absolute;
   bottom: 20px;
   right: 20px;
   z-index: 1100;
-  background: rgba(255, 255, 255, 0.753);
+  background: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(8px);
   padding: 15px 20px;
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.3);
   min-width: 180px;
-}
-
-@media (max-width: 768px) {
-  .map-legend-overlay {
-    bottom: 10px;
-    right: 10px;
-    transform: scale(0.85);
-    transform-origin: bottom right;
-    padding: 10px 15px;
-    min-width: 150px;
-  }
 }
 
 .legend-header {
@@ -134,7 +214,6 @@
   height: 14px;
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  flex-shrink: 0;
 }
 
 .region-label {

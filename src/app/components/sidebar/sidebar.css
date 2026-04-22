@@ -712,11 +712,11 @@
   cursor: pointer;
 }
 
-/* --- ESTILOS PARA MODO COLAPSADO (80px) --- */
+/* ESTILOS PARA MODO COLAPSADO (80px) */
 :host.collapsed .sidebar {
   padding: 15px 2px 5px 2px !important;
   overflow: hidden !important;
-  /* Forzar sin scroll */
+
 }
 
 :host.collapsed .sidebar-main-content {
@@ -750,7 +750,6 @@
   height: 42px !important;
   border-radius: 10px !important;
   margin: 0 auto 6px !important;
-  /* Aumentado un poco */
 }
 
 :host.collapsed .subcapa-item {
@@ -778,14 +777,12 @@
   flex-direction: column;
   align-items: center;
   padding-top: 4px !important;
-  /* Reducido de 8px a 4px */
 }
 
 :host.collapsed .subcapa-group {
   justify-content: center !important;
   width: 100%;
   margin-bottom: 0 !important;
-  /* Asegurar sin margen inferior en el grupo */
 }
 
 :host.collapsed .section-label,
@@ -822,5 +819,113 @@
 
   :host.collapsed .layer-icon {
     font-size: 14px !important;
+  }
+}
+
+/* Estilos para el selector de tipo en Capa 1 */
+.tipo-selector-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 8px 12px;
+}
+
+.tipo-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #a0aec0;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tipo-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.tipo-btn.active {
+  background: #3240A5;
+  color: white;
+  border-color: #3240A5;
+  box-shadow: 0 0 10px rgba(50, 64, 165, 0.3);
+}
+
+.subcapas-container.mini {
+  margin-top: -5px;
+  margin-bottom: 10px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 0 0 10px 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Responsividad Móvil */
+@media screen and (max-width: 768px) {
+  .sidebar {
+    width: 240px;
+  }
+
+  .sidebar-main-content {
+    padding: 15px 10px;
+  }
+
+  .brand-text {
+    font-size: 1.1rem;
+  }
+
+  .layer-item {
+    padding: 10px;
+    margin-bottom: 6px;
+  }
+
+  .layer-icon {
+    width: 32px;
+    font-size: 1.1rem;
+  }
+
+  .section-label {
+    font-size: 0.65rem;
+    margin-top: 12px;
+  }
+
+  .subcapas-container {
+    padding: 8px;
+    margin-left: 5px;
+  }
+
+  .subcapa-item {
+    padding: 8px;
+    font-size: 0.85rem;
+  }
+
+  .add-item-btn {
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+  }
+
+  .btn-collapse,
+  .btn-logout {
+    padding: 12px;
+    font-size: 0.9rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .sidebar {
+    width: 200px;
+  }
+
+  .brand-text {
+    display: none;
+  }
+
+  .layer-item span,
+  .subcapa-item span {
+    font-size: 0.75rem;
   }
 }

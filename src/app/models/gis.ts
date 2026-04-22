@@ -3,7 +3,8 @@ export type TipoElementoCap2 = 'antenas' | 'abonados' | 'oficinas' | 'agentes' |
 export interface CapasEstado {
   regiones: boolean;
   operaciones: boolean;
-  detalleCap2: TipoElementoCap2;
+  detalleCap2: TipoElementoCap2[];
+  detalleCap1: TipoElementoCap2;
 }
 
 export interface RadioBase {

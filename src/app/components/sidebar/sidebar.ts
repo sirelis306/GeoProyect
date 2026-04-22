@@ -181,12 +181,15 @@ export class Sidebar {
     }
   }
 
+  isActive(tipo: TipoElementoCap2): boolean {
+    return this.gis.capasVisibles().detalleCap2.includes(tipo);
+  }
+
   setDetalle(tipo: TipoElementoCap2) {
-    // Si ya está activo, lo desactivamos
-    if (this.gis.capasVisibles().detalleCap2 === tipo) {
-      this.gis.setDetalleCap2('ninguno');
-    } else {
-      this.gis.setDetalleCap2(tipo);
-    }
+    this.gis.setDetalleCap2(tipo);
+  }
+
+  setDetalleCapa1(tipo: TipoElementoCap2) {
+    this.gis.setDetalleCap1(tipo);
   }
 }

@@ -2,7 +2,7 @@ import { Component, AfterViewInit, inject, ElementRef, ViewChild, effect } from 
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Gis } from '../../services/gis/gisService';
-import { RadioBase, Oficina, Abonado, Agente } from '../../models/gis';
+import { RadioBase, Oficina, Abonado, Agente, TipoElementoCap2 } from '../../models/gis';
 import * as L from 'leaflet';
 import { Totales } from "../totales/totales";
 
@@ -25,29 +25,40 @@ export class Map implements AfterViewInit {
   private abonados = L.layerGroup();
   private oficinas = L.layerGroup();
   private agentes = L.layerGroup();
+  private layerAggregated = L.layerGroup();
+
+  private configIconos: any = {
+    antenas: { icon: 'fa-broadcast-tower', color: '#FF1493', label: 'Radio Bases' },
+    abonados: { icon: 'fa-user-check', color: '#00BFFF', label: 'Abonados' },
+    oficinas: { icon: 'fa-building', color: '#32CD32', label: 'Oficinas' },
+    agentes: { icon: 'fa-store', color: '#FF8C00', label: 'Agentes' }
+  };
 
 
 
 
   constructor() {
-    // Creamos un efecto que reaccione a los cambios del servicio automáticamente
     effect(() => {
       const estado = this.gis.capasVisibles();
-      const configGeografica = this.gis.estadosSignal(); // Observamos los estados de la BD
-      
-      // Si la configuración dinámica aún no llega, salimos para no pintar gris/error
-      if (configGeografica.length === 0) return;
+      const configGeografica = this.gis.estadosSignal();
+      const zoom = this.gis.zoomLevel();
 
-      const antenas = this.gis.radioBasesSignal();
-      const oficinas = this.gis.oficinasSignal();
-      const abonados = this.gis.abonadosSignal();
-      const agentes = this.gis.agentesSignal();
+      // Dependencias para reaccionar a la carga de datos
+      this.gis.radioBasesSignal();
+      this.gis.oficinasSignal();
+      this.gis.abonadosSignal();
+      this.gis.agentesSignal();
 
-      if (this.map && this.capaGeoJsonRegiones) {
+      if (!this.map) return;
+
+      // Limpiamos todas las capas de marcadores
+      [this.radioBases, this.oficinas, this.abonados, this.agentes].forEach(g => g.clearLayers());
+      if (this.layerAggregated) this.layerAggregated.clearLayers();
+
+      // --- LÓGICA CAPA 1 (GEOMETRÍA) ---
+      if (this.capaGeoJsonRegiones) {
         if (estado.regiones) {
           this.capaGeoJsonRegiones.addTo(this.map);
-
-          // Obtenemos las regiones a marcar
           const regionesActivas = this.gis.getRegionesConDatos();
 
           this.capaGeoJsonRegiones.setStyle((feature: any) => {
@@ -56,7 +67,7 @@ export class Map implements AfterViewInit {
             const tieneDatos = regionesActivas.includes(region);
 
             return {
-              fillColor: tieneDatos ? (this.gis.COLORES_REGIONES[region] || '#DEE2E6') : 'transparent',
+              fillColor: tieneDatos ? (this.gis.COLORES_REGIONES_SIGNAL()[region] || '#DEE2E6') : 'transparent',
               weight: tieneDatos ? 1.5 : 0,
               opacity: tieneDatos ? 1 : 0,
               color: '#FFFFFF',
@@ -66,156 +77,26 @@ export class Map implements AfterViewInit {
         } else {
           this.map.removeLayer(this.capaGeoJsonRegiones);
         }
+      }
 
-        // --- LÓGICA CAPA 2 ---
-        if (this.map) {
-          // Limpiamos todas las capas de marcadores
-          [this.radioBases, this.oficinas, this.abonados, this.agentes].forEach(g => g.clearLayers());
+      // --- LÓGICA DE VISUALIZACIÓN SEGÚN ZOOM ---
+      const esVistaDetalle = zoom >= 8;
 
-          const crearPinIcon = (colorClass: string) => {
-            return L.divIcon({
-              html: `<div class="custom-pin-marker ${colorClass}"></div>`,
-              className: 'marker-pin-container',
-              iconSize: [30, 30],
-              iconAnchor: [15, 30],
-              popupAnchor: [0, -30]
-            });
-          };
-
-          if (estado.operaciones && estado.detalleCap2 !== 'ninguno') {
-            switch (estado.detalleCap2) {
-              case 'antenas':
-                const iconA = crearPinIcon('pin-antena');
-                const terminoAntena = this.gis.busquedaAntena().toLowerCase();
-
-                let antenasFiltradas = antenas;
-                if (terminoAntena) {
-                  antenasFiltradas = antenas.filter(a =>
-                    (a.nombre && a.nombre.toLowerCase().includes(terminoAntena)) ||
-                    (a.direccion && a.direccion.toLowerCase().includes(terminoAntena))
-                  );
-                }
-
-                antenasFiltradas.forEach((a: RadioBase) => {
-                  const lat = Number(a.latitud);
-                  const lng = Number(a.longitud);
-                  const colorActividad = a.actividad === 'Operativa' ? 'green' : a.actividad === 'Vandalizada' ? 'red' : 'orange';
-                  L.marker([lat, lng], { icon: iconA })
-                    .bindPopup(`<b>Antena:</b> ${a.nombre}<br><b>Ubicación:</b> ${a.estado} (${a.region})<br> <b>Coordenadas:</b> ${lat.toFixed(4)}, ${lng.toFixed(4)}<br> <b>Tecnología:</b> ${a.tecnologia}<br> ${a.actividad ? `<b>Estado:</b> <span style="color:${colorActividad}; font-weight: bold;">${a.actividad}</span>` : ''} ${a.direccion ? `<b>Dirección:</b> ${a.direccion}<br>` : ''}`)
-                    .addTo(this.radioBases);
-                });
-                this.radioBases.addTo(this.map);
-                break;
-
-              case 'abonados':
-                const iconAb = crearPinIcon('pin-abonado');
-                abonados.forEach((ab: Abonado) => {
-                  const lat = Number(ab.latitud);
-                  const lng = Number(ab.longitud);
-
-                  // Filtramos todos los registros que pertenecen al mismo estado para sumar sus segmentaciones
-                  const abonadosDelEstado = abonados.filter(item => item.estado === ab.estado);
-
-                  const total3G = abonadosDelEstado
-                    .filter(item => item.segmentacion === '3G')
-                    .reduce((acc, curr) => acc + (Number(curr.cantidad) || 0), 0);
-
-                  const total4G = abonadosDelEstado
-                    .filter(item => item.segmentacion === '4G')
-                    .reduce((acc, curr) => acc + (Number(curr.cantidad) || 0), 0);
-
-                  const total5G = abonadosDelEstado
-                    .filter(item => item.segmentacion === '5G')
-                    .reduce((acc, curr) => acc + (Number(curr.cantidad) || 0), 0);
-
-                  const totalGeneral = total3G + total4G + total5G;
-
-                  L.marker([lat, lng], { icon: iconAb })
-                    .bindPopup(`
-                      <div style="min-width: 200px; font-family: sans-serif;">
-                        <h3 style="margin: 0; color: #00BFFF; font-size: 16px;">Abonados - ${ab.estado}</h3>
-                        <hr style="margin: 8px 0; border: 0; border-top: 1px solid #eee;">
-                        
-                        <div style="font-size: 13px; margin-bottom: 8px;">
-                          <b style="color: #555;">Segmentación por Tecnología:</b><br>
-                          <div style="margin-top: 8px; display: grid; gap: 6px;">
-                            <div style="background: #fee2e2; color: #b91c1c; padding: 5px 10px; border-radius: 4px; display: flex; justify-content: space-between;">
-                              <span>● 3G</span> <b>${total3G.toLocaleString()}</b>
-                            </div>
-                            <div style="background: #e0f2fe; color: #0369a1; padding: 5px 10px; border-radius: 4px; display: flex; justify-content: space-between;">
-                              <span>● 4G</span> <b>${total4G.toLocaleString()}</b>
-                            </div>
-                            <div style="background: #dcfce7; color: #15803d; padding: 5px 10px; border-radius: 4px; display: flex; justify-content: space-between;">
-                              <span>● 5G</span> <b>${total5G.toLocaleString()}</b>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div style="background-color: #daf6ff; padding: 12px; border-radius: 6px; margin-top: 10px; text-align: center; border: 1px solid #adebff;">
-                          <span style="display: block; font-size: 11px; color: #555; text-transform: uppercase; opacity: 0.9; margin-bottom: 4px;"> Total en el Estado </span>
-                          <strong style="font-size: 22px; color: #06a7dd;">
-                            ${totalGeneral.toLocaleString()}
-                          </strong>
-                        </div>
-                      </div>
-                    `)
-                    .addTo(this.abonados);
-                });
-                this.abonados.addTo(this.map);
-                break;
-
-              case 'oficinas':
-                const iconO = crearPinIcon('pin-oficina');
-                oficinas.forEach((o: Oficina) => {
-                  const lat = Number(o.latitud);
-                  const lng = Number(o.longitud);
-                  L.marker([lat, lng], { icon: iconO })
-                    .bindPopup(`
-                      <div style="min-width: 180px; font-family: sans-serif;">
-                        <h3 style="margin: 0; color: #32CD32; font-size: 16px;">${o.nombre || 'Oficina Comercial'}</h3>
-                        <hr style="margin: 8px 0; border: 0; border-top: 1px solid #eee;">
-                        <div style="font-size: 13px; line-height: 1.5;">
-                          <b>Región:</b> ${o.region}<br>
-                          <b>Estado:</b> ${o.estado}<br>
-                          ${o.direccion ? `<b>Dirección:</b> ${o.direccion}<br>` : ''}
-                          <b>Coordenadas:</b> ${lat.toFixed(4)}, ${lng.toFixed(4)}
-                        </div>
-                      </div>
-                    `)
-                    .addTo(this.oficinas);
-                });
-                this.oficinas.addTo(this.map);
-                break;
-
-              case 'agentes':
-                const iconAg = crearPinIcon('pin-agente');
-                agentes.forEach((ag: any) => {
-                  const lat = Number(ag.latitud);
-                  const lng = Number(ag.longitud);
-                  L.marker([lat, lng], { icon: iconAg })
-                    .bindPopup(`
-                      <div style="min-width: 180px; font-family: sans-serif;">
-                        <h3 style="margin: 0; color: #FF8C00; font-size: 16px;">${ag.nombre || 'Agente Autorizado'}</h3>
-                        <hr style="margin: 8px 0; border: 0; border-top: 1px solid #eee;">
-                        <div style="font-size: 13px; line-height: 1.5;">
-                          <b>Código Dealer:</b> ${ag.codigoDealer || 'N/A'}<br>
-                          <b>Clasificación:</b> ${ag.clasificacion || 'N/A'}<br>
-                          <b>Región:</b> ${ag.region}<br>
-                          <b>Estado:</b> ${ag.estado}<br>
-                          ${ag.direccion ? `<b>Dirección:</b> ${ag.direccion}` : ''}
-                        </div>
-                      </div>
-                    `)
-                    .addTo(this.agentes);
-                });
-                this.agentes.addTo(this.map);
-                break;
-            }
+      if (estado.operaciones) {
+        if (esVistaDetalle) {
+          // Puntos individuales (excepto Abonados)
+          this.renderIndividualMarkers(estado.detalleCap2);
+          // Abonados siempre como total por estado en esta vista
+          if (estado.detalleCap2.includes('abonados')) {
+            this.renderStateTotals(['abonados']);
           }
         } else {
-          // Si Capa 2 está OFF, removemos los grupos del mapa
-          [this.radioBases, this.oficinas, this.abonados, this.agentes].forEach(g => g.remove());
+          // Totales por estado
+          this.renderStateTotals(estado.detalleCap2);
         }
+      } else if (estado.regiones && zoom < 8) {
+        // Totales por región
+        this.renderRegionTotals(estado.detalleCap1);
       }
     });
   }
@@ -252,6 +133,15 @@ export class Map implements AfterViewInit {
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     }).addTo(this.map);
 
+    this.map.on('zoomend', () => {
+      this.gis.zoomLevel.set(this.map.getZoom());
+    });
+
+    this.layerAggregated.addTo(this.map);
+
+    // Forzamos que se muestre en el nivel inicial
+    this.gis.zoomLevel.set(this.map.getZoom());
+
     // Cargar Capa 1 (Relieve/Regiones)
     this.http.get('assets/geojson/venezuela.json').subscribe((data: any) => {
       this.capaGeoJsonRegiones = L.geoJSON(data, {
@@ -284,4 +174,129 @@ export class Map implements AfterViewInit {
     this.gis.cargarDatos();
   }
 
+  // --- MÉTODOS DE RENDERIZADO ---
+
+  private renderIndividualMarkers(tipos: TipoElementoCap2[]) {
+    const crearPinIcon = (tipo: TipoElementoCap2) => {
+      const config = this.configIconos[tipo];
+      return L.divIcon({
+        html: `<div class="custom-pin-marker pin-${tipo}">
+                 <i class="fas ${config.icon}"></i>
+               </div>`,
+        className: 'marker-pin-container',
+        iconSize: [30, 30],
+        iconAnchor: [15, 30],
+        popupAnchor: [0, -30]
+      });
+    };
+
+    if (tipos.includes('antenas')) {
+      const icon = crearPinIcon('antenas');
+      const termino = this.gis.busquedaAntena().toLowerCase();
+      this.gis.radioBasesSignal()
+        .filter(a => !termino || a.nombre?.toLowerCase().includes(termino) || a.direccion?.toLowerCase().includes(termino))
+        .forEach(a => {
+          L.marker([a.latitud, a.longitud], { icon })
+            .bindPopup(`<b>Antena:</b> ${a.nombre}<br><b>Estado:</b> ${a.estado}<br><b>Región:</b> ${a.region}`)
+            .addTo(this.radioBases);
+        });
+      this.radioBases.addTo(this.map);
+    }
+
+    if (tipos.includes('oficinas')) {
+      const icon = crearPinIcon('oficinas');
+      this.gis.oficinasSignal().forEach(o => {
+        L.marker([o.latitud, o.longitud], { icon })
+          .bindPopup(`<b>Oficina:</b> ${o.nombre}<br><b>Estado:</b> ${o.estado}`)
+          .addTo(this.oficinas);
+      });
+      this.oficinas.addTo(this.map);
+    }
+
+    if (tipos.includes('agentes')) {
+      const icon = crearPinIcon('agentes');
+      this.gis.agentesSignal().forEach(ag => {
+        L.marker([ag.latitud, ag.longitud], { icon })
+          .bindPopup(`<b>Agente:</b> ${ag.nombre}<br><b>Estado:</b> ${ag.estado}`)
+          .addTo(this.agentes);
+      });
+      this.agentes.addTo(this.map);
+    }
+  }
+
+  private renderStateTotals(tipos: TipoElementoCap2[]) {
+    const estados = this.gis.estadosSignal();
+
+    estados.forEach(est => {
+      const items: any[] = [];
+      tipos.forEach(tipo => {
+        const total = this.gis.getTotalesPorEstado(tipo).get(est.nombre) || 0;
+        if (total > 0) {
+          items.push({ tipo, total });
+        }
+      });
+
+      if (items.length > 0) {
+        const icon = this.crearBadgeGroupIcon(items);
+        L.marker([est.latitud, est.longitud], { icon, zIndexOffset: 1000 })
+          .bindPopup(this.crearPopupAgregado(`Estado: ${est.nombre}`, items))
+          .addTo(this.layerAggregated);
+      }
+    });
+  }
+
+  private renderRegionTotals(tipo: TipoElementoCap2) {
+    const regiones = this.gis.regionesSignal();
+    regiones.forEach(reg => {
+      const total = this.gis.getTotalesPorRegion(tipo).get(reg.nombre) || 0;
+      if (total > 0) {
+        const centro = this.gis.getCentroRegion(reg.nombre);
+        if (centro) {
+          const items = [{ tipo, total }];
+          const icon = this.crearBadgeGroupIcon(items, true);
+          const marker = L.marker([centro.lat, centro.lng], { icon, zIndexOffset: 2000 });
+
+          marker.bindPopup(this.crearPopupAgregado(`Región: ${reg.nombre}`, items));
+          marker.addTo(this.layerAggregated);
+        }
+      }
+    });
+  }
+
+  private crearBadgeGroupIcon(items: any[], esRegion = false) {
+    let html = `<div class="badge-group ${esRegion ? 'region-badge' : ''}">`;
+    items.forEach(item => {
+      const config = this.configIconos[item.tipo];
+      html += `
+        <div class="badge-item" style="--bg-color: ${config.color}">
+          <i class="fas ${config.icon}"></i>
+          <span>${item.total.toLocaleString()}</span>
+        </div>
+      `;
+    });
+    html += '</div>';
+
+    return L.divIcon({
+      html,
+      className: 'custom-badge-container',
+      iconSize: [40, 40],
+      iconAnchor: [20, 20]
+    });
+  }
+
+  private crearPopupAgregado(titulo: string, items: any[]) {
+    let html = `<div class="popup-agregado"><h3>${titulo}</h3><hr>`;
+    items.forEach(item => {
+      const config = this.configIconos[item.tipo];
+      html += `
+        <div class="popup-item">
+          <i class="fas ${config.icon}" style="color: ${config.color}"></i>
+          <span>${config.label}:</span>
+          <strong>${item.total.toLocaleString()}</strong>
+        </div>
+      `;
+    });
+    html += '</div>';
+    return html;
+  }
 }

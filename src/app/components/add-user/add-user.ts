@@ -170,8 +170,8 @@ export class AddUser implements OnInit {
     const token = localStorage.getItem('token_geo');
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
 
-    // this.http.post<any>('http://localhost:3000/api/users/crear', this.user, { headers }).subscribe({
-    this.http.post<any>('https://geobackend-api.onrender.com/api/users/crear', this.user, { headers }).subscribe({
+    this.http.post<any>('http://localhost:3000/api/users/crear', this.user, { headers }).subscribe({
+    // this.http.post<any>('https://geobackend-api.onrender.com/api/users/crear', this.user, { headers }).subscribe({
       next: (res) => {
         this.cargando = false;
         this.passwordTemporal = res.passwordTemporal;
