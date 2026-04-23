@@ -35,19 +35,19 @@
         </button>
 
         <!-- Selección de elemento para Regiones (Solo si regiones está ON y operaciones está OFF) -->
-        <div class="subcapas-container mini" *ngIf="gis.capasVisibles().regiones && !gis.capasVisibles().operaciones && !gis.sidebarColapsado()">
+        <div class="subcapas-container mini" *ngIf="gis.capasVisibles().regiones && !gis.sidebarColapsado()">
           <div class="section-label">MOSTRAR TOTAL DE:</div>
           <div class="tipo-selector-grid">
-            <button class="tipo-btn" [class.active]="gis.capasVisibles().detalleCap1 === 'antenas'" (click)="setDetalleCapa1('antenas')" title="Radio Bases">
+            <button class="tipo-btn" [class.active]="gis.capasVisibles().detalleCap1.includes('antenas')" (click)="setDetalleCapa1('antenas')" title="Radio Bases">
               <i class="fas fa-broadcast-tower"></i>
             </button>
-            <button class="tipo-btn" [class.active]="gis.capasVisibles().detalleCap1 === 'abonados'" (click)="setDetalleCapa1('abonados')" title="Abonados">
+            <button class="tipo-btn" [class.active]="gis.capasVisibles().detalleCap1.includes('abonados')" (click)="setDetalleCapa1('abonados')" title="Abonados">
               <i class="fas fa-user-check"></i>
             </button>
-            <button class="tipo-btn" [class.active]="gis.capasVisibles().detalleCap1 === 'oficinas'" (click)="setDetalleCapa1('oficinas')" title="Oficinas">
+            <button class="tipo-btn" [class.active]="gis.capasVisibles().detalleCap1.includes('oficinas')" (click)="setDetalleCapa1('oficinas')" title="Oficinas">
               <i class="fas fa-building"></i>
             </button>
-            <button class="tipo-btn" [class.active]="gis.capasVisibles().detalleCap1 === 'agentes'" (click)="setDetalleCapa1('agentes')" title="Agentes">
+            <button class="tipo-btn" [class.active]="gis.capasVisibles().detalleCap1.includes('agentes')" (click)="setDetalleCapa1('agentes')" title="Agentes">
               <i class="fas fa-store"></i>
             </button>
           </div>

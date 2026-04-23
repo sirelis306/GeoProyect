@@ -57,25 +57,37 @@ export class Map implements AfterViewInit {
 
       // --- LÓGICA CAPA 1 (GEOMETRÍA) ---
       if (this.capaGeoJsonRegiones) {
-        if (estado.regiones) {
+        if (estado.regiones || estado.operaciones) {
           this.capaGeoJsonRegiones.addTo(this.map);
-          const regionesActivas = this.gis.getRegionesConDatos();
+
+          // Operaciones → color por estado específico; Regiones → color por región
+          const usarColorEstado = estado.operaciones;
+          const estadosConDatos = new Set(this.gis.getEstadosConDatos().map(e => e.nombre));
+          const regionesActivas  = this.gis.getRegionesConDatos();
 
           this.capaGeoJsonRegiones.setStyle((feature: any) => {
             const nombreEstado = feature.properties.estado || feature.properties.name;
-            const region = this.gis.obtenerRegion(nombreEstado);
-            const tieneDatos = regionesActivas.includes(region);
+            const region       = this.gis.obtenerRegion(nombreEstado);
+
+            const tieneDatos = usarColorEstado
+              ? estadosConDatos.has(nombreEstado)
+              : regionesActivas.includes(region);
+
+            const fillColor = usarColorEstado
+              ? this.gis.getColorEstado(nombreEstado)
+              : (this.gis.COLORES_REGIONES_SIGNAL()[region] || '#DEE2E6');
 
             return {
-              fillColor: tieneDatos ? (this.gis.COLORES_REGIONES_SIGNAL()[region] || '#DEE2E6') : 'transparent',
-              weight: tieneDatos ? 1.5 : 0,
-              opacity: tieneDatos ? 1 : 0,
+              fillColor: tieneDatos ? fillColor : 'transparent',
+              weight:      tieneDatos ? 1.5 : 0,
+              opacity:     tieneDatos ? 1   : 0,
               color: '#FFFFFF',
               fillOpacity: tieneDatos ? 0.7 : 0
             };
           });
         } else {
           this.map.removeLayer(this.capaGeoJsonRegiones);
+
         }
       }
 
@@ -84,19 +96,16 @@ export class Map implements AfterViewInit {
 
       if (estado.operaciones) {
         if (esVistaDetalle) {
-          // Puntos individuales (excepto Abonados)
+          // Zoom alto (≥8): pines individuales por elemento
           this.renderIndividualMarkers(estado.detalleCap2);
-          // Abonados siempre como total por estado en esta vista
-          if (estado.detalleCap2.includes('abonados')) {
-            this.renderStateTotals(['abonados']);
-          }
         } else {
-          // Totales por estado
+          // Zoom bajo (<8): badges de totales por estado
           this.renderStateTotals(estado.detalleCap2);
         }
-      } else if (estado.regiones && zoom < 8) {
-        // Totales por región
+      } else if (estado.regiones) {
+        // Solo regiones activa: badges por región a cualquier zoom (multi-tipo)
         this.renderRegionTotals(estado.detalleCap1);
+
       }
     });
   }
@@ -190,14 +199,27 @@ export class Map implements AfterViewInit {
       });
     };
 
+    const fmtCoords = (lat: number, lng: number) =>
+      `${Number(lat).toFixed(5)}, ${Number(lng).toFixed(5)}`;
+
     if (tipos.includes('antenas')) {
       const icon = crearPinIcon('antenas');
+      const cfg  = this.configIconos['antenas'];
       const termino = this.gis.busquedaAntena().toLowerCase();
       this.gis.radioBasesSignal()
         .filter(a => !termino || a.nombre?.toLowerCase().includes(termino) || a.direccion?.toLowerCase().includes(termino))
         .forEach(a => {
+          const popup = this.crearPopupDetalle(cfg, [
+            { label: 'Nombre',       value: a.nombre },
+            { label: 'Estado',       value: a.estado },
+            { label: 'Región',       value: a.region },
+            { label: 'Tecnología',   value: a.tecnologia },
+            { label: 'Actividad',    value: a.actividad, badge: true },
+            { label: 'Dirección',    value: a.direccion },
+            { label: 'Coordenadas',  value: fmtCoords(a.latitud, a.longitud), coords: true }
+          ]);
           L.marker([a.latitud, a.longitud], { icon })
-            .bindPopup(`<b>Antena:</b> ${a.nombre}<br><b>Estado:</b> ${a.estado}<br><b>Región:</b> ${a.region}`)
+            .bindPopup(popup, { maxWidth: 290 })
             .addTo(this.radioBases);
         });
       this.radioBases.addTo(this.map);
@@ -205,9 +227,17 @@ export class Map implements AfterViewInit {
 
     if (tipos.includes('oficinas')) {
       const icon = crearPinIcon('oficinas');
+      const cfg  = this.configIconos['oficinas'];
       this.gis.oficinasSignal().forEach(o => {
+        const popup = this.crearPopupDetalle(cfg, [
+          { label: 'Nombre',      value: o.nombre },
+          { label: 'Estado',      value: o.estado },
+          { label: 'Región',      value: o.region },
+          { label: 'Dirección',   value: o.direccion },
+          { label: 'Coordenadas', value: fmtCoords(o.latitud, o.longitud), coords: true }
+        ]);
         L.marker([o.latitud, o.longitud], { icon })
-          .bindPopup(`<b>Oficina:</b> ${o.nombre}<br><b>Estado:</b> ${o.estado}`)
+          .bindPopup(popup, { maxWidth: 270 })
           .addTo(this.oficinas);
       });
       this.oficinas.addTo(this.map);
@@ -215,13 +245,116 @@ export class Map implements AfterViewInit {
 
     if (tipos.includes('agentes')) {
       const icon = crearPinIcon('agentes');
+      const cfg  = this.configIconos['agentes'];
       this.gis.agentesSignal().forEach(ag => {
+        const popup = this.crearPopupDetalle(cfg, [
+          { label: 'Nombre',        value: ag.nombre },
+          { label: 'Estado',        value: ag.estado },
+          { label: 'Región',        value: ag.region },
+          { label: 'Cód. Dealer',   value: ag.codigoDealer },
+          { label: 'Clasificación', value: ag.clasificacion, badge: true },
+          { label: 'Dirección',     value: ag.direccion },
+          { label: 'Coordenadas',   value: fmtCoords(ag.latitud, ag.longitud), coords: true }
+        ]);
         L.marker([ag.latitud, ag.longitud], { icon })
-          .bindPopup(`<b>Agente:</b> ${ag.nombre}<br><b>Estado:</b> ${ag.estado}`)
+          .bindPopup(popup, { maxWidth: 310 })
           .addTo(this.agentes);
       });
       this.agentes.addTo(this.map);
     }
+
+    if (tipos.includes('abonados')) {
+      const icon = crearPinIcon('abonados');
+      const cfg  = this.configIconos['abonados'];
+
+      const todos = this.gis.abonadosSignal();
+
+      // --- Flujo 1: abonados CON dirección → pin individual con ubicación específica ---
+      todos.filter(ab => !!ab.direccion).forEach(ab => {
+        const popup = this.crearPopupDetalle(cfg, [
+          { label: 'Nombre',       value: ab.nombre },
+          { label: 'Estado',       value: ab.estado },
+          { label: 'Región',       value: ab.region },
+          { label: 'Segmentación', value: ab.segmentacion, badge: true },
+          { label: 'Cantidad',     value: (ab.cantidad ?? 0).toLocaleString() },
+          { label: 'Dirección',    value: ab.direccion },
+          { label: 'Coordenadas',  value: fmtCoords(ab.latitud, ab.longitud), coords: true }
+        ]);
+        L.marker([Number(ab.latitud), Number(ab.longitud)], { icon })
+          .bindPopup(popup, { maxWidth: 290 })
+          .addTo(this.abonados);
+      });
+
+      // --- Flujo 2: abonados SIN dirección → agrupados por estado (desglose por segmentación) ---
+      type GrupoAbonado = { estado: string; region: string; lat: number; lng: number; segs: Record<string, number> };
+      const grupos: Record<string, GrupoAbonado> = {};
+
+      todos.filter(ab => !ab.direccion).forEach(ab => {
+        if (!grupos[ab.estado]) {
+          grupos[ab.estado] = {
+            estado: ab.estado,
+            region: ab.region,
+            lat: Number(ab.latitud),
+            lng: Number(ab.longitud),
+            segs: {}
+          };
+        }
+        const g = grupos[ab.estado];
+        g.segs[ab.segmentacion] = (g.segs[ab.segmentacion] || 0) + (Number(ab.cantidad) || 0);
+      });
+
+      Object.values(grupos).forEach((g: GrupoAbonado) => {
+        const total = Object.values(g.segs).reduce((a: number, b: number) => a + b, 0);
+        const popup = this.crearPopupDetalle(cfg, [
+          { label: 'Estado',      value: g.estado },
+          { label: 'Región',      value: g.region },
+          { label: 'Total',       value: total.toLocaleString() },
+          { label: 'Desglose',    breakdown: g.segs },
+          { label: 'Coordenadas', value: fmtCoords(g.lat, g.lng), coords: true }
+        ]);
+        L.marker([g.lat, g.lng], { icon })
+          .bindPopup(popup, { maxWidth: 270 })
+          .addTo(this.abonados);
+      });
+
+      this.abonados.addTo(this.map);
+    }
+  }
+
+  /** Construye el HTML de un popup detallado con cabecera de color e ícono */
+  private crearPopupDetalle(
+    cfg: { icon: string; color: string; label: string },
+    rows: { label: string; value?: string | number | null; badge?: boolean; coords?: boolean; breakdown?: Record<string, number> }[]
+  ) {
+    const filas = rows
+      .filter(r => r.breakdown !== undefined || (r.value !== undefined && r.value !== null && r.value !== ''))
+      .map(r => {
+        let cell: string;
+        if (r.breakdown) {
+          // Bloque de desglose por segmentación (inline en la tabla)
+          const segs = Object.entries(r.breakdown).sort()
+            .map(([seg, cnt]) =>
+              `<span class="popup-seg-pill"><b>${seg}</b> ${(cnt as number).toLocaleString()}</span>`
+            ).join('');
+          cell = `<span class="popup-seg-pills">${segs}</span>`;
+        } else if (r.coords) {
+          cell = `<span class="popup-coords"><i class="fas fa-map-pin"></i>${r.value}</span>`;
+        } else if (r.badge) {
+          cell = `<span class="popup-badge" style="--bdg-color:${cfg.color}">${r.value}</span>`;
+        } else {
+          cell = `<span class="popup-val">${r.value}</span>`;
+        }
+        return `<tr><td class="popup-lbl">${r.label}</td><td>${cell}</td></tr>`;
+      }).join('');
+
+    return `
+      <div class="popup-detalle">
+        <div class="popup-header" style="background: linear-gradient(135deg, ${cfg.color} 0%, ${cfg.color}cc 100%)">
+          <div class="popup-header-icon"><i class="fas ${cfg.icon}"></i></div>
+          <span>${cfg.label}</span>
+        </div>
+        <table class="popup-table">${filas}</table>
+      </div>`;
   }
 
   private renderStateTotals(tipos: TipoElementoCap2[]) {
@@ -238,25 +371,37 @@ export class Map implements AfterViewInit {
 
       if (items.length > 0) {
         const icon = this.crearBadgeGroupIcon(items);
+        // Para abonados calculamos el desglose por segmentación en este estado
+        const segBreakdown = tipos.includes('abonados')
+          ? this.gis.abonadosSignal()
+              .filter(ab => ab.estado === est.nombre)
+              .reduce((acc: Record<string, number>, ab) => {
+                acc[ab.segmentacion] = (acc[ab.segmentacion] || 0) + (Number(ab.cantidad) || 0);
+                return acc;
+              }, {})
+          : null;
         L.marker([est.latitud, est.longitud], { icon, zIndexOffset: 1000 })
-          .bindPopup(this.crearPopupAgregado(`Estado: ${est.nombre}`, items))
+          .bindPopup(this.crearPopupAgregado(est.nombre, 'estado', items, segBreakdown))
           .addTo(this.layerAggregated);
       }
     });
   }
 
-  private renderRegionTotals(tipo: TipoElementoCap2) {
+  private renderRegionTotals(tipos: TipoElementoCap2[]) {
     const regiones = this.gis.regionesSignal();
     regiones.forEach(reg => {
-      const total = this.gis.getTotalesPorRegion(tipo).get(reg.nombre) || 0;
-      if (total > 0) {
+      const items: any[] = [];
+      tipos.forEach(tipo => {
+        const total = this.gis.getTotalesPorRegion(tipo).get(reg.nombre) || 0;
+        if (total > 0) items.push({ tipo, total });
+      });
+
+      if (items.length > 0) {
         const centro = this.gis.getCentroRegion(reg.nombre);
         if (centro) {
-          const items = [{ tipo, total }];
           const icon = this.crearBadgeGroupIcon(items, true);
           const marker = L.marker([centro.lat, centro.lng], { icon, zIndexOffset: 2000 });
-
-          marker.bindPopup(this.crearPopupAgregado(`Región: ${reg.nombre}`, items));
+          marker.bindPopup(this.crearPopupAgregado(reg.nombre, 'region', items));
           marker.addTo(this.layerAggregated);
         }
       }
@@ -284,19 +429,41 @@ export class Map implements AfterViewInit {
     });
   }
 
-  private crearPopupAgregado(titulo: string, items: any[]) {
-    let html = `<div class="popup-agregado"><h3>${titulo}</h3><hr>`;
+  private crearPopupAgregado(
+    titulo: string,
+    tipo: 'estado' | 'region',
+    items: any[],
+    segBreakdown: Record<string, number> | null = null
+  ) {
+    const mainColor = items.length > 0 ? this.configIconos[items[0].tipo].color : '#3240A5';
+    const icono = tipo === 'estado' ? 'fa-map-marker-alt' : 'fa-globe-americas';
+
+    let rows = '';
     items.forEach(item => {
       const config = this.configIconos[item.tipo];
-      html += `
-        <div class="popup-item">
-          <i class="fas ${config.icon}" style="color: ${config.color}"></i>
-          <span>${config.label}:</span>
-          <strong>${item.total.toLocaleString()}</strong>
-        </div>
-      `;
+      rows += `
+        <div class="pagg-row">
+          <span class="pagg-dot" style="background:${config.color}"></span>
+          <span class="pagg-label">${config.label}</span>
+          <strong class="pagg-val">${item.total.toLocaleString()}</strong>
+        </div>`;
+
+      if (item.tipo === 'abonados' && segBreakdown && Object.keys(segBreakdown).length > 0) {
+        rows += `<div class="popup-seg-breakdown">`;
+        Object.entries(segBreakdown).sort().forEach(([seg, cnt]) => {
+          rows += `<div class="popup-seg-row"><span class="popup-seg-label">${seg}</span><span class="popup-seg-val">${(cnt as number).toLocaleString()}</span></div>`;
+        });
+        rows += `</div>`;
+      }
     });
-    html += '</div>';
-    return html;
+
+    return `
+      <div class="pagg">
+        <div class="pagg-header" style="background: linear-gradient(135deg, ${mainColor} 0%, ${mainColor}cc 100%)">
+          <i class="fas ${icono}"></i>
+          <span>${titulo}</span>
+        </div>
+        <div class="pagg-body">${rows}</div>
+      </div>`;
   }
 }

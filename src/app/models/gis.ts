@@ -4,7 +4,7 @@ export interface CapasEstado {
   regiones: boolean;
   operaciones: boolean;
   detalleCap2: TipoElementoCap2[];
-  detalleCap1: TipoElementoCap2;
+  detalleCap1: TipoElementoCap2[]; // multi-select en modo regiones
 }
 
 export interface RadioBase {

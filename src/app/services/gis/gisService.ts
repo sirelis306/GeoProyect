@@ -115,7 +115,11 @@ export class Gis {
 
   public getCoordsCentrales(nombreEstado: string) {
     const found = this.estadosSignal().find(e => e.nombre === nombreEstado);
-    if (found) return { lat: found.latitud, lng: found.longitud };
+    if (found) {
+      const lat = Number(found.latitud);
+      const lng = Number(found.longitud);
+      if (!isNaN(lat) && !isNaN(lng)) return { lat, lng };
+    }
     return this.COORD_CENTRALES[nombreEstado];
   }
 
@@ -123,7 +127,7 @@ export class Gis {
     regiones: true,
     operaciones: false,
     detalleCap2: [],
-    detalleCap1: 'antenas'
+    detalleCap1: ['antenas']
   });
 
   zoomLevel = signal<number>(7);
@@ -149,6 +153,51 @@ export class Gis {
     'Insular': '#59afbd'
   };
 
+  public readonly COLORES_ESTADOS: Record<string, string> = {
+    // Región Capital
+    'Distrito Capital': '#ce5461',
+    'Miranda':          '#e57381',
+    'La Guaira':        '#a33d49',
+    // Región Central
+    'Carabobo':         '#f8ab6b',
+    'Aragua':           '#fbc18f',
+    'Cojedes':          '#d68d4f',
+    // Región Los Llanos
+    'Guárico':          '#ffda6b',
+    'Apure':            '#ffe79a',
+    // Región Centro Occidental
+    'Falcón':           '#e0679f',
+    'Lara':             '#eb8db8',
+    'Portuguesa':       '#b84d7f',
+    'Yaracuy':          '#f4b3d1',
+    // Región Zuliana
+    'Zulia':            '#7ab8fc',
+    // Región Los Andes
+    'Mérida':           '#ac7cf8',
+    'Táchira':          '#c4a1fa',
+    'Trujillo':         '#8c5dd6',
+    'Barinas':          '#dcc7ff',
+    // Región Nororiental
+    'Anzoátegui':       '#53c7a4',
+    'Monagas':          '#7ed9bc',
+    'Sucre':            '#3a9c7f',
+    // Región Insular
+    'Nueva Esparta':    '#59afbd',
+    'Dependencias Federales': '#84c8d4',
+    // Región Guayana
+    'Bolívar':          '#55aa69',
+    'Amazonas':         '#7bc28c',
+    'Delta Amacuro':    '#3d824d'
+  };
+
+  /** Devuelve el color específico de un estado, con fallback al color de su región */
+  public getColorEstado(nombreEstado: string): string {
+    if (this.COLORES_ESTADOS[nombreEstado]) return this.COLORES_ESTADOS[nombreEstado];
+    // Fallback: color de la región a la que pertenece
+    const region = this.obtenerRegion(nombreEstado);
+    return this.COLORES_REGIONES_SIGNAL()[region] || '#DEE2E6';
+  }
+
   constructor() {
     this.cargarConfiguracionGeografica();
   }
@@ -172,6 +221,27 @@ export class Gis {
       nombre: nombre,
       color: coloresMapping[nombre] || this.COLORES_REGIONES[nombre] || '#DEE2E6'
     }));
+  }
+
+  /** Devuelve los estados que tienen datos para los tipos activos en Capa 2 (operaciones) */
+  public getEstadosConDatos(): { nombre: string; color: string }[] {
+    const estado = this.capasVisibles();
+    // detalleCap1 ya es TipoElementoCap2[], usamos spread para no crear array anidado
+    const tipos: TipoElementoCap2[] = estado.operaciones ? estado.detalleCap2 : [...estado.detalleCap1];
+
+    const estadosConData = new Set<string>();
+    tipos.forEach(tipo => {
+      this.getDataPorTipo(tipo).forEach((item: any) => {
+        if (item.estado) estadosConData.add(item.estado);
+      });
+    });
+
+    return this.estadosSignal()
+      .filter(e => estadosConData.has(e.nombre))
+      .map(e => ({
+        nombre: e.nombre,
+        color: this.getColorEstado(e.nombre)   // color específico por estado
+      }));
   }
 
   get totalAbonadosSum() {
@@ -354,13 +424,14 @@ export class Gis {
         else if (tipo === 'abonados') extraerDe(this.abonadosSignal());
         else if (tipo === 'agentes') extraerDe(this.agentesSignal());
       });
-    } else if (estado.regiones && estado.detalleCap1 !== 'ninguno') {
-      // Si solo la Capa 1 está activa, extraemos regiones del tipo seleccionado para Capa 1
-      const tipo = estado.detalleCap1;
-      if (tipo === 'antenas') extraerDe(this.radioBasesSignal());
-      else if (tipo === 'oficinas') extraerDe(this.oficinasSignal());
-      else if (tipo === 'abonados') extraerDe(this.abonadosSignal());
-      else if (tipo === 'agentes') extraerDe(this.agentesSignal());
+    } else if (estado.regiones && estado.detalleCap1.length > 0) {
+      // Capa 1 activa: iterar todos los tipos seleccionados (multi-select)
+      estado.detalleCap1.forEach(tipo => {
+        if (tipo === 'antenas') extraerDe(this.radioBasesSignal());
+        else if (tipo === 'oficinas') extraerDe(this.oficinasSignal());
+        else if (tipo === 'abonados') extraerDe(this.abonadosSignal());
+        else if (tipo === 'agentes') extraerDe(this.agentesSignal());
+      });
     } else {
       // Si solo la Capa 1 está activa, extraemos regiones de TODOS los datos
       extraerDe(this.radioBasesSignal());
@@ -448,10 +519,21 @@ export class Gis {
 
   toggleCapa(nombre: keyof CapasEstado) {
     this.capasVisibles.update(estado => {
-      const nuevoEstado = { ...estado, [nombre]: !estado[nombre] };
+      const activar = !estado[nombre];
+      const nuevoEstado = { ...estado, [nombre]: activar };
 
-      // Si desactivamos operaciones, limpiamos detalleCap2
-      if (nombre === 'operaciones' && !nuevoEstado.operaciones) {
+      // Capas mutuamente exclusivas: activar una desactiva la otra
+      if (nombre === 'operaciones' && activar) {
+        nuevoEstado.regiones = false;
+        nuevoEstado.detalleCap1 = [];
+      }
+      if (nombre === 'regiones' && activar) {
+        nuevoEstado.operaciones = false;
+        nuevoEstado.detalleCap2 = [];
+      }
+
+      // Al desactivar operaciones, limpiar detalleCap2
+      if (nombre === 'operaciones' && !activar) {
         nuevoEstado.detalleCap2 = [];
       }
 
@@ -476,25 +558,31 @@ export class Gis {
     });
   }
 
+  /** Activa/desactiva un tipo en la selección múltiple de Capa 1 (Regiones) */
   setDetalleCap1(tipo: TipoElementoCap2) {
-    this.capasVisibles.update(estado => ({
-      ...estado,
-      detalleCap1: tipo
-    }));
+    this.capasVisibles.update(estado => {
+      const actual = Array.isArray(estado.detalleCap1) ? [...estado.detalleCap1] : [estado.detalleCap1];
+      const idx = actual.indexOf(tipo);
+      const nuevo = idx >= 0 ? actual.filter(t => t !== tipo) : [...actual, tipo];
+      return { ...estado, detalleCap1: nuevo.length > 0 ? nuevo : actual }; // nunca vacío
+    });
   }
 
   // Helper para obtener centros de regiones
   getCentroRegion(nombreRegion: string) {
     const estadosDeRegion = this.estadosSignal().filter(e => e.nombre_region === nombreRegion);
-    
-    if (estadosDeRegion.length > 0) {
-      const latSum = estadosDeRegion.reduce((acc, e) => acc + e.latitud, 0);
-      const lngSum = estadosDeRegion.reduce((acc, e) => acc + e.longitud, 0);
 
-      return {
-        lat: latSum / estadosDeRegion.length,
-        lng: lngSum / estadosDeRegion.length
-      };
+    if (estadosDeRegion.length > 0) {
+      // Cast to Number to prevent string concatenation when the API returns string values
+      const latSum = estadosDeRegion.reduce((acc, e) => acc + Number(e.latitud), 0);
+      const lngSum = estadosDeRegion.reduce((acc, e) => acc + Number(e.longitud), 0);
+      const lat = latSum / estadosDeRegion.length;
+      const lng = lngSum / estadosDeRegion.length;
+
+      // If the average produced NaN (e.g. missing coords in DB), fall through to the static fallback
+      if (!isNaN(lat) && !isNaN(lng)) {
+        return { lat, lng };
+      }
     }
 
     // Fallback a coordenadas predefinidas

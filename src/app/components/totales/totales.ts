@@ -32,6 +32,9 @@ export class Totales {
   totalAbonados = computed(() => 
     this.gis.abonadosSignal().reduce((acc, curr) => acc + (curr.cantidad || 0), 0)
   );
-  // Solo se muestra si la Capa 2 está activa
-  visible = computed(() => this.gis.capasVisibles().operaciones);
+  // Se muestra si la Capa 2 (Operaciones) o la Capa 1 (Regiones) están activas
+  visible = computed(() => {
+    const capas = this.gis.capasVisibles();
+    return capas.operaciones || capas.regiones;
+  });
 }

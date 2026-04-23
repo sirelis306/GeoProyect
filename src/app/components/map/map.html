@@ -2,8 +2,19 @@
   <div #mapContainer id="map" style="width: 100%; height: 100%;"></div>
   <app-totales></app-totales>
 
-  <!-- Leyenda de Regiones (Abajo a la Derecha) -->
-  <div class="map-legend-overlay" *ngIf="gis.capasVisibles().regiones">
+  <!-- Leyenda: Estados activos (cuando Capa 2 / Operaciones está activa) -->
+  <div class="map-legend-overlay" *ngIf="gis.capasVisibles().operaciones && gis.getEstadosConDatos().length > 0">
+    <div class="legend-header">ESTADOS CON DATOS</div>
+    <div class="legend-body">
+      <div class="legend-item-map" *ngFor="let est of gis.getEstadosConDatos()">
+        <span class="color-indicator" [style.backgroundColor]="est.color"></span>
+        <span class="region-label">{{ est.nombre }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leyenda: Regiones activas (solo Capa 1, sin operaciones) -->
+  <div class="map-legend-overlay" *ngIf="gis.capasVisibles().regiones && !gis.capasVisibles().operaciones">
     <div class="legend-header">REGIONES ACTIVAS</div>
     <div class="legend-body">
       <div class="legend-item-map" *ngFor="let region of gis.getRegionesConColores()">
@@ -12,4 +23,5 @@
       </div>
     </div>
   </div>
+
 </div>
