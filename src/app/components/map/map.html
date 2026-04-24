@@ -4,7 +4,7 @@
 
   <!-- Leyenda: Estados activos (cuando Capa 2 / Operaciones está activa) -->
   <div class="map-legend-overlay" *ngIf="gis.capasVisibles().operaciones && gis.getEstadosConDatos().length > 0">
-    <div class="legend-header">ESTADOS CON DATOS</div>
+    <div class="legend-header">ESTADOS ACTIVOS</div>
     <div class="legend-body">
       <div class="legend-item-map" *ngFor="let est of gis.getEstadosConDatos()">
         <span class="color-indicator" [style.backgroundColor]="est.color"></span>

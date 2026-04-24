@@ -35,20 +35,20 @@
         </button>
 
         <!-- Selección de elemento para Regiones (Solo si regiones está ON y operaciones está OFF) -->
-        <div class="subcapas-container mini" *ngIf="gis.capasVisibles().regiones && !gis.sidebarColapsado()">
+        <div class="subcapas-container mini" *ngIf="gis.capasVisibles().regiones">
           <div class="section-label">MOSTRAR TOTAL DE:</div>
           <div class="tipo-selector-grid">
             <button class="tipo-btn" [class.active]="gis.capasVisibles().detalleCap1.includes('antenas')" (click)="setDetalleCapa1('antenas')" title="Radio Bases">
-              <i class="fas fa-broadcast-tower"></i>
+              <i class="fas fa-broadcast-tower" style="color: #FF1493;"></i>
             </button>
             <button class="tipo-btn" [class.active]="gis.capasVisibles().detalleCap1.includes('abonados')" (click)="setDetalleCapa1('abonados')" title="Abonados">
-              <i class="fas fa-user-check"></i>
+              <i class="fas fa-user-check" style="color: #00BFFF;"></i>
             </button>
             <button class="tipo-btn" [class.active]="gis.capasVisibles().detalleCap1.includes('oficinas')" (click)="setDetalleCapa1('oficinas')" title="Oficinas">
-              <i class="fas fa-building"></i>
+              <i class="fas fa-building" style="color: #32CD32;"></i>
             </button>
             <button class="tipo-btn" [class.active]="gis.capasVisibles().detalleCap1.includes('agentes')" (click)="setDetalleCapa1('agentes')" title="Agentes">
-              <i class="fas fa-store"></i>
+              <i class="fas fa-store" style="color: #FF8C00;"></i>
             </button>
           </div>
         </div>
@@ -128,144 +128,10 @@
     <span *ngIf="!gis.sidebarColapsado()">Cerrar Sesión</span>
   </button>
 
-  <!-- Overlay del Modal -->
-  <div class="modal-overlay" [class.active]="mostrarForm()">
-    <div class="modal-content">
-      <div class="modal-header">
-        <div>
-          <h3>Agregar Nuevo</h3>
-          <small class="text-blue">{{ tipoEdicion | titlecase }}</small>
-        </div>
-        <button class="close-x" (click)="mostrarForm.set(false)">&times;</button>
-      </div>
-
-      <div class="modal-body">
-        <div class="form-row">
-          <div class="form-group">
-            <label>Estado</label>
-            <ng-select [(ngModel)]="nuevoItem.estado" [items]="listaEstados" [clearable]="false" [searchable]="true"
-              placeholder="Seleccione un estado" class="select-simple">
-            </ng-select>
-          </div>
-          <div class="form-group">
-            <label>Región</label>
-            <input type="text" [value]="gis.obtenerRegion(nuevoItem.estado)" readonly placeholder="Se asigna solo">
-          </div>
-        </div>
-
-        <ng-container *ngIf="tipoEdicion === 'antenas' || tipoEdicion === 'agentes' || tipoEdicion === 'oficinas'">
-          <div class="form-row">
-            <div class="form-group">
-              <label>{{ tipoEdicion === 'agentes' ? 'Razón Social *' : 'Nombre *' }}</label>
-              <input type="text" [(ngModel)]="nuevoItem.nombre"
-                [placeholder]="tipoEdicion === 'agentes' ? 'Razón Social del Agente' : 'Nombre de la Antena/Oficina'"
-                required>
-            </div>
-            <div class="form-group">
-              <label>Dirección</label>
-              <div class="input-with-action">
-                <input type="text" [(ngModel)]="nuevoItem.direccion" placeholder="Ej: Av. Francisco de Miranda"
-                  class="full-width-input">
-                <button type="button" class="action-btn" (click)="guardar()" title="Validar ubicación">
-                  <i class="fas fa-search-location"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        </ng-container>
-
-        <div class="form-group" *ngIf="tipoEdicion === 'antenas'">
-          <div class="form-row">
-            <div class="form-group">
-              <label>Tecnología</label>
-              <ng-select [(ngModel)]="nuevoItem.tecnologia" [items]="opcionesTecnologia" bindLabel="label"
-                bindValue="value" [multiple]="true" [closeOnSelect]="false" [searchable]="false"
-                class="custom-ng-select" placeholder="Seleccione..." appendTo="body"
-                dropdownPanelClass="custom-dropdown-panel">
-
-                <ng-template ng-header-tmp>
-                  <div class="custom-option select-all-option" (click)="toggleAllTecnologias()">
-                    <div class="custom-checkbox" [class.selected]="todasSeleccionadas"
-                      [class.partial]="algunasSeleccionadas && !todasSeleccionadas">
-                      <i class="fas fa-check" *ngIf="todasSeleccionadas"></i>
-                      <i class="fas fa-minus" *ngIf="algunasSeleccionadas && !todasSeleccionadas"></i>
-                    </div>
-                    <span style="font-weight: 500; font-size: 14px;">Seleccionar Todo</span>
-                  </div>
-                </ng-template>
-
-                <ng-template ng-option-tmp let-item="item" let-item$="item$" let-index="index">
-                  <div class="custom-option" [class.active-row]="item$.selected">
-                    <div class="custom-checkbox" [class.selected]="item$.selected">
-                      <i class="fas fa-check" *ngIf="item$.selected"></i>
-                    </div>
-                    <span style="font-size: 14px; font-weight: 400;">{{item.label}}</span>
-                  </div>
-                </ng-template>
-              </ng-select>
-            </div>
-
-            <div class="form-group">
-              <label>Estado de Actividad</label>
-              <ng-select [(ngModel)]="nuevoItem.actividad" [items]="listaActividad" bindLabel="label" bindValue="value"
-                [clearable]="false" [searchable]="false" placeholder="Seleccione" class="select-simple">
-              </ng-select>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-group"
-          *ngIf="tipoEdicion === 'antenas' || tipoEdicion === 'agentes' || tipoEdicion === 'oficinas'">
-          <div class="form-row">
-            <div class="form-group">
-              <label>Longitud</label>
-              <input type="number" [(ngModel)]="nuevoItem.longitud" placeholder="" step="any">
-            </div>
-            <div class="form-group">
-              <label>Latitud</label>
-              <input type="number" [(ngModel)]="nuevoItem.latitud" placeholder="" step="any">
-            </div>
-          </div>
-        </div>
-
-        <div *ngIf="tipoEdicion === 'abonados'" class="form-group">
-          <label>Segmentación de Cartera</label>
-          <ng-select [(ngModel)]="nuevoItem.segmentacion_elegida" class="select-simple" [clearable]="false"
-            [searchable]="false" placeholder="Seleccione segmentación">
-            <ng-option value="3G">3G</ng-option>
-            <ng-option value="4G">4G</ng-option>
-            <ng-option value="5G">5G</ng-option>
-          </ng-select>
-        </div>
-
-        <div *ngIf="tipoEdicion === 'agentes'">
-          <div class="form-row">
-            <div class="form-group">
-              <label>Código Dealer *</label>
-              <input type="text" [(ngModel)]="nuevoItem.codigoDealer" placeholder="Ej: AA001" required>
-            </div>
-            <div class="form-group">
-              <label>Clasificación *</label>
-              <ng-select [(ngModel)]="nuevoItem.clasificacion" [items]="clasificaciones" [clearable]="false"
-                [searchable]="false" placeholder="Seleccione..." class="select-simple" required>
-              </ng-select>
-            </div>
-          </div>
-        </div>
-
-        <div *ngIf="tipoEdicion === 'abonados'" class="form-group">
-          <label>Cantidad Total</label>
-          <input type="number" [(ngModel)]="nuevoItem.cantidad" placeholder="Ej: 1500">
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn-cancel" (click)="mostrarForm.set(false)">Cancelar</button>
-        <button class="btn-save" [disabled]="enviando" (click)="guardar()">
-          <span *ngIf="!enviando">Guardar</span>
-          <span *ngIf="enviando">...</span>
-        </button>
-      </div>
-    </div>
-  </div>
+  <app-add-element 
+    [tipo]="tipoEdicion" 
+    [visible]="mostrarForm()" 
+    (onClose)="mostrarForm.set(false)" 
+    (onSaved)="onElementSaved()">
+  </app-add-element>
 </div>

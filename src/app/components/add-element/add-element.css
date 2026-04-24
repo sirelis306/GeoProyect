@@ -1,0 +1,306 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999999 !important;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease-in-out;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-content {
+  background: #ffffff;
+  padding: 32px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 480px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+  z-index: 100000;
+  position: relative;
+  font-family: 'Poppins', sans-serif;
+  transform: translateY(-20px);
+  transition: transform 0.3s ease-in-out;
+}
+
+.modal-overlay.active .modal-content {
+  transform: translateY(0);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-shrink: 0;
+}
+
+.modal-header h3 {
+  margin: 0px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.modal-header small.text-blue {
+  color: #3240A5;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.close-x {
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: #888;
+  padding: 0;
+  line-height: 1;
+}
+
+.close-x:hover {
+  color: #3240A5;
+}
+
+.modal-body {
+  margin-bottom: 15px;
+  overflow-y: auto;
+  flex: 1;
+  padding-right: 5px;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+@media (min-width: 640px) {
+  .form-row {
+    flex-direction: row;
+  }
+}
+
+.form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+}
+
+.form-group label {
+  font-weight: 600;
+  font-size: 14px;
+  color: #1a1a1a;
+  margin-bottom: 6px;
+}
+
+.form-group input,
+.form-group select {
+  padding: 13px 14px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #ffffff;
+  font-size: 14px;
+  color: #495057;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #4155e9;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(65, 85, 233, 0.1);
+}
+
+.form-group input[readonly] {
+  background: #f1f3f5;
+  color: #6c757d;
+  cursor: not-allowed;
+  border-color: #e8e8e8;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.custom-option {
+  display: flex;
+  align-items: center;
+  font-family: 'Poppins', sans-serif;
+  gap: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.custom-option:hover {
+  background: #f8f9fa;
+}
+
+.custom-checkbox {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1px solid #ced4da;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.custom-checkbox.selected {
+  background: #4f46e5;
+  border-color: #4f46e5;
+}
+
+.custom-checkbox i {
+  font-size: 10px;
+  color: white;
+}
+
+.btn-cancel {
+  background: #f1f3f5;
+  color: #1a1a1a;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-save {
+  background: #3240A5;
+  color: #ffffff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-save:disabled {
+  background: #adb5bd;
+  cursor: not-allowed;
+}
+
+
+/* Ng-select specific overrides */
+::ng-deep .select-simple .ng-select-container {
+  min-height: 48px !important;
+  border-radius: 10px !important;
+}
+
+::ng-deep .select-simple .ng-input {
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+::ng-deep .select-simple.ng-select-focused .ng-select-container {
+  border-color: #3240A5 !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(50, 64, 165, 0.1) !important;
+}
+
+::ng-deep .custom-ng-select .ng-select-container {
+  border-radius: 10px !important;
+  border: 1px solid #e0e0e0 !important;
+  background: #f8f9fa !important;
+  min-height: 48px !important;
+  padding: 0 4px;
+  align-items: center !important;
+  box-shadow: none !important;
+  transition: all 0.2s;
+}
+
+::ng-deep .custom-ng-select.ng-select-focused .ng-select-container {
+  border-color: #3240A5 !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(50, 64, 165, 0.1) !important;
+}
+
+::ng-deep .custom-ng-select .ng-select-container .ng-value-container {
+  display: flex !important;
+  align-items: center !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  height: 100% !important;
+  margin-top: 0 !important;
+}
+
+::ng-deep .custom-ng-select .ng-value-container {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 4px !important;
+  padding: 5px !important;
+  align-items: center !important;
+}
+
+::ng-deep .custom-ng-select .ng-value {
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  font-size: 11px !important;
+  background: #f0f2ff !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+}
+
+::ng-deep .custom-ng-select .ng-placeholder {
+  grid-column: span 2;
+  position: absolute !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  padding-left: 5px !important;
+  margin: 0 !important;
+}
+
+::ng-deep .custom-ng-select .ng-input {
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+::ng-deep .ng-dropdown-panel {
+  border-radius: 12px !important;
+  border: 1px solid #eee !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+  margin-top: 6px !important;
+  overflow: hidden !important;
+  z-index: 1000001 !important;
+  font-family: 'Poppins', sans-serif !important;
+}
+
+::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items {
+  max-height: 150px !important;
+  font-family: 'Poppins', sans-serif !important;
+}
+
+::ng-deep .ng-dropdown-panel .ng-option {
+  font-size: 13px !important;
+  padding: 8px 12px !important;
+  font-family: 'Poppins', sans-serif !important;
+}

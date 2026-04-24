@@ -7,11 +7,12 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth/authService';
 import { RouterModule } from '@angular/router';
+import { AddElementComponent } from '../add-element/add-element';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, NgSelectModule, RouterModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, NgSelectModule, RouterModule, AddElementComponent],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.css',
 })
@@ -22,42 +23,6 @@ export class Sidebar {
 
   mostrarForm = signal(false);
   tipoEdicion: TipoElemento = 'ninguno';
-  nuevoItem: any = { nombre: '', estado: '', region: '', latitud: null, longitud: null, tecnologia: [] };
-  busquedaAntena: string = '';
-  get listaEstados(): string[] {
-    const estadosDeDB = this.gis.estadosSignal().map(e => e.nombre);
-    return estadosDeDB.length > 0 ? estadosDeDB : [
-      'Amazonas', 'Anzoátegui', 'Apure', 'Aragua', 'Barinas', 'Bolívar', 'Carabobo', 'Cojedes', 'Delta Amacuro',
-      'Distrito Capital', 'Falcón', 'Guárico', 'La Guaira', 'Lara', 'Mérida', 'Miranda', 'Monagas', 'Nueva Esparta', 'Portuguesa',
-      'Sucre', 'Táchira', 'Trujillo', 'Yaracuy', 'Zulia', 'Dependencias Federales'
-    ];
-  }
-
-  listaActividad = ['Operativa', 'Mantenimiento', 'Vandalizada'];
-  clasificaciones = ['AA', 'ACI', 'PYME', 'Compartida'];
-  enviando = false;
-  opcionesTecnologia = [
-    { value: 'GSM', label: 'GSM' },
-    { value: 'UMTS', label: 'UMTS' },
-    { value: 'LTE', label: 'LTE' },
-    { value: 'NR', label: 'NR' }
-  ];
-
-  get todasSeleccionadas(): boolean {
-    return this.nuevoItem.tecnologia?.length === this.opcionesTecnologia.length;
-  }
-
-  get algunasSeleccionadas(): boolean {
-    return this.nuevoItem.tecnologia?.length > 0;
-  }
-
-  toggleAllTecnologias() {
-    if (this.todasSeleccionadas) {
-      this.nuevoItem.tecnologia = [];
-    } else {
-      this.nuevoItem.tecnologia = this.opcionesTecnologia.map(t => t.value);
-    }
-  }
 
   get esAdmin(): boolean {
     const rol = this.auth.getUserRol();
@@ -67,104 +32,12 @@ export class Sidebar {
   constructor(public router: Router) { }
 
   abrirModal(tipo: TipoElemento) {
-    console.log('Abriendo modal para:', tipo);
     this.tipoEdicion = tipo;
     this.mostrarForm.set(true);
-    this.resetearFormulario();
   }
 
-  abrirMenuTech() {
-    this.selectTech.open();
-  }
-
-  // En el componente donde registras el ítem
-  validarCoordenadas(lat: number, lng: number): boolean {
-    const limites = {
-      latMin: 0.6, latMax: 12.2,
-      lngMin: -73.3, lngMax: -59.7
-    };
-
-    if (lat < limites.latMin || lat > limites.latMax ||
-      lng < limites.lngMin || lng > limites.lngMax) {
-      alert("Las coordenadas están fuera de Venezuela. Por favor, verifícalas.");
-      return false;
-    }
-    return true;
-  }
-
-  registroForm = new FormGroup({
-    nombre: new FormControl('', [Validators.required, Validators.minLength(3)]),
-    direccion: new FormControl('', [Validators.required]),
-    latitud: new FormControl('', [Validators.required, Validators.pattern(/^-?\d+(\.\d+)?$/)]),
-    longitud: new FormControl('', [Validators.required, Validators.pattern(/^-?\d+(\.\d+)?$/)])
-  });
-
-  async guardar() {
-    try {
-      this.enviando = true;
-      // Construir e inspeccionar los datos en el servicio
-      const itemFinal = await this.gis.construirYValidarElemento(this.tipoEdicion, this.nuevoItem);
-
-      // Si pasaron todas las validaciones sin lanzar error, se inserta
-      this.gis.agregarElemento(this.tipoEdicion, itemFinal).subscribe({
-        next: (res: any) => {
-          this.gis.cargarDatos();
-          this.mostrarForm.set(false);
-          this.resetearFormulario();
-          this.enviando = false;
-        },
-        error: (err) => {
-          this.enviando = false;
-          const mensaje = err.error?.mensaje || 'Error al guardar en la base de datos';
-          alert(mensaje);
-        }
-      });
-    } catch (error: any) {
-      this.enviando = false;
-      alert(error.message);
-    }
-  }
-
-  // Lógica principal de guardado corregida
-  async guardarItem() {
-    const formValue = this.registroForm.value;
-    let latitud = formValue.latitud;
-    let longitud = formValue.longitud;
-
-    if (!latitud || !longitud) {
-      // LLAMADA AL SERVICIO EN LUGAR DE LOCAL
-      const coords = await this.gis.obtenerCoordsDesdeDireccion(formValue.direccion);
-      if (coords) {
-        this.registroForm.patchValue({
-          latitud: coords.lat.toString(),
-          longitud: coords.lng.toString()
-        });
-        latitud = coords.lat.toString();
-        longitud = coords.lng.toString();
-      } else {
-        return alert("No se encontró la ubicación.");
-      }
-    }
-    // LLAMADA AL SERVICIO PARA GUARDAR
-    this.gis.enviarAlServidor(this.registroForm.value);
-    this.registroForm.reset();
-  }
-
-  // Función auxiliar para limpiar 
-  resetearFormulario() {
-    this.nuevoItem = {
-      nombre: '',
-      estado: null,
-      latitud: null,
-      longitud: null,
-      direccion: '',
-      cantidad: null,
-      actividad: 'Operativa',
-      tecnologia: [],
-      segmentacion_elegida: '4G',
-      codigoDealer: '',
-      clasificacion: null
-    };
+  onElementSaved() {
+    this.gis.cargarDatos();
   }
 
   salir() {

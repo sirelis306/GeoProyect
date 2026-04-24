@@ -1,0 +1,130 @@
+<div class="modal-overlay" [class.active]="visible">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div>
+        <h3>Agregar Nuevo</h3>
+        <small class="text-blue">{{ tipo | titlecase }}</small>
+      </div>
+      <button class="close-x" (click)="cerrar()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Estado</label>
+          <ng-select [(ngModel)]="nuevoItem.estado" [items]="listaEstados" [clearable]="false" [searchable]="true"
+            placeholder="Seleccione un estado" class="select-simple" appendTo="body">
+          </ng-select>
+        </div>
+        <div class="form-group">
+          <label>Región</label>
+          <input type="text" [value]="getRegion(nuevoItem.estado)" readonly placeholder="Se asigna solo">
+        </div>
+      </div>
+
+      <ng-container *ngIf="tipo === 'antenas' || tipo === 'agentes' || tipo === 'oficinas'">
+        <div class="form-row">
+          <div class="form-group">
+            <label>{{ tipo === 'agentes' ? 'Razón Social *' : 'Nombre *' }}</label>
+            <input type="text" [(ngModel)]="nuevoItem.nombre"
+              [placeholder]="tipo === 'agentes' ? 'Razón Social del Agente' : 'Nombre'" required>
+          </div>
+          <div class="form-group">
+            <label>Dirección</label>
+            <input type="text" [(ngModel)]="nuevoItem.direccion" placeholder="Ej: Av. Francisco de Miranda">
+          </div>
+        </div>
+      </ng-container>
+
+      <div class="form-group" *ngIf="tipo === 'antenas'">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Tecnología</label>
+            <ng-select [(ngModel)]="nuevoItem.tecnologia" [items]="opcionesTecnologia" bindLabel="label"
+              bindValue="value" [multiple]="true" [closeOnSelect]="false" [searchable]="false" class="custom-ng-select"
+              placeholder="Seleccione..." appendTo="body" dropdownPanelClass="custom-dropdown-panel">
+
+              <ng-template ng-header-tmp>
+                <div class="custom-option select-all-option" (click)="toggleAllTecnologias()">
+                  <div class="custom-checkbox" [class.selected]="todasSeleccionadas"
+                    [class.partial]="algunasSeleccionadas && !todasSeleccionadas">
+                    <i class="fas fa-check" *ngIf="todasSeleccionadas"></i>
+                    <i class="fas fa-minus" *ngIf="algunasSeleccionadas && !todasSeleccionadas"></i>
+                  </div>
+                  <span style="font-weight: 500; font-size: 14px;">Seleccionar Todo</span>
+                </div>
+              </ng-template>
+
+              <ng-template ng-option-tmp let-item="item" let-item$="item$" let-index="index">
+                <div class="custom-option" [class.active-row]="item$.selected">
+                  <div class="custom-checkbox" [class.selected]="item$.selected">
+                    <i class="fas fa-check" *ngIf="item$.selected"></i>
+                  </div>
+                  <span style="font-size: 14px; font-weight: 400;">{{item.label}}</span>
+                </div>
+              </ng-template>
+            </ng-select>
+          </div>
+
+          <div class="form-group">
+            <label>Estado de Actividad</label>
+            <ng-select [(ngModel)]="nuevoItem.actividad" [items]="listaActividad" bindLabel="label" bindValue="value"
+              [clearable]="false" [searchable]="false" placeholder="Seleccione" class="select-simple" appendTo="body">
+            </ng-select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group" *ngIf="tipo === 'antenas' || tipo === 'agentes' || tipo === 'oficinas'">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Longitud</label>
+            <input type="number" [(ngModel)]="nuevoItem.longitud" placeholder="" step="any">
+          </div>
+          <div class="form-group">
+            <label>Latitud</label>
+            <input type="number" [(ngModel)]="nuevoItem.latitud" placeholder="" step="any">
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="tipo === 'abonados'" class="form-group">
+        <label>Segmentación de Cartera</label>
+        <ng-select [(ngModel)]="nuevoItem.segmentacion_elegida" class="select-simple" [clearable]="false"
+          [searchable]="false" placeholder="Seleccione segmentación" appendTo="body">
+          <ng-option value="3G">3G</ng-option>
+          <ng-option value="4G">4G</ng-option>
+          <ng-option value="5G">5G</ng-option>
+        </ng-select>
+      </div>
+
+      <div *ngIf="tipo === 'agentes'">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Código Dealer *</label>
+            <input type="text" [(ngModel)]="nuevoItem.codigoDealer" placeholder="Ej: AA001" required>
+          </div>
+          <div class="form-group">
+            <label>Clasificación *</label>
+            <ng-select [(ngModel)]="nuevoItem.clasificacion" [items]="clasificaciones" [clearable]="false"
+              [searchable]="false" placeholder="Seleccione..." class="select-simple" required appendTo="body">
+            </ng-select>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="tipo === 'abonados'" class="form-group">
+        <label>Cantidad Total</label>
+        <input type="number" [(ngModel)]="nuevoItem.cantidad" placeholder="Ej: 1500">
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="cerrar()">Cancelar</button>
+      <button class="btn-save" [disabled]="enviando" (click)="guardar()">
+        <span *ngIf="!enviando">Guardar</span>
+        <span *ngIf="enviando">...</span>
+      </button>
+    </div>
+  </div>
+</div>

@@ -8,6 +8,12 @@ export class MapService {
   private coord = inject(CoordService);
   private element = inject(ElementService);
 
+  constructor() {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      this.sidebarColapsado.set(true);
+    }
+  }
+
   // Estado de UI
   capasVisibles = signal<CapasEstado>({
     regiones: true,
