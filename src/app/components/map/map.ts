@@ -1,8 +1,8 @@
 import { Component, AfterViewInit, inject, ElementRef, ViewChild, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Gis } from '../../services/gis/gisService';
-import { RadioBase, Oficina, Abonado, Agente, TipoElementoCap2 } from '../../models/gis';
+import { GisService as Gis } from '../../services/gis/gisService';
+import { RadioBase, Oficina, Abonado, Agente, TipoElemento } from '../../models/gis';
 import * as L from 'leaflet';
 import { Totales } from "../totales/totales";
 
@@ -161,7 +161,7 @@ export class Map implements AfterViewInit {
           // Lógica de filtrado:
           const regionesActivas = this.gis.getRegionesConDatos();
           const estaActiva = regionesActivas.includes(region);
-          const colorRegion = estaActiva ? (this.gis.COLORES_REGIONES[region] || '#DEE2E6') : 'transparent';
+          const colorRegion = estaActiva ? (this.gis.COLORES_REGIONES_SIGNAL()[region] || '#DEE2E6') : 'transparent';
 
           return {
             fillColor: colorRegion,
@@ -185,8 +185,8 @@ export class Map implements AfterViewInit {
 
   // --- MÉTODOS DE RENDERIZADO ---
 
-  private renderIndividualMarkers(tipos: TipoElementoCap2[]) {
-    const crearPinIcon = (tipo: TipoElementoCap2) => {
+  private renderIndividualMarkers(tipos: TipoElemento[]) {
+    const crearPinIcon = (tipo: TipoElemento) => {
       const config = this.configIconos[tipo];
       return L.divIcon({
         html: `<div class="custom-pin-marker pin-${tipo}">
@@ -211,8 +211,7 @@ export class Map implements AfterViewInit {
         .forEach(a => {
           const popup = this.crearPopupDetalle(cfg, [
             { label: 'Nombre',       value: a.nombre },
-            { label: 'Estado',       value: a.estado },
-            { label: 'Región',       value: a.region },
+            { label: 'Ubicación',    value: `${a.estado} (${a.region})` },
             { label: 'Tecnología',   value: a.tecnologia },
             { label: 'Actividad',    value: a.actividad, badge: true },
             { label: 'Dirección',    value: a.direccion },
@@ -231,8 +230,7 @@ export class Map implements AfterViewInit {
       this.gis.oficinasSignal().forEach(o => {
         const popup = this.crearPopupDetalle(cfg, [
           { label: 'Nombre',      value: o.nombre },
-          { label: 'Estado',      value: o.estado },
-          { label: 'Región',      value: o.region },
+          { label: 'Ubicación',   value: `${o.estado} (${o.region})` },
           { label: 'Dirección',   value: o.direccion },
           { label: 'Coordenadas', value: fmtCoords(o.latitud, o.longitud), coords: true }
         ]);
@@ -249,8 +247,7 @@ export class Map implements AfterViewInit {
       this.gis.agentesSignal().forEach(ag => {
         const popup = this.crearPopupDetalle(cfg, [
           { label: 'Nombre',        value: ag.nombre },
-          { label: 'Estado',        value: ag.estado },
-          { label: 'Región',        value: ag.region },
+          { label: 'Ubicación',     value: `${ag.estado} (${ag.region})` },
           { label: 'Cód. Dealer',   value: ag.codigoDealer },
           { label: 'Clasificación', value: ag.clasificacion, badge: true },
           { label: 'Dirección',     value: ag.direccion },
@@ -265,55 +262,63 @@ export class Map implements AfterViewInit {
 
     if (tipos.includes('abonados')) {
       const icon = crearPinIcon('abonados');
-      const cfg  = this.configIconos['abonados'];
-
+      const cfg = this.configIconos['abonados'];
       const todos = this.gis.abonadosSignal();
 
-      // --- Flujo 1: abonados CON dirección → pin individual con ubicación específica ---
-      todos.filter(ab => !!ab.direccion).forEach(ab => {
-        const popup = this.crearPopupDetalle(cfg, [
-          { label: 'Nombre',       value: ab.nombre },
-          { label: 'Estado',       value: ab.estado },
-          { label: 'Región',       value: ab.region },
-          { label: 'Segmentación', value: ab.segmentacion, badge: true },
-          { label: 'Cantidad',     value: (ab.cantidad ?? 0).toLocaleString() },
-          { label: 'Dirección',    value: ab.direccion },
-          { label: 'Coordenadas',  value: fmtCoords(ab.latitud, ab.longitud), coords: true }
-        ]);
-        L.marker([Number(ab.latitud), Number(ab.longitud)], { icon })
-          .bindPopup(popup, { maxWidth: 290 })
-          .addTo(this.abonados);
-      });
-
-      // --- Flujo 2: abonados SIN dirección → agrupados por estado (desglose por segmentación) ---
-      type GrupoAbonado = { estado: string; region: string; lat: number; lng: number; segs: Record<string, number> };
+      // Agrupamos por coordenadas y nombre para consolidar segmentaciones
+      type GrupoAbonado = { 
+        nombre: string; 
+        estado: string; 
+        region: string; 
+        lat: number; 
+        lng: number; 
+        direccion?: string; 
+        segs: Record<string, number> 
+      };
       const grupos: Record<string, GrupoAbonado> = {};
 
-      todos.filter(ab => !ab.direccion).forEach(ab => {
-        if (!grupos[ab.estado]) {
-          grupos[ab.estado] = {
+      todos.forEach(ab => {
+        const key = `${Number(ab.latitud).toFixed(5)}_${Number(ab.longitud).toFixed(5)}`;
+        if (!grupos[key]) {
+          // Limpiamos el nombre para que no diga "4G" o "3G" en el título si vamos a mostrar varios
+          const nombreLimpio = ab.nombre.replace(/ 3G| 4G| 5G/gi, '');
+          grupos[key] = {
+            nombre: nombreLimpio,
             estado: ab.estado,
             region: ab.region,
             lat: Number(ab.latitud),
             lng: Number(ab.longitud),
+            direccion: ab.direccion,
             segs: {}
           };
         }
-        const g = grupos[ab.estado];
-        g.segs[ab.segmentacion] = (g.segs[ab.segmentacion] || 0) + (Number(ab.cantidad) || 0);
+        grupos[key].segs[ab.segmentacion] = (grupos[key].segs[ab.segmentacion] || 0) + (Number(ab.cantidad) || 0);
       });
 
-      Object.values(grupos).forEach((g: GrupoAbonado) => {
-        const total = Object.values(g.segs).reduce((a: number, b: number) => a + b, 0);
-        const popup = this.crearPopupDetalle(cfg, [
-          { label: 'Estado',      value: g.estado },
-          { label: 'Región',      value: g.region },
-          { label: 'Total',       value: total.toLocaleString() },
-          { label: 'Desglose',    breakdown: g.segs },
-          { label: 'Coordenadas', value: fmtCoords(g.lat, g.lng), coords: true }
-        ]);
+      Object.values(grupos).forEach(g => {
+        const total = Object.values(g.segs).reduce((a, b) => a + b, 0);
+        const popupRows: any[] = [
+          { label: 'Nombre', value: g.nombre },
+          { label: 'Ubicación', value: `${g.estado} (${g.region})` },
+        ];
+
+        // Si hay más de una segmentación, mostramos el desglose
+        const numSegs = Object.keys(g.segs).length;
+        if (numSegs > 1) {
+          popupRows.push({ label: 'Desglose', breakdown: g.segs });
+          popupRows.push({ label: 'Total General', value: total.toLocaleString(), badge: true });
+        } else {
+          // Si solo hay una, lo mostramos simple como antes
+          const [seg, cant] = Object.entries(g.segs)[0];
+          popupRows.push({ label: 'Segmentación', value: seg, badge: true });
+          popupRows.push({ label: 'Cantidad', value: cant.toLocaleString() });
+        }
+
+        if (g.direccion) popupRows.push({ label: 'Dirección', value: g.direccion });
+        popupRows.push({ label: 'Coordenadas', value: fmtCoords(g.lat, g.lng), coords: true });
+
         L.marker([g.lat, g.lng], { icon })
-          .bindPopup(popup, { maxWidth: 270 })
+          .bindPopup(this.crearPopupDetalle(cfg, popupRows), { maxWidth: 300 })
           .addTo(this.abonados);
       });
 
@@ -357,7 +362,7 @@ export class Map implements AfterViewInit {
       </div>`;
   }
 
-  private renderStateTotals(tipos: TipoElementoCap2[]) {
+  private renderStateTotals(tipos: TipoElemento[]) {
     const estados = this.gis.estadosSignal();
 
     estados.forEach(est => {
@@ -387,7 +392,7 @@ export class Map implements AfterViewInit {
     });
   }
 
-  private renderRegionTotals(tipos: TipoElementoCap2[]) {
+  private renderRegionTotals(tipos: TipoElemento[]) {
     const regiones = this.gis.regionesSignal();
     regiones.forEach(reg => {
       const items: any[] = [];

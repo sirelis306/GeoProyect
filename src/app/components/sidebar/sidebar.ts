@@ -1,8 +1,8 @@
 import { Component, inject, ViewChild, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Gis } from '../../services/gis/gisService';
+import { GisService } from '../../services/gis/gisService';
 import { FormsModule, ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
-import { CapasEstado, TipoElementoCap2 } from '../../models/gis';
+import { CapasEstado, TipoElemento } from '../../models/gis';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth/authService';
@@ -16,12 +16,12 @@ import { RouterModule } from '@angular/router';
   styleUrl: './sidebar.css',
 })
 export class Sidebar {
-  public gis = inject(Gis);
+  public gis = inject(GisService);
   public auth = inject(AuthService);
   @ViewChild('selectTech') selectTech: any;
 
   mostrarForm = signal(false);
-  tipoEdicion: TipoElementoCap2 = 'ninguno';
+  tipoEdicion: TipoElemento = 'ninguno';
   nuevoItem: any = { nombre: '', estado: '', region: '', latitud: null, longitud: null, tecnologia: [] };
   busquedaAntena: string = '';
   get listaEstados(): string[] {
@@ -66,7 +66,7 @@ export class Sidebar {
 
   constructor(public router: Router) { }
 
-  abrirModal(tipo: TipoElementoCap2) {
+  abrirModal(tipo: TipoElemento) {
     console.log('Abriendo modal para:', tipo);
     this.tipoEdicion = tipo;
     this.mostrarForm.set(true);
@@ -181,15 +181,15 @@ export class Sidebar {
     }
   }
 
-  isActive(tipo: TipoElementoCap2): boolean {
+  isActive(tipo: TipoElemento): boolean {
     return this.gis.capasVisibles().detalleCap2.includes(tipo);
   }
 
-  setDetalle(tipo: TipoElementoCap2) {
+  setDetalle(tipo: TipoElemento) {
     this.gis.setDetalleCap2(tipo);
   }
 
-  setDetalleCapa1(tipo: TipoElementoCap2) {
+  setDetalleCapa1(tipo: TipoElemento) {
     this.gis.setDetalleCap1(tipo);
   }
 }

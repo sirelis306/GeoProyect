@@ -1,10 +1,10 @@
-export type TipoElementoCap2 = 'antenas' | 'abonados' | 'oficinas' | 'agentes' | 'ninguno';
+export type TipoElemento = 'antenas' | 'abonados' | 'oficinas' | 'agentes' | 'ninguno';
 
 export interface CapasEstado {
   regiones: boolean;
   operaciones: boolean;
-  detalleCap2: TipoElementoCap2[];
-  detalleCap1: TipoElementoCap2[]; // multi-select en modo regiones
+  detalleCap2: TipoElemento[];
+  detalleCap1: TipoElemento[];
 }
 
 export interface RadioBase {
@@ -62,6 +62,7 @@ export interface Estado {
   longitud: number;
   nombre_region: string;
   color_region: string;
+  color_estado?: string;
 }
 
 export interface Region {
