@@ -1,24 +1,33 @@
 .sidebar {
   padding: 20px;
   font-family: sans-serif;
-  width: 280px;
-  min-width: 280px;
+  width: clamp(240px, 20vw, 280px);
+  min-width: clamp(240px, 20vw, 280px);
   background: white;
-  height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  overflow-x: hidden;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
   margin: 0;
   box-sizing: border-box;
-  transition: width 0.3s ease, min-width 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @media (max-width: 768px) {
   .sidebar {
-    width: 240px;
-    min-width: 240px;
-    padding: 15px;
+    width: 75vw;
+    max-width: 260px;
+    min-width: 200px;
+    padding: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    width: 85vw;
+    max-width: 250px;
   }
 }
 
@@ -39,8 +48,7 @@
   overflow-y: auto;
 }
 
-.btn-logout,
-.btn-collapse {
+.btn-logout {
   margin-top: auto;
   padding: 16px 20px;
   background: transparent;
@@ -53,9 +61,41 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 12px;
   transition: all 0.2s ease;
   width: 100%;
+}
+
+.btn-toggle {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.btn-toggle:hover {
+  color: #3240A5;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 25px;
+  width: 100%;
+}
+
+.sidebar-header.collapsed {
+  flex-direction: column-reverse;
+  gap: 15px;
+  margin-bottom: 20px;
 }
 
 .btn-logout {
@@ -67,11 +107,6 @@
   background-color: #fef2f2;
 }
 
-.btn-collapse:hover {
-  background-color: #f8fafc;
-  color: #3240A5;
-}
-
 .header-divider {
   border: 0;
   border-top: 1px solid #f1f5f9;
@@ -81,7 +116,6 @@
 .brand {
   display: flex;
   align-items: center;
-  margin-bottom: 30px;
 }
 
 .brand-text strong {
@@ -107,9 +141,10 @@
 
 @media (max-width: 768px) {
   .brand-icon {
-    width: 38px;
-    height: 38px;
-    font-size: 18px;
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+    border-radius: 8px;
   }
 }
 
@@ -177,25 +212,35 @@
   width: 24px;
   text-align: center;
   margin-right: 12px;
-  font-size: 20px; /* Tamaño grande para desktop */
+  font-size: 20px;
   transition: all 0.2s ease;
 }
 
-.subcapa-item .layer-icon {
+.subcapa-item .layer-icon,
+.tipo-btn .layer-icon {
   font-size: 18px;
   margin-right: 10px;
 }
 
+.tipo-btn .layer-icon {
+  margin-right: 0;
+}
+
 @media (max-width: 768px) {
   .layer-icon {
-    font-size: 16px; /* Tamaño normal para móvil */
-    width: 20px;
-    margin-right: 8px;
-  }
-  
-  .subcapa-item .layer-icon {
-    font-size: 15px;
+    font-size: 14px;
+    width: 18px;
     margin-right: 6px;
+  }
+
+  .subcapa-item .layer-icon,
+  .tipo-btn .layer-icon {
+    font-size: 13px;
+    margin-right: 4px;
+  }
+
+  .tipo-btn .layer-icon {
+    margin-right: 0;
   }
 }
 
@@ -310,9 +355,9 @@
 
 /* MODO COLAPSADO */
 :host.collapsed .sidebar {
-  width: 80px !important;
-  min-width: 80px !important;
-  padding: 15px 2px 5px 2px !important;
+  width: clamp(60px, 15vw, 75px) !important;
+  min-width: clamp(60px, 15vw, 75px) !important;
+  padding: 15px 0 5px 0 !important;
 }
 
 :host.collapsed .brand {
@@ -326,13 +371,17 @@
 
 :host.collapsed .layer-item,
 :host.collapsed .btn-logout,
-:host.collapsed .btn-collapse {
+:host.collapsed .btn-toggle {
   justify-content: center !important;
   padding: 0 !important;
   width: 44px !important;
   height: 44px !important;
-  margin: 0 auto 8px !important;
+  margin: 0 auto 8px auto !important;
   flex: none !important;
+}
+
+:host.collapsed .btn-toggle {
+  margin: 0 !important;
 }
 
 :host.collapsed .subcapa-item,
@@ -341,7 +390,7 @@
   padding: 0 !important;
   width: 38px !important;
   height: 38px !important;
-  margin: 0 auto 6px !important;
+  margin: 0 auto 6px auto !important;
   flex: none !important;
 }
 
@@ -351,7 +400,28 @@
   flex-direction: column;
   gap: 2px;
   align-items: center;
+  width: 100%;
   margin-top: 0;
+}
+
+@media (max-width: 400px) {
+  :host.collapsed .sidebar {
+    width: 55px !important;
+    min-width: 55px !important;
+  }
+
+  :host.collapsed .layer-item,
+  :host.collapsed .btn-logout,
+  :host.collapsed .btn-toggle {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  :host.collapsed .subcapa-item,
+  :host.collapsed .tipo-btn {
+    width: 34px !important;
+    height: 34px !important;
+  }
 }
 
 

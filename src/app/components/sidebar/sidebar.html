@@ -1,12 +1,19 @@
 <div class="sidebar">
   <div class="sidebar-main-content">
-    <div class="brand">
-      <div class="brand-icon">
-        <i class="fas fa-map"></i>
+    <div class="sidebar-header" [class.collapsed]="gis.sidebarColapsado()">
+      <div class="brand">
+        <div class="brand-icon">
+          <i class="fas fa-map"></i>
+        </div>
+        <div class="brand-text" *ngIf="!gis.sidebarColapsado()">
+          <strong>STERIÁ</strong>
+        </div>
       </div>
-      <div class="brand-text" *ngIf="!gis.sidebarColapsado()">
-        <strong>STERIÁ</strong>
-      </div>
+
+      <button class="btn-toggle" (click)="gis.sidebarColapsado.set(!gis.sidebarColapsado())"
+        [title]="gis.sidebarColapsado() ? 'Expandir Menú' : 'Colapsar Menú'">
+        <i class="fas fa-bars layer-icon"></i>
+      </button>
     </div>
     <hr class="header-divider">
 
@@ -27,33 +34,44 @@
     <ng-container *ngIf="router.url === '/mapa'">
       <div class="section-label" *ngIf="!gis.sidebarColapsado()">CONTROL DE CAPAS</div>
       <div class="layer-list">
-        <!-- Capa 1: Regiones -->
+        <!-- Capa Cotas -->
+        <button class="layer-item" [class.active]="gis.capasVisibles().cotas" (click)="toggle('cotas')"
+          [title]="gis.sidebarColapsado() ? 'Cotas' : ''">
+          <i class="fas fa-mountain layer-icon" style="color: #3240A5;"></i>
+          <span *ngIf="!gis.sidebarColapsado()">Cotas</span>
+        </button>
+
+        <!-- Regiones -->
         <button class="layer-item" [class.active]="gis.capasVisibles().regiones" (click)="toggle('regiones')"
           [title]="gis.sidebarColapsado() ? 'Regiones' : ''">
           <i class="fas fa-layer-group layer-icon" style="color: #3240A5;"></i>
           <span *ngIf="!gis.sidebarColapsado()">Regiones</span>
         </button>
 
-        <!-- Selección de elemento para Regiones (Solo si regiones está ON y operaciones está OFF) -->
+        <!-- Selección de elemento para Regiones -->
         <div class="subcapas-container mini" *ngIf="gis.capasVisibles().regiones">
           <div class="section-label">MOSTRAR TOTAL DE:</div>
           <div class="tipo-selector-grid">
-            <button class="tipo-btn" [class.active]="gis.capasVisibles().detalleCap1.includes('antenas')" (click)="setDetalleCapa1('antenas')" title="Radio Bases">
-              <i class="fas fa-broadcast-tower" style="color: #FF1493;"></i>
+            <button class="tipo-btn" [class.active]="gis.capasVisibles().detalleCap1.includes('antenas')"
+              (click)="setDetalleCapa1('antenas')" title="Radio Bases">
+              <i class="fas fa-broadcast-tower layer-icon" style="color: #FF1493;"></i>
             </button>
-            <button class="tipo-btn" [class.active]="gis.capasVisibles().detalleCap1.includes('abonados')" (click)="setDetalleCapa1('abonados')" title="Abonados">
-              <i class="fas fa-user-check" style="color: #00BFFF;"></i>
+            <button class="tipo-btn" [class.active]="gis.capasVisibles().detalleCap1.includes('abonados')"
+              (click)="setDetalleCapa1('abonados')" title="Abonados">
+              <i class="fas fa-user-check layer-icon" style="color: #00BFFF;"></i>
             </button>
-            <button class="tipo-btn" [class.active]="gis.capasVisibles().detalleCap1.includes('oficinas')" (click)="setDetalleCapa1('oficinas')" title="Oficinas">
-              <i class="fas fa-building" style="color: #32CD32;"></i>
+            <button class="tipo-btn" [class.active]="gis.capasVisibles().detalleCap1.includes('oficinas')"
+              (click)="setDetalleCapa1('oficinas')" title="Oficinas">
+              <i class="fas fa-building layer-icon" style="color: #32CD32;"></i>
             </button>
-            <button class="tipo-btn" [class.active]="gis.capasVisibles().detalleCap1.includes('agentes')" (click)="setDetalleCapa1('agentes')" title="Agentes">
-              <i class="fas fa-store" style="color: #FF8C00;"></i>
+            <button class="tipo-btn" [class.active]="gis.capasVisibles().detalleCap1.includes('agentes')"
+              (click)="setDetalleCapa1('agentes')" title="Agentes">
+              <i class="fas fa-store layer-icon" style="color: #FF8C00;"></i>
             </button>
           </div>
         </div>
 
-        <!-- Capa 2: Operaciones (principal) -->
+        <!-- Operaciones -->
         <button class="layer-item" [class.active]="gis.capasVisibles().operaciones" (click)="toggle('operaciones')"
           [title]="gis.sidebarColapsado() ? 'Operaciones' : ''">
           <i class="fas fa-network-wired layer-icon" style="color: #3240A5;"></i>
@@ -66,8 +84,8 @@
 
           <!-- Grupo: Radio Bases -->
           <div class="subcapa-group">
-            <button class="subcapa-item" [class.active]="isActive('antenas')"
-              (click)="setDetalle('antenas')" [title]="gis.sidebarColapsado() ? 'Radio Bases' : ''">
+            <button class="subcapa-item" [class.active]="isActive('antenas')" (click)="setDetalle('antenas')"
+              [title]="gis.sidebarColapsado() ? 'Radio Bases' : ''">
               <i class="fas fa-broadcast-tower layer-icon" style="color: #FF1493;"></i>
               <span *ngIf="!gis.sidebarColapsado()">Radio Bases</span>
             </button>
@@ -85,8 +103,8 @@
 
           <!-- Grupo: Abonados -->
           <div class="subcapa-group">
-            <button class="subcapa-item" [class.active]="isActive('abonados')"
-              (click)="setDetalle('abonados')" [title]="gis.sidebarColapsado() ? 'Abonados' : ''">
+            <button class="subcapa-item" [class.active]="isActive('abonados')" (click)="setDetalle('abonados')"
+              [title]="gis.sidebarColapsado() ? 'Abonados' : ''">
               <i class="fas fa-user-check layer-icon" style="color: #00BFFF;"></i>
               <span *ngIf="!gis.sidebarColapsado()">Abonados</span>
             </button>
@@ -95,8 +113,8 @@
 
           <!-- Grupo: Oficinas -->
           <div class="subcapa-group">
-            <button class="subcapa-item" [class.active]="isActive('oficinas')"
-              (click)="setDetalle('oficinas')" [title]="gis.sidebarColapsado() ? 'Oficinas Comerciales' : ''">
+            <button class="subcapa-item" [class.active]="isActive('oficinas')" (click)="setDetalle('oficinas')"
+              [title]="gis.sidebarColapsado() ? 'Oficinas Comerciales' : ''">
               <i class="fas fa-building layer-icon" style="color: #32CD32;"></i>
               <span *ngIf="!gis.sidebarColapsado()">Oficinas</span>
             </button>
@@ -105,8 +123,8 @@
 
           <!-- Grupo: Agentes -->
           <div class="subcapa-group">
-            <button class="subcapa-item" [class.active]="isActive('agentes')"
-              (click)="setDetalle('agentes')" [title]="gis.sidebarColapsado() ? 'Agentes Autorizados' : ''">
+            <button class="subcapa-item" [class.active]="isActive('agentes')" (click)="setDetalle('agentes')"
+              [title]="gis.sidebarColapsado() ? 'Agentes Autorizados' : ''">
               <i class="fas fa-store layer-icon" style="color: #FF8C00;"></i>
               <span *ngIf="!gis.sidebarColapsado()">Agentes</span>
             </button>
@@ -117,21 +135,12 @@
     </ng-container>
   </div>
 
-  <button class="btn-collapse" (click)="gis.sidebarColapsado.set(!gis.sidebarColapsado())">
-    <i class="fas" [class.fa-chevron-left]="!gis.sidebarColapsado()"
-      [class.fa-chevron-right]="gis.sidebarColapsado()"></i>
-    <span *ngIf="!gis.sidebarColapsado()">Cerrar Menú</span>
-  </button>
-
   <button class="btn-logout" (click)="salir()">
-    <i class="fas fa-sign-out-alt"></i>
+    <i class="fas fa-sign-out-alt layer-icon"></i>
     <span *ngIf="!gis.sidebarColapsado()">Cerrar Sesión</span>
   </button>
 
-  <app-add-element 
-    [tipo]="tipoEdicion" 
-    [visible]="mostrarForm()" 
-    (onClose)="mostrarForm.set(false)" 
+  <app-add-element [tipo]="tipoEdicion" [visible]="mostrarForm()" (onClose)="mostrarForm.set(false)"
     (onSaved)="onElementSaved()">
   </app-add-element>
 </div>

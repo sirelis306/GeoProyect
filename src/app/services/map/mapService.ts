@@ -18,6 +18,7 @@ export class MapService {
   capasVisibles = signal<CapasEstado>({
     regiones: true,
     operaciones: false,
+    cotas: false,
     detalleCap2: [],
     detalleCap1: ['antenas']
   });
@@ -26,7 +27,7 @@ export class MapService {
   sidebarColapsado = signal<boolean>(false);
   busquedaAntena = signal<string>('');
 
-  // Paleta de colores (Ahora dinámica desde BD)
+  // Paleta de colores
   COLORES_REGIONES_SIGNAL = computed(() => {
     const mapping: Record<string, string> = {};
     this.regionesSignal().forEach(r => { mapping[r.nombre] = r.color; });
@@ -107,6 +108,10 @@ export class MapService {
   // Control de capas
   toggleCapa(nombre: keyof CapasEstado) {
     this.capasVisibles.update(e => {
+      if (nombre === 'cotas') {
+        return { ...e, cotas: !e.cotas };
+      }
+
       const activar = !e[nombre];
       const nuevo = { ...e, [nombre]: activar };
       if (nombre === 'operaciones' && activar) { nuevo.regiones = false; nuevo.detalleCap1 = []; }

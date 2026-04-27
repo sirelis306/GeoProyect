@@ -3,7 +3,6 @@
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  /* Centrado correcto */
   z-index: 1100;
   display: flex;
   align-items: center;
@@ -26,23 +25,28 @@
     padding: 10px 15px;
     border-radius: 12px;
   }
+
   .divider {
     display: none;
   }
+
   .stat-item {
     gap: 8px;
     padding: 4px 5px;
   }
+
   .icon-circle {
-    width: 32px;
-    height: 32px;
-    font-size: 14px;
+    width: 24px;
+    height: 24px;
+    font-size: 11px;
   }
+
   .value {
-    font-size: 16px;
+    font-size: 13px;
   }
+
   .label {
-    font-size: 9px;
+    font-size: 7.5px;
   }
 }
 
@@ -52,19 +56,23 @@
     gap: 6px 10px;
     padding: 8px 12px;
   }
+
   .stat-item {
     padding: 2px;
   }
+
   .icon-circle {
-    width: 28px;
-    height: 28px;
-    font-size: 12px;
+    width: 20px;
+    height: 20px;
+    font-size: 9px;
   }
+
   .value {
-    font-size: 14px;
+    font-size: 11px;
   }
+
   .label {
-    font-size: 8px;
+    font-size: 6.5px;
   }
 }
 
@@ -78,15 +86,12 @@
 /* Forzar círculo perfecto */
 .icon-circle {
   width: 42px;
-  /* Tamaño ajustado */
   height: 42px;
-  /* Debe ser igual al width */
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  /* Evita que se deforme */
   font-size: 18px;
 }
 
@@ -118,7 +123,7 @@
 }
 
 .label {
-  font-size: 10px;
+  font-size: clamp(6.5px, 2.5vw, 10px);
   font-weight: 700;
   font-family: 'Poppins', sans-serif;
   color: #95a5a6;
@@ -128,7 +133,7 @@
 }
 
 .value {
-  font-size: 20px;
+  font-size: clamp(11px, 4.5vw, 20px);
   font-weight: 800;
   font-family: 'Arial';
   color: #2c3e50;

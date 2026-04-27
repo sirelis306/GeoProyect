@@ -26,6 +26,9 @@ export class Map implements AfterViewInit {
   private oficinas = L.layerGroup();
   private agentes = L.layerGroup();
   private layerAggregated = L.layerGroup();
+  private capaCotas = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; Esri'
+  });
 
   private configIconos: any = {
     antenas: { icon: 'fa-broadcast-tower', color: '#FF1493', label: 'Radio Bases' },
@@ -50,6 +53,13 @@ export class Map implements AfterViewInit {
       this.gis.agentesSignal();
 
       if (!this.map) return;
+
+      // --- LÓGICA CAPA COTAS (RELIEVE) ---
+      if (estado.cotas) {
+        this.capaCotas.addTo(this.map);
+      } else {
+        this.map.removeLayer(this.capaCotas);
+      }
 
       // Limpiamos todas las capas de marcadores
       [this.radioBases, this.oficinas, this.abonados, this.agentes].forEach(g => g.clearLayers());
@@ -405,8 +415,18 @@ export class Map implements AfterViewInit {
         const centro = this.gis.getCentroRegion(reg.nombre);
         if (centro) {
           const icon = this.crearBadgeGroupIcon(items, true);
+          // Cálculo de desglose por segmentación para la región
+          const segBreakdown = tipos.includes('abonados')
+            ? this.gis.abonadosSignal()
+                .filter(ab => ab.region === reg.nombre)
+                .reduce((acc: Record<string, number>, ab) => {
+                  acc[ab.segmentacion] = (acc[ab.segmentacion] || 0) + (Number(ab.cantidad) || 0);
+                  return acc;
+                }, {})
+            : null;
+
           const marker = L.marker([centro.lat, centro.lng], { icon, zIndexOffset: 2000 });
-          marker.bindPopup(this.crearPopupAgregado(reg.nombre, 'region', items));
+          marker.bindPopup(this.crearPopupAgregado(reg.nombre, 'region', items, segBreakdown));
           marker.addTo(this.layerAggregated);
         }
       }

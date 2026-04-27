@@ -3,6 +3,7 @@ export type TipoElemento = 'antenas' | 'abonados' | 'oficinas' | 'agentes' | 'ni
 export interface CapasEstado {
   regiones: boolean;
   operaciones: boolean;
+  cotas: boolean;
   detalleCap2: TipoElemento[];
   detalleCap1: TipoElemento[];
 }
