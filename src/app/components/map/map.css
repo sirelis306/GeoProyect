@@ -590,3 +590,37 @@
     gap: 4px;
   }
 }
+/* CAPA ELECTRICIDAD: Efecto de brillo y popups */
+::ng-deep .electric-line-glow {
+  filter: drop-shadow(0 0 3px rgba(255, 69, 0, 0.6));
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke-width 0.2s, opacity 0.2s;
+}
+
+::ng-deep .electric-line-glow:hover {
+  stroke-width: 5px !important;
+  opacity: 1 !important;
+  cursor: pointer;
+}
+
+::ng-deep .leaflet-popup-content-wrapper:has(.electric-popup) {
+  background: #1a202c;
+  color: #e2e8f0;
+  border-radius: 8px;
+  border-left: 4px solid #ff4500;
+}
+
+::ng-deep .electric-popup {
+  padding: 5px 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+::ng-deep .electric-popup strong {
+  color: #ff4500;
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+}

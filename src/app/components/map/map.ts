@@ -17,6 +17,10 @@ export class Map implements AfterViewInit {
   public gis = inject(Gis);
   private http = inject(HttpClient);
   private capaGeoJsonRegiones: L.GeoJSON | null = null;
+  private capaEtiquetas = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
+    zIndex: 1000,
+    pane: 'markerPane' // Para que esté por encima de los polígonos
+  });
   @ViewChild('mapContainer') mapContainer!: ElementRef;
 
   private map!: L.Map;
@@ -27,8 +31,13 @@ export class Map implements AfterViewInit {
   private agentes = L.layerGroup();
   private layerAggregated = L.layerGroup();
   private capaCotas = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
-    attribution: 'Tiles &copy; Esri'
+    attribution: 'Tiles &copy; Esri',
+    zIndex: 100,
+    opacity: 0.6
   });
+  private capaElectricidad = L.layerGroup();
+  private datosElectricidadCargados = false;
+  private capaElectricidadGeoJson: L.GeoJSON | null = null;
 
   private configIconos: any = {
     antenas: { icon: 'fa-broadcast-tower', color: '#FF1493', label: 'Radio Bases' },
@@ -36,9 +45,6 @@ export class Map implements AfterViewInit {
     oficinas: { icon: 'fa-building', color: '#32CD32', label: 'Oficinas' },
     agentes: { icon: 'fa-store', color: '#FF8C00', label: 'Agentes' }
   };
-
-
-
 
   constructor() {
     effect(() => {
@@ -57,8 +63,20 @@ export class Map implements AfterViewInit {
       // --- LÓGICA CAPA COTAS (RELIEVE) ---
       if (estado.cotas) {
         this.capaCotas.addTo(this.map);
+        this.map.removeLayer(this.capaEtiquetas);
       } else {
         this.map.removeLayer(this.capaCotas);
+        this.capaEtiquetas.addTo(this.map);
+      }
+
+      // --- LÓGICA CAPA ELECTRICIDAD ---
+      if (estado.electricidad) {
+        this.capaElectricidad.addTo(this.map);
+        if (!this.datosElectricidadCargados) {
+          this.cargarCapaElectricidad();
+        }
+      } else {
+        this.map.removeLayer(this.capaElectricidad);
       }
 
       // Limpiamos todas las capas de marcadores
@@ -73,11 +91,11 @@ export class Map implements AfterViewInit {
           // Operaciones → color por estado específico; Regiones → color por región
           const usarColorEstado = estado.operaciones;
           const estadosConDatos = new Set(this.gis.getEstadosConDatos().map(e => e.nombre));
-          const regionesActivas  = this.gis.getRegionesConDatos();
+          const regionesActivas = this.gis.getRegionesConDatos();
 
           this.capaGeoJsonRegiones.setStyle((feature: any) => {
             const nombreEstado = feature.properties.estado || feature.properties.name;
-            const region       = this.gis.obtenerRegion(nombreEstado);
+            const region = this.gis.obtenerRegion(nombreEstado);
 
             const tieneDatos = usarColorEstado
               ? estadosConDatos.has(nombreEstado)
@@ -89,15 +107,14 @@ export class Map implements AfterViewInit {
 
             return {
               fillColor: tieneDatos ? fillColor : 'transparent',
-              weight:      tieneDatos ? 1.5 : 0,
-              opacity:     tieneDatos ? 1   : 0,
+              weight: tieneDatos ? 1.5 : 0,
+              opacity: tieneDatos ? 1 : 0,
               color: '#FFFFFF',
               fillOpacity: tieneDatos ? 0.7 : 0
             };
           });
         } else {
           this.map.removeLayer(this.capaGeoJsonRegiones);
-
         }
       }
 
@@ -106,22 +123,17 @@ export class Map implements AfterViewInit {
 
       if (estado.operaciones) {
         if (esVistaDetalle) {
-          // Zoom alto (≥8): pines individuales por elemento
           this.renderIndividualMarkers(estado.detalleCap2);
         } else {
-          // Zoom bajo (<8): badges de totales por estado
           this.renderStateTotals(estado.detalleCap2);
         }
       } else if (estado.regiones) {
-        // Solo regiones activa: badges por región a cualquier zoom (multi-tipo)
         this.renderRegionTotals(estado.detalleCap1);
-
       }
     });
   }
 
   ngAfterViewInit() {
-    // Validación de seguridad para evitar el error TypeError
     if (this.mapContainer && this.mapContainer.nativeElement) {
       this.initMap();
     } else {
@@ -134,48 +146,41 @@ export class Map implements AfterViewInit {
       console.error("Error: No se encontró el contenedor del mapa en el DOM.");
       return;
     }
-    // Crea el mapa
     this.map = L.map(this.mapContainer.nativeElement, {
       center: [7.1291, -66.1818],
       zoom: 7,
       zoomControl: false,
-      minZoom: 6,        // Zoom mínimo
-      maxZoom: 18,       // Zoom máximo 
-      maxBounds: [       // Límites del mapa (para que no se salga de cierta área)
-        [-15, -85],      // Suroeste (lat, lng)
-        [20, -55]        // Noreste (lat, lng)
+      minZoom: 6,
+      maxZoom: 18,
+      maxBounds: [
+        [-15, -85],
+        [20, -55]
       ],
       maxBoundsViscosity: 1.0
     });
 
-    // Muestra los demas paises
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    }).addTo(this.map);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {}).addTo(this.map);
+    this.capaEtiquetas.addTo(this.map);
 
     this.map.on('zoomend', () => {
       this.gis.zoomLevel.set(this.map.getZoom());
     });
 
     this.layerAggregated.addTo(this.map);
-
-    // Forzamos que se muestre en el nivel inicial
     this.gis.zoomLevel.set(this.map.getZoom());
 
-    // Cargar Capa 1 (Relieve/Regiones)
     this.http.get('assets/geojson/venezuela.json').subscribe((data: any) => {
       this.capaGeoJsonRegiones = L.geoJSON(data, {
         style: (feature: any) => {
           const nombreEstado = feature.properties.estado || feature.properties.name;
           const region = this.gis.obtenerRegion(nombreEstado);
-
-          // Lógica de filtrado:
           const regionesActivas = this.gis.getRegionesConDatos();
           const estaActiva = regionesActivas.includes(region);
           const colorRegion = estaActiva ? (this.gis.COLORES_REGIONES_SIGNAL()[region] || '#DEE2E6') : 'transparent';
 
           return {
             fillColor: colorRegion,
-            weight: estaActiva ? 1.5 : 0.5, // Más delgado si no tiene datos
+            weight: estaActiva ? 1.5 : 0.5,
             opacity: estaActiva ? 1 : 0.3,
             color: '#FFFFFF',
             fillOpacity: estaActiva ? 0.8 : 0
@@ -183,7 +188,6 @@ export class Map implements AfterViewInit {
         }
       });
 
-      // Forzamos al effect a revisar el estado inicial:
       if (this.gis.capasVisibles().regiones) {
         this.capaGeoJsonRegiones.addTo(this.map);
       }
@@ -192,8 +196,6 @@ export class Map implements AfterViewInit {
     L.control.zoom({ position: 'topright' }).addTo(this.map);
     this.gis.cargarDatos();
   }
-
-  // --- MÉTODOS DE RENDERIZADO ---
 
   private renderIndividualMarkers(tipos: TipoElemento[]) {
     const crearPinIcon = (tipo: TipoElemento) => {
@@ -214,18 +216,18 @@ export class Map implements AfterViewInit {
 
     if (tipos.includes('antenas')) {
       const icon = crearPinIcon('antenas');
-      const cfg  = this.configIconos['antenas'];
+      const cfg = this.configIconos['antenas'];
       const termino = this.gis.busquedaAntena().toLowerCase();
       this.gis.radioBasesSignal()
         .filter(a => !termino || a.nombre?.toLowerCase().includes(termino) || a.direccion?.toLowerCase().includes(termino))
         .forEach(a => {
           const popup = this.crearPopupDetalle(cfg, [
-            { label: 'Nombre',       value: a.nombre },
-            { label: 'Ubicación',    value: `${a.estado} (${a.region})` },
-            { label: 'Tecnología',   value: a.tecnologia },
-            { label: 'Actividad',    value: a.actividad, badge: true },
-            { label: 'Dirección',    value: a.direccion },
-            { label: 'Coordenadas',  value: fmtCoords(a.latitud, a.longitud), coords: true }
+            { label: 'Nombre', value: a.nombre },
+            { label: 'Ubicación', value: `${a.estado} (${a.region})` },
+            { label: 'Tecnología', value: a.tecnologia },
+            { label: 'Actividad', value: a.actividad, badge: true },
+            { label: 'Dirección', value: a.direccion },
+            { label: 'Coordenadas', value: fmtCoords(a.latitud, a.longitud), coords: true }
           ]);
           L.marker([a.latitud, a.longitud], { icon })
             .bindPopup(popup, { maxWidth: 290 })
@@ -236,12 +238,12 @@ export class Map implements AfterViewInit {
 
     if (tipos.includes('oficinas')) {
       const icon = crearPinIcon('oficinas');
-      const cfg  = this.configIconos['oficinas'];
+      const cfg = this.configIconos['oficinas'];
       this.gis.oficinasSignal().forEach(o => {
         const popup = this.crearPopupDetalle(cfg, [
-          { label: 'Nombre',      value: o.nombre },
-          { label: 'Ubicación',   value: `${o.estado} (${o.region})` },
-          { label: 'Dirección',   value: o.direccion },
+          { label: 'Nombre', value: o.nombre },
+          { label: 'Ubicación', value: `${o.estado} (${o.region})` },
+          { label: 'Dirección', value: o.direccion },
           { label: 'Coordenadas', value: fmtCoords(o.latitud, o.longitud), coords: true }
         ]);
         L.marker([o.latitud, o.longitud], { icon })
@@ -253,15 +255,15 @@ export class Map implements AfterViewInit {
 
     if (tipos.includes('agentes')) {
       const icon = crearPinIcon('agentes');
-      const cfg  = this.configIconos['agentes'];
+      const cfg = this.configIconos['agentes'];
       this.gis.agentesSignal().forEach(ag => {
         const popup = this.crearPopupDetalle(cfg, [
-          { label: 'Nombre',        value: ag.nombre },
-          { label: 'Ubicación',     value: `${ag.estado} (${ag.region})` },
-          { label: 'Cód. Dealer',   value: ag.codigoDealer },
+          { label: 'Nombre', value: ag.nombre },
+          { label: 'Ubicación', value: `${ag.estado} (${ag.region})` },
+          { label: 'Cód. Dealer', value: ag.codigoDealer },
           { label: 'Clasificación', value: ag.clasificacion, badge: true },
-          { label: 'Dirección',     value: ag.direccion },
-          { label: 'Coordenadas',   value: fmtCoords(ag.latitud, ag.longitud), coords: true }
+          { label: 'Dirección', value: ag.direccion },
+          { label: 'Coordenadas', value: fmtCoords(ag.latitud, ag.longitud), coords: true }
         ]);
         L.marker([ag.latitud, ag.longitud], { icon })
           .bindPopup(popup, { maxWidth: 310 })
@@ -275,22 +277,20 @@ export class Map implements AfterViewInit {
       const cfg = this.configIconos['abonados'];
       const todos = this.gis.abonadosSignal();
 
-      // Agrupamos por coordenadas y nombre para consolidar segmentaciones
-      type GrupoAbonado = { 
-        nombre: string; 
-        estado: string; 
-        region: string; 
-        lat: number; 
-        lng: number; 
-        direccion?: string; 
-        segs: Record<string, number> 
+      type GrupoAbonado = {
+        nombre: string;
+        estado: string;
+        region: string;
+        lat: number;
+        lng: number;
+        direccion?: string;
+        segs: Record<string, number>
       };
       const grupos: Record<string, GrupoAbonado> = {};
 
       todos.forEach(ab => {
         const key = `${Number(ab.latitud).toFixed(5)}_${Number(ab.longitud).toFixed(5)}`;
         if (!grupos[key]) {
-          // Limpiamos el nombre para que no diga "4G" o "3G" en el título si vamos a mostrar varios
           const nombreLimpio = ab.nombre.replace(/ 3G| 4G| 5G/gi, '');
           grupos[key] = {
             nombre: nombreLimpio,
@@ -312,13 +312,11 @@ export class Map implements AfterViewInit {
           { label: 'Ubicación', value: `${g.estado} (${g.region})` },
         ];
 
-        // Si hay más de una segmentación, mostramos el desglose
         const numSegs = Object.keys(g.segs).length;
         if (numSegs > 1) {
           popupRows.push({ label: 'Desglose', breakdown: g.segs });
           popupRows.push({ label: 'Total General', value: total.toLocaleString(), badge: true });
         } else {
-          // Si solo hay una, lo mostramos simple como antes
           const [seg, cant] = Object.entries(g.segs)[0];
           popupRows.push({ label: 'Segmentación', value: seg, badge: true });
           popupRows.push({ label: 'Cantidad', value: cant.toLocaleString() });
@@ -336,7 +334,6 @@ export class Map implements AfterViewInit {
     }
   }
 
-  /** Construye el HTML de un popup detallado con cabecera de color e ícono */
   private crearPopupDetalle(
     cfg: { icon: string; color: string; label: string },
     rows: { label: string; value?: string | number | null; badge?: boolean; coords?: boolean; breakdown?: Record<string, number> }[]
@@ -346,7 +343,6 @@ export class Map implements AfterViewInit {
       .map(r => {
         let cell: string;
         if (r.breakdown) {
-          // Bloque de desglose por segmentación (inline en la tabla)
           const segs = Object.entries(r.breakdown).sort()
             .map(([seg, cnt]) =>
               `<span class="popup-seg-pill"><b>${seg}</b> ${(cnt as number).toLocaleString()}</span>`
@@ -379,21 +375,18 @@ export class Map implements AfterViewInit {
       const items: any[] = [];
       tipos.forEach(tipo => {
         const total = this.gis.getTotalesPorEstado(tipo).get(est.nombre) || 0;
-        if (total > 0) {
-          items.push({ tipo, total });
-        }
+        if (total > 0) items.push({ tipo, total });
       });
 
       if (items.length > 0) {
         const icon = this.crearBadgeGroupIcon(items);
-        // Para abonados calculamos el desglose por segmentación en este estado
         const segBreakdown = tipos.includes('abonados')
           ? this.gis.abonadosSignal()
-              .filter(ab => ab.estado === est.nombre)
-              .reduce((acc: Record<string, number>, ab) => {
-                acc[ab.segmentacion] = (acc[ab.segmentacion] || 0) + (Number(ab.cantidad) || 0);
-                return acc;
-              }, {})
+            .filter(ab => ab.estado === est.nombre)
+            .reduce((acc: Record<string, number>, ab) => {
+              acc[ab.segmentacion] = (acc[ab.segmentacion] || 0) + (Number(ab.cantidad) || 0);
+              return acc;
+            }, {})
           : null;
         L.marker([est.latitud, est.longitud], { icon, zIndexOffset: 1000 })
           .bindPopup(this.crearPopupAgregado(est.nombre, 'estado', items, segBreakdown))
@@ -415,14 +408,13 @@ export class Map implements AfterViewInit {
         const centro = this.gis.getCentroRegion(reg.nombre);
         if (centro) {
           const icon = this.crearBadgeGroupIcon(items, true);
-          // Cálculo de desglose por segmentación para la región
           const segBreakdown = tipos.includes('abonados')
             ? this.gis.abonadosSignal()
-                .filter(ab => ab.region === reg.nombre)
-                .reduce((acc: Record<string, number>, ab) => {
-                  acc[ab.segmentacion] = (acc[ab.segmentacion] || 0) + (Number(ab.cantidad) || 0);
-                  return acc;
-                }, {})
+              .filter(ab => ab.region === reg.nombre)
+              .reduce((acc: Record<string, number>, ab) => {
+                acc[ab.segmentacion] = (acc[ab.segmentacion] || 0) + (Number(ab.cantidad) || 0);
+                return acc;
+              }, {})
             : null;
 
           const marker = L.marker([centro.lat, centro.lng], { icon, zIndexOffset: 2000 });
@@ -441,8 +433,7 @@ export class Map implements AfterViewInit {
         <div class="badge-item" style="--bg-color: ${config.color}">
           <i class="fas ${config.icon}"></i>
           <span>${item.total.toLocaleString()}</span>
-        </div>
-      `;
+        </div>`;
     });
     html += '</div>';
 
@@ -490,5 +481,52 @@ export class Map implements AfterViewInit {
         </div>
         <div class="pagg-body">${rows}</div>
       </div>`;
+  }
+
+  private cargarCapaElectricidad() {
+    this.datosElectricidadCargados = true;
+    const query = `[out:json][timeout:30];area["name"="Venezuela"]["admin_level"="2"]->.a;(way["power"="line"](area.a);way["power"="cable"](area.a););out body;>;out skel qt;`;
+    const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+    this.http.get(url).subscribe({
+      next: (data: any) => {
+        const nodes: Record<number, [number, number]> = {};
+        data.elements.filter((e: any) => e.type === "node").forEach((n: any) => {
+          nodes[n.id] = [n.lat, n.lon];
+        });
+        const ways = data.elements.filter((e: any) => e.type === "way");
+        const features = ways.map((w: any) => {
+          const coords = w.nodes.map((id: number) => nodes[id]).filter((c: any) => {
+            if (!c) return false;
+            return c[0] > 0.6 && c[0] < 13.0 && c[1] > -73.5 && c[1] < -59.4;
+          });
+          if (coords.length < 2) return null;
+          return {
+            type: "Feature",
+            properties: w.tags,
+            geometry: { type: "LineString", coordinates: coords.map((c: any) => [c[1], c[0]]) }
+          };
+        }).filter((f: any) => f !== null);
+
+        this.capaElectricidadGeoJson = L.geoJSON({ type: "FeatureCollection", features: features } as any, {
+          style: (feature: any) => {
+            const v = feature.properties?.voltage || "";
+            const isHigh = v.includes("400") || v.includes("765");
+            return {
+              color: isHigh ? "#FF4500" : "#FFA500",
+              weight: isHigh ? 2.5 : 1.5,
+              opacity: 0.8,
+              dashArray: isHigh ? "" : "5, 5",
+              className: "electric-line-glow"
+            };
+          },
+          onEachFeature: (f: any, l: any) => {
+            const t = f.properties;
+            l.bindPopup(`<div class="electric-popup"><strong>Infraestructura</strong><br/>${t.voltage ? `V: ${t.voltage} kV<br/>` : ""}${t.name ? `N: ${t.name}<br/>` : ""}</div>`);
+          }
+        });
+        this.capaElectricidad.addLayer(this.capaElectricidadGeoJson);
+      },
+      error: () => this.datosElectricidadCargados = false
+    });
   }
 }

@@ -19,6 +19,7 @@ export class MapService {
     regiones: true,
     operaciones: false,
     cotas: false,
+    electricidad: false,
     detalleCap2: [],
     detalleCap1: ['antenas']
   });
@@ -108,8 +109,8 @@ export class MapService {
   // Control de capas
   toggleCapa(nombre: keyof CapasEstado) {
     this.capasVisibles.update(e => {
-      if (nombre === 'cotas') {
-        return { ...e, cotas: !e.cotas };
+      if (nombre === 'cotas' || nombre === 'electricidad') {
+        return { ...e, [nombre]: !e[nombre] };
       }
 
       const activar = !e[nombre];

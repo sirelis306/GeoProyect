@@ -4,6 +4,7 @@ export interface CapasEstado {
   regiones: boolean;
   operaciones: boolean;
   cotas: boolean;
+  electricidad: boolean;
   detalleCap2: TipoElemento[];
   detalleCap1: TipoElemento[];
 }
