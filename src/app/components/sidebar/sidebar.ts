@@ -50,19 +50,19 @@ export class Sidebar {
     this.gis.toggleCapa(capa);
 
     if (capa === 'operaciones' && !this.gis.capasVisibles().operaciones) {
-      this.gis.setDetalleCap2('ninguno');
+      this.gis.setDetalleOperaciones('ninguno');
     }
   }
 
   isActive(tipo: TipoElemento): boolean {
-    return this.gis.capasVisibles().detalleCap2.includes(tipo);
+    return this.gis.capasVisibles().detalleOperaciones.includes(tipo);
   }
 
   setDetalle(tipo: TipoElemento) {
-    this.gis.setDetalleCap2(tipo);
+    this.gis.setDetalleOperaciones(tipo);
   }
 
-  setDetalleCapa1(tipo: TipoElemento) {
-    this.gis.setDetalleCap1(tipo);
+  setDetalleRegiones(tipo: TipoElemento) {
+    this.gis.setDetalleRegiones(tipo);
   }
 }

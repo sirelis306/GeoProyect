@@ -5,8 +5,9 @@ export interface CapasEstado {
   operaciones: boolean;
   cotas: boolean;
   electricidad: boolean;
-  detalleCap2: TipoElemento[];
-  detalleCap1: TipoElemento[];
+  vias: boolean;
+  detalleOperaciones: TipoElemento[];
+  detalleRegiones: TipoElemento[];
 }
 
 export interface RadioBase {

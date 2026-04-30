@@ -16,12 +16,13 @@ export class MapService {
 
   // Estado de UI
   capasVisibles = signal<CapasEstado>({
-    regiones: true,
+    regiones: false,
     operaciones: false,
     cotas: false,
     electricidad: false,
-    detalleCap2: [],
-    detalleCap1: ['antenas']
+    vias: false,
+    detalleOperaciones: [],
+    detalleRegiones: ['antenas']
   });
 
   zoomLevel = signal<number>(7);
@@ -78,10 +79,10 @@ export class MapService {
     const regiones = new Set<string>();
 
     const extraer = (lista: any[]) => lista.forEach(i => { if (i.region) regiones.add(i.region); });
-    const tipos = capas.operaciones ? capas.detalleCap2 : capas.detalleCap1;
+    const tipos = capas.operaciones ? capas.detalleOperaciones : capas.detalleRegiones;
 
     if (tipos.length > 0) {
-      tipos.forEach(t => extraer(this.element.getDataPorTipo(t)));
+      tipos.forEach((t: TipoElemento) => extraer(this.element.getDataPorTipo(t)));
     } else {
       ['antenas', 'oficinas', 'abonados', 'agentes'].forEach(t =>
         extraer(this.element.getDataPorTipo(t as TipoElemento))
@@ -92,7 +93,7 @@ export class MapService {
 
   getEstadosConDatos(): { nombre: string; color: string }[] {
     const capas = this.capasVisibles();
-    const tipos: TipoElemento[] = capas.operaciones ? capas.detalleCap2 : [...capas.detalleCap1];
+    const tipos: TipoElemento[] = capas.operaciones ? capas.detalleOperaciones : [...capas.detalleRegiones];
 
     const nombres = new Set<string>();
     tipos.forEach(t => this.element.getDataPorTipo(t).forEach((i: any) => { if (i.estado) nombres.add(i.estado); }));
@@ -109,34 +110,34 @@ export class MapService {
   // Control de capas
   toggleCapa(nombre: keyof CapasEstado) {
     this.capasVisibles.update(e => {
-      if (nombre === 'cotas' || nombre === 'electricidad') {
+      if (nombre === 'cotas' || nombre === 'electricidad' || nombre === 'vias') {
         return { ...e, [nombre]: !e[nombre] };
       }
 
       const activar = !e[nombre];
       const nuevo = { ...e, [nombre]: activar };
-      if (nombre === 'operaciones' && activar) { nuevo.regiones = false; nuevo.detalleCap1 = []; }
-      if (nombre === 'regiones' && activar) { nuevo.operaciones = false; nuevo.detalleCap2 = []; }
-      if (nombre === 'operaciones' && !activar) nuevo.detalleCap2 = [];
+      if (nombre === 'operaciones' && activar) { nuevo.regiones = false; nuevo.detalleRegiones = []; }
+      if (nombre === 'regiones' && activar) { nuevo.operaciones = false; nuevo.detalleOperaciones = []; }
+      if (nombre === 'operaciones' && !activar) nuevo.detalleOperaciones = [];
       return nuevo;
     });
   }
 
-  setDetalleCap2(tipo: TipoElemento) {
+  setDetalleOperaciones(tipo: TipoElemento) {
     this.capasVisibles.update(e => {
-      const lista = e.detalleCap2.includes(tipo)
-        ? e.detalleCap2.filter(t => t !== tipo)
-        : [...e.detalleCap2, tipo];
-      return { ...e, detalleCap2: lista };
+      const lista = e.detalleOperaciones.includes(tipo)
+        ? e.detalleOperaciones.filter(t => t !== tipo)
+        : [...e.detalleOperaciones, tipo];
+      return { ...e, detalleOperaciones: lista };
     });
   }
 
-  setDetalleCap1(tipo: TipoElemento) {
+  setDetalleRegiones(tipo: TipoElemento) {
     this.capasVisibles.update(e => {
-      const actual = [...e.detalleCap1];
+      const actual = [...e.detalleRegiones];
       const idx = actual.indexOf(tipo);
       const nuevo = idx >= 0 ? actual.filter(t => t !== tipo) : [...actual, tipo];
-      return { ...e, detalleCap1: nuevo.length > 0 ? nuevo : actual }; // nunca vacío
+      return { ...e, detalleRegiones: nuevo.length > 0 ? nuevo : actual }; // nunca vacío
     });
   }
 }

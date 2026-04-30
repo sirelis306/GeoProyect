@@ -56,8 +56,8 @@ export class GisService {
 
   // Control de capas
   toggleCapa(nombre: keyof CapasEstado) { this.map.toggleCapa(nombre); }
-  setDetalleCap2(tipo: TipoElemento) { this.map.setDetalleCap2(tipo); }
-  setDetalleCap1(tipo: TipoElemento) { this.map.setDetalleCap1(tipo); }
+  setDetalleOperaciones(tipo: TipoElemento) { this.map.setDetalleOperaciones(tipo); }
+  setDetalleRegiones(tipo: TipoElemento) { this.map.setDetalleRegiones(tipo); }
 
   // Carga de datos
   cargarDatos() { this.element.cargarDatos(); }
