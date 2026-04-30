@@ -2,6 +2,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TipoElemento, RadioBase, Abonado, Oficina, Agente, Estado } from '../../models/gis';
 import { CoordService } from '../coord/coordService';
+import { GeocodingService } from '../gis/geocodingService';
 
 /**
  * ElementService — Principio SRP
@@ -12,6 +13,7 @@ import { CoordService } from '../coord/coordService';
 export class ElementService {
   private http = inject(HttpClient);
   private coord = inject(CoordService);
+  private geocoding = inject(GeocodingService);
   private API_URL = 'http://localhost:3000/api';
   // private API_URL = 'https://geobackend-api.onrender.com/api';
 
@@ -97,7 +99,7 @@ export class ElementService {
       let lng = nuevoItem.longitud;
 
       if (!lat || !lng) {
-        const coordsAuto = await this.obtenerCoordsDesdeDireccion(nuevoItem.direccion);
+        const coordsAuto = await this.geocoding.obtenerCoordsDesdeDireccion(nuevoItem.direccion);
         if (coordsAuto) {
           lat = coordsAuto.lat; lng = coordsAuto.lng;
         } else {
@@ -155,37 +157,8 @@ export class ElementService {
     });
   }
 
-  // Geocodificación
-  async obtenerCoordsDesdeDireccion(direccion: string | null | undefined): Promise<{ lat: number; lng: number } | null> {
-    if (!direccion) return null;
-    const limpia = this.limpiarDireccionParaBusqueda(direccion);
-    const pais = 'Venezuela';
-    const maxIntentos = 2;
-
-    for (let i = 0; i < maxIntentos; i++) {
-      const queryActual = i === 0 ? limpia : direccion;
-      try {
-        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(queryActual)}, ${pais}`;
-        const res: any = await this.http.get(url).toPromise();
-        if (res && res.length > 0)
-          return { lat: parseFloat(res[0].lat), lng: parseFloat(res[0].lon) };
-      } catch { /* continúa */ }
-
-      if (i < maxIntentos - 1)
-        await new Promise(r => setTimeout(r, 300));
-    }
-    return null;
-  }
-
-  private limpiarDireccionParaBusqueda(dir: string): string {
-    const ruidos = [
-      /LOCAL\s+(NRO\.?|N°?|NUMERO)?\s*\d+/gi, /NIVEL\s+\w+/gi, /PISO\s+\d+/gi,
-      /PB/gi, /P\.B/gi, /EDIFICIO\s+\w+/gi, /EDIF\.\s+\w+/gi,
-      /APT\s+\d+/gi, /APTO\s+\d+/gi, /C.C\s+\w+/gi, /CENTRO COMERCIAL\s+\w+/gi,
-      /BASEMENT/gi, /PLANTA BAJA/gi, /ESTADO\s+/gi
-    ];
-    let limpia = dir.toUpperCase();
-    ruidos.forEach(r => { limpia = limpia.replace(r, ''); });
-    return limpia.replace(/, ,/g, ',').replace(/\s+/g, ' ').trim();
+  // Geocodificación (ahora delegada a GeocodingService)
+  async obtenerCoordsDesdeDireccion(dir: string | null | undefined) {
+    return this.geocoding.obtenerCoordsDesdeDireccion(dir);
   }
 }

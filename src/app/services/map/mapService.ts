@@ -1,33 +1,20 @@
-import { inject, Injectable, signal, computed } from '@angular/core';
+import { inject, Injectable, computed } from '@angular/core';
 import { CapasEstado, TipoElemento, Region } from '../../models/gis';
 import { CoordService } from '../coord/coordService';
 import { ElementService } from '../element/elementService';
+import { MapStateService } from './mapStateService';
 
 @Injectable({ providedIn: 'root' })
 export class MapService {
   private coord = inject(CoordService);
   private element = inject(ElementService);
+  private state = inject(MapStateService);
 
-  constructor() {
-    if (typeof window !== 'undefined' && window.innerWidth < 768) {
-      this.sidebarColapsado.set(true);
-    }
-  }
-
-  // Estado de UI
-  capasVisibles = signal<CapasEstado>({
-    regiones: false,
-    operaciones: false,
-    cotas: false,
-    electricidad: false,
-    vias: false,
-    detalleOperaciones: [],
-    detalleRegiones: ['antenas']
-  });
-
-  zoomLevel = signal<number>(7);
-  sidebarColapsado = signal<boolean>(false);
-  busquedaAntena = signal<string>('');
+  // Exponemos los signals del estado para que la fachada siga funcionando igual
+  get capasVisibles() { return this.state.capasVisibles; }
+  get zoomLevel() { return this.state.zoomLevel; }
+  get sidebarColapsado() { return this.state.sidebarColapsado; }
+  get busquedaAntena() { return this.state.busquedaAntena; }
 
   // Paleta de colores
   COLORES_REGIONES_SIGNAL = computed(() => {
@@ -39,12 +26,9 @@ export class MapService {
   // lista de regiones
   regionesSignal = computed<Region[]>(() => {
     const unique = new Map<string, string>();
-    const FALLBACK = ['Capital', 'Central', 'Los Llanos', 'Centro Occidental', 'Zuliana', 'Los Andes', 'Nororiental', 'Insular', 'Guayana'];
-
     this.element.estadosSignal().forEach(e => {
       if (e.nombre_region && e.color_region) unique.set(e.nombre_region, e.color_region);
     });
-
     return Array.from(unique.entries()).map(([nombre, color]) => ({ nombre, color }));
   });
 
@@ -61,7 +45,6 @@ export class MapService {
   }
 
   getCentroRegion(nombreRegion: string): { lat: number; lng: number } | null {
-    // Primero intenta calcular el centroide dinámico desde los estados en BD
     const estados = this.element.estadosSignal().filter(e => e.nombre_region === nombreRegion);
     if (estados.length > 0) {
       const latSum = estados.reduce((a, e) => a + Number(e.latitud), 0);
@@ -137,7 +120,7 @@ export class MapService {
       const actual = [...e.detalleRegiones];
       const idx = actual.indexOf(tipo);
       const nuevo = idx >= 0 ? actual.filter(t => t !== tipo) : [...actual, tipo];
-      return { ...e, detalleRegiones: nuevo.length > 0 ? nuevo : actual }; // nunca vacío
+      return { ...e, detalleRegiones: nuevo.length > 0 ? nuevo : actual };
     });
   }
 }

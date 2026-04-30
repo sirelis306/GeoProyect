@@ -10,6 +10,7 @@ export const routes: Routes = [
     { path: 'mapa', component: Map, canActivate: [authGuard] },
     { path: 'usuarios', component: Users, canActivate: [authGuard] }, 
     { path: 'usuarios/nuevo', component: AddUser, canActivate: [authGuard] }, 
+    { path: 'usuarios/editar/:id', component: AddUser, canActivate: [authGuard] },
     { path: '', redirectTo: 'mapa', pathMatch: 'full' }, 
     { path: '**', redirectTo: 'login' },
 ];

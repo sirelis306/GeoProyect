@@ -3,17 +3,16 @@
   <div class="breadcrumb">
     <a routerLink="/usuarios" class="breadcrumb-link">Usuarios</a>
     <span class="breadcrumb-separator">/</span>
-    <span class="breadcrumb-current">Crear Usuario</span>
+    <span class="breadcrumb-current">{{ esEdicion ? 'Editar Usuario' : 'Crear Usuario' }}</span>
   </div>
 
   <!-- Panel de éxito: muestra la contraseña temporal -->
   <div *ngIf="passwordTemporal" class="success-panel">
     <div class="success-icon"><i class="fas fa-check-circle"></i></div>
     <div class="success-content">
-      <div class="success-title">¡Usuario creado exitosamente!</div>
-      <p class="success-desc">Comparte esta contraseña temporal con el usuario. Deberá cambiarla en su primer acceso.
-      </p>
-      <div class="password-display">
+      <div class="success-title">¡Usuario {{ esEdicion ? 'actualizado' : 'creado' }} exitosamente!</div>
+      <p class="success-desc" *ngIf="!esEdicion">Comparte esta contraseña temporal con el usuario. Deberá cambiarla en su primer acceso.</p>
+      <div class="password-display" *ngIf="passwordTemporal && !esEdicion">
         <span class="password-label">Contraseña temporal:</span>
         <code class="password-value">{{ passwordTemporal }}</code>
       </div>
@@ -25,13 +24,14 @@
 
   <!-- Formulario (se oculta tras crear) -->
   <div class="form-card" *ngIf="!passwordTemporal">
-
-    <div *ngIf="showErrors && errorMsg" class="error-message-box">
-      <i class="fas fa-exclamation-circle"></i> {{ errorMsg }}
-    </div>
-    <div *ngIf="errorMsg && !showErrors" class="error-message-box">
-      <i class="fas fa-exclamation-circle"></i> {{ errorMsg }}
-    </div>
+    
+    <div>
+      <div *ngIf="showErrors && errorMsg" class="error-message-box">
+        <i class="fas fa-exclamation-circle"></i> {{ errorMsg }}
+      </div>
+      <div *ngIf="errorMsg && !showErrors" class="error-message-box">
+        <i class="fas fa-exclamation-circle"></i> {{ errorMsg }}
+      </div>
 
     <form #userForm="ngForm" (ngSubmit)="guardar(userForm)">
       <div class="form-grid">
@@ -153,5 +153,6 @@
         </button>
       </div>
     </form>
+    </div>
   </div>
 </div>

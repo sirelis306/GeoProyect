@@ -1,10 +1,10 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
-import { RouterLink, Router } from '@angular/router';
+import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../../services/auth/authService';
+import { UserService } from '../../services/users/userService';
 import { User } from '../../models/user';
 
 @Component({
@@ -16,14 +16,19 @@ import { User } from '../../models/user';
 })
 export class AddUser implements OnInit {
   private router = inject(Router);
-  private http = inject(HttpClient);
+  private route = inject(ActivatedRoute);
   private auth = inject(AuthService);
+  private userService = inject(UserService);
+  private cdr = inject(ChangeDetectorRef);
 
   showErrors = false;
   cargando = false;
+  cargandoUsuario = false;
   errorMsg = '';
   passwordTemporal = '';
   esSuperAdmin = false;
+  esEdicion = false;
+  userId: number | null = null;
 
   user: User = {
     primerNombre: '',
@@ -147,10 +152,38 @@ export class AddUser implements OnInit {
   ngOnInit() {
     const rol = this.auth.getUserRol();
     this.esSuperAdmin = rol === 'super_admin';
+
+    const id = this.route.snapshot.params['id'];
+    if (id) {
+      this.esEdicion = true;
+      this.userId = Number(id);
+      this.cargarUsuario(this.userId);
+    }
   }
 
-  onEstadoChange() {
-    this.user.ciudad = null;
+  cargarUsuario(id: number) {
+    this.cargandoUsuario = true;
+    this.userService.obtenerUsuarioPorId(id).subscribe({
+      next: (userData) => {
+        // Fusión robusta para evitar que campos nulos rompan el formulario
+        this.user = {
+          ...this.user,
+          ...userData,
+          roles: userData.roles || this.user.roles
+        };
+        if (this.user.estado) this.onEstadoChange(false);
+        this.cargandoUsuario = false;
+        this.cdr.detectChanges(); // Forzar actualización de la vista
+      },
+      error: (err) => {
+        this.cargandoUsuario = false;
+        this.errorMsg = 'No se pudo cargar el usuario para editar.';
+      }
+    });
+  }
+
+  onEstadoChange(limpiarCiudad: boolean = true) {
+    if (limpiarCiudad) this.user.ciudad = null;
     this.ciudadesDisponibles = this.user.estado ? this.ciudadesMap[this.user.estado] || [] : [];
   }
 
@@ -167,20 +200,30 @@ export class AddUser implements OnInit {
     }
 
     this.cargando = true;
-    const token = localStorage.getItem('token_geo');
-    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
-
-    this.http.post<any>('http://localhost:3000/api/users/crear', this.user, { headers }).subscribe({
-    // this.http.post<any>('https://geobackend-api.onrender.com/api/users/crear', this.user, { headers }).subscribe({
-      next: (res) => {
-        this.cargando = false;
-        this.passwordTemporal = res.passwordTemporal;
-      },
-      error: (err) => {
-        this.cargando = false;
-        this.errorMsg = err.error?.mensaje || 'Error al crear el usuario. Intenta de nuevo.';
-      }
-    });
+    if (this.esEdicion && this.userId) {
+      this.userService.actualizarUsuario(this.userId, this.user).subscribe({
+        next: () => {
+          this.cargando = false;
+          alert('Usuario actualizado con éxito');
+          this.router.navigate(['/usuarios']);
+        },
+        error: (err) => {
+          this.cargando = false;
+          this.errorMsg = err.error?.mensaje || 'Error al actualizar el usuario.';
+        }
+      });
+    } else {
+      this.userService.crearUsuario(this.user).subscribe({
+        next: (res) => {
+          this.cargando = false;
+          this.passwordTemporal = res.passwordTemporal;
+        },
+        error: (err) => {
+          this.cargando = false;
+          this.errorMsg = err.error?.mensaje || 'Error al crear el usuario.';
+        }
+      });
+    }
   }
 
   cerrarYRegresar() {
