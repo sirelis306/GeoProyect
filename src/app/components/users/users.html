@@ -15,12 +15,18 @@
       <div class="toolbar-left tw-flex-col sm:tw-flex-row tw-w-full md:tw-w-auto">
         <div class="search-box">
           <i class="fas fa-search"></i>
-          <input type="text" placeholder="Buscar usuario...">
+          <input type="text" placeholder="Buscar usuario..." [(ngModel)]="searchTexto">
         </div>
-        <div class="filter-dropdown">
-          <select>
-            <option>Todos los roles</option>
-          </select>
+        <div class="filter-dropdown tw-w-full md:tw-w-[250px]">
+          <ng-select class="select-simple" 
+            [(ngModel)]="filtroRol" 
+            [items]="rolesOptions" 
+            bindLabel="label" 
+            bindValue="value"
+            [clearable]="false"
+            [searchable]="false"
+            placeholder="Filtrar por rol">
+          </ng-select>
         </div>
       </div>
 
@@ -38,7 +44,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let user of listaUsuarios">
+        <tr *ngFor="let user of usuariosFiltrados">
           <td>
             <div class="user-info">
               <div class="user-details">
@@ -77,7 +83,9 @@
     </div>
 
     <div class="table-footer tw-flex-col sm:tw-flex-row tw-gap-4">
-      <div class="showing-text">Mostrando {{ listaUsuarios.length }} de {{ listaUsuarios.length }} usuarios</div>
+      <div class="showing-text">
+        Mostrando {{ usuariosFiltrados.length }} de {{ listaUsuarios.length }} usuarios
+      </div>
       <div class="pagination">
         <button class="page-btn active">1</button>
         <button class="page-btn">2</button>

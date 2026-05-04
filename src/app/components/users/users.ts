@@ -1,12 +1,14 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { NgSelectModule } from '@ng-select/ng-select';
 import { UserService } from '../../services/users/userService';
 
 @Component({
   selector: 'app-users',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule, NgSelectModule],
   templateUrl: './users.html',
   styleUrl: './users.css'
 })
@@ -15,9 +17,50 @@ export class Users implements OnInit {
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
   listaUsuarios: any[] = [];
+  searchTexto: string = '';
+  filtroRol: string = 'todos';
+  rolesOptions: any[] = [{ value: 'todos', label: 'Todos los roles' }];
 
   ngOnInit() {
     this.obtenerUsuarios();
+    this.cargarRoles();
+  }
+
+  cargarRoles() {
+    this.userService.obtenerRoles().subscribe({
+      next: (roles) => {
+        const rolesMapeados = roles.map(r => ({
+          value: r.nombre_rol.replace('rol_', ''), // quitamos el prefijo para el filtro
+          label: this.formatRolLabel(r.nombre_rol)
+        }));
+        this.rolesOptions = [{ value: 'todos', label: 'Todos los roles' }, ...rolesMapeados];
+      }
+    });
+  }
+
+  formatRolLabel(rol: string): string {
+    const labels: any = {
+      'rol_super_administrador': 'Súper Administrador',
+      'rol_administrador': 'Administrador',
+      'rol_analista': 'Analista',
+      'rol_regular': 'Regular'
+    };
+    return labels[rol] || rol;
+  }
+
+  /* Retorna la lista filtrada basándose en el texto de búsqueda y el rol seleccionado */
+  get usuariosFiltrados() {
+    return this.listaUsuarios.filter(user => {
+      const matchTexto =
+        (user.primerNombre + ' ' + user.primerApellido + ' ' + user.email)
+          .toLowerCase()
+          .includes(this.searchTexto.toLowerCase());
+
+      const matchRol = this.filtroRol === 'todos' || 
+        user.roles?.['rol_' + this.filtroRol] === true;
+
+      return matchTexto && matchRol;
+    });
   }
 
   obtenerUsuarios() {

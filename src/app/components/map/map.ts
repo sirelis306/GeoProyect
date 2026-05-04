@@ -347,7 +347,7 @@ export class Map implements AfterViewInit {
     Object.values(segmentos).forEach(info => {
       if (info.count === 1) {
         outlineSegments.push(L.polyline([info.p1, info.p2], {
-          color: '#c2c2c9ff',
+          color: '#e2e2e2ff',
           weight: 2,
           interactive: false,
           pane: 'borderPane'

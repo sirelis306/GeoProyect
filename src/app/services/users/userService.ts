@@ -13,6 +13,11 @@ export class UserService {
     return this.http.get<any[]>(`${this.API_URL}/listado`);
   }
 
+  /* Obtiene todos los roles definidos en la base de datos. */
+  obtenerRoles(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API_URL}/roles`);
+  }
+
   /* Desactiva un usuario por su ID. */
   desactivarUsuario(id: number): Observable<any> {
     return this.http.put(`${this.API_URL}/desactivar/${id}`, {});
