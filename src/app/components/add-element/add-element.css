@@ -150,6 +150,17 @@
   border-color: #e8e8e8;
 }
 
+/* --- VALIDATION STYLES --- */
+.form-group input.ng-invalid.ng-touched,
+.form-group select.ng-invalid.ng-touched,
+::ng-deep .select-simple.ng-invalid.ng-touched .ng-select-container,
+::ng-deep .custom-ng-select.ng-invalid.ng-touched .ng-select-container {
+  border-color: #ef4444 !important;
+  background-color: #fef2f2 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+
 .modal-footer {
   display: flex;
   justify-content: flex-end;
@@ -333,4 +344,70 @@
   font-size: 13px !important;
   padding: 8px 12px !important;
   font-family: 'Poppins', sans-serif !important;
+}
+
+/* --- MINI MODAL NOTIFICATION --- */
+.mini-modal-overlay {
+  position: fixed; /* Cambiado a fixed para cubrir toda la pantalla */
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.2); /* Fondo un poco más oscuro */
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999999; /* Mayor que el modal principal (999999) */
+  animation: fadeIn 0.2s ease;
+}
+
+.mini-modal-content {
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  width: 80%;
+  max-width: 280px;
+  text-align: center;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border-bottom: 5px solid #4155e9;
+}
+
+
+.mini-modal-content.success { border-bottom-color: #10b981; }
+.mini-modal-content.error { border-bottom-color: #ef4444; }
+.mini-modal-content.warning { border-bottom-color: #f59e0b; }
+
+.mini-modal-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.success .mini-modal-icon { color: #10b981; }
+.error .mini-modal-icon { color: #ef4444; }
+.warning .mini-modal-icon { color: #f59e0b; }
+
+.mini-modal-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 2px;
+}
+
+.mini-modal-message {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.3;
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

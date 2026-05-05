@@ -20,10 +20,24 @@ export class Users implements OnInit {
   searchTexto: string = '';
   filtroRol: string = 'todos';
   rolesOptions: any[] = [{ value: 'todos', label: 'Todos los roles' }];
+  currentUser: any = null;
 
   ngOnInit() {
     this.obtenerUsuarios();
     this.cargarRoles();
+    this.loadCurrentUser();
+  }
+
+  loadCurrentUser() {
+    const userJson = localStorage.getItem('user_geo');
+    if (userJson) {
+      this.currentUser = JSON.parse(userJson);
+    }
+  }
+
+  canDeactivate(): boolean {
+    if (!this.currentUser || !this.currentUser.roles) return false;
+    return this.currentUser.roles.rol_super_administrador || this.currentUser.roles.rol_administrador;
   }
 
   cargarRoles() {
@@ -33,7 +47,11 @@ export class Users implements OnInit {
           value: r.nombre_rol.replace('rol_', ''), // quitamos el prefijo para el filtro
           label: this.formatRolLabel(r.nombre_rol)
         }));
-        this.rolesOptions = [{ value: 'todos', label: 'Todos los roles' }, ...rolesMapeados];
+
+        setTimeout(() => {
+          this.rolesOptions = [{ value: 'todos', label: 'Todos los roles' }, ...rolesMapeados];
+          this.cdr.markForCheck();
+        });
       }
     });
   }
@@ -56,7 +74,7 @@ export class Users implements OnInit {
           .toLowerCase()
           .includes(this.searchTexto.toLowerCase());
 
-      const matchRol = this.filtroRol === 'todos' || 
+      const matchRol = this.filtroRol === 'todos' ||
         user.roles?.['rol_' + this.filtroRol] === true;
 
       return matchTexto && matchRol;
@@ -67,7 +85,9 @@ export class Users implements OnInit {
     this.userService.obtenerUsuarios().subscribe({
       next: (data) => {
         this.listaUsuarios = data;
-        this.cdr.detectChanges();
+        // No es estrictamente necesario llamar a detectChanges() aquí si usamos HttpClient 
+        // y el componente está en la zona de Angular, pero markForCheck es más seguro.
+        this.cdr.markForCheck();
       },
       error: (err) => {
         console.error('Error al obtener usuarios:', err);

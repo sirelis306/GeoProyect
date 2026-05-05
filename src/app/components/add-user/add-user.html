@@ -1,4 +1,24 @@
 <div class="page-container">
+  <!-- Modal de Notificación Premium -->
+  <div class="modal-overlay" *ngIf="modalConfig.show" (click)="cerrarModal()">
+    <div class="modal-content" [ngClass]="modalConfig.type" (click)="$event.stopPropagation()">
+      <div class="modal-icon">
+        <i class="fas" [ngClass]="{
+          'fa-check-circle': modalConfig.type === 'success',
+          'fa-exclamation-circle': modalConfig.type === 'error',
+          'fa-exclamation-triangle': modalConfig.type === 'warning'
+        }"></i>
+      </div>
+      <div class="modal-body">
+        <h3 class="modal-title">{{ modalConfig.title }}</h3>
+        <p class="modal-message">{{ modalConfig.message }}</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-modal" (click)="cerrarModal()">{{ modalConfig.buttonText }}</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Breadcrumb -->
   <div class="breadcrumb">
     <a routerLink="/usuarios" class="breadcrumb-link">Usuarios</a>

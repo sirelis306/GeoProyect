@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -11,13 +11,20 @@ import { AuthService } from '../../services/auth/authService';
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
-export class Login {
+export class Login implements OnInit {
   private auth = inject(AuthService);
   private router = inject(Router);
 
   creds = { email: '', password: '' };
   error = '';
   cargando = false;
+
+  ngOnInit() {
+    // Si ya está logueado, lo mandamos al mapa directamente
+    if (this.auth.estaLogueado()) {
+      this.router.navigate(['/mapa']);
+    }
+  }
 
   ingresar() {
     this.cargando = true;

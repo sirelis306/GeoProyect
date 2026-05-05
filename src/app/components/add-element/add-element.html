@@ -1,4 +1,22 @@
+<!-- Mini Modal de Notificación -->
+<div class="mini-modal-overlay" *ngIf="modalConfig.show" (click)="cerrarModal()">
+  <div class="mini-modal-content" [ngClass]="modalConfig.type" (click)="$event.stopPropagation()">
+    <div class="mini-modal-icon">
+      <i class="fas" [ngClass]="{
+        'fa-check-circle': modalConfig.type === 'success',
+        'fa-exclamation-circle': modalConfig.type === 'error',
+        'fa-exclamation-triangle': modalConfig.type === 'warning'
+      }"></i>
+    </div>
+    <div class="mini-modal-body">
+      <h4 class="mini-modal-title">{{ modalConfig.title }}</h4>
+      <p class="mini-modal-message">{{ modalConfig.message }}</p>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" [class.active]="visible">
+
   <div class="modal-content">
     <div class="modal-header">
       <div>
@@ -11,9 +29,9 @@
     <div class="modal-body">
       <div class="form-row">
         <div class="form-group">
-          <label>Estado</label>
-          <ng-select [(ngModel)]="nuevoItem.estado" [items]="listaEstados" [clearable]="false" [searchable]="true"
-            placeholder="Seleccione un estado" class="select-simple" appendTo="body">
+          <label>Estado *</label>
+          <ng-select [(ngModel)]="nuevoItem.estado" [items]="listaEstados()" [clearable]="false" [searchable]="true"
+            placeholder="Seleccione un estado" class="select-simple" required #estado="ngModel">
           </ng-select>
         </div>
         <div class="form-group">
@@ -102,7 +120,7 @@
         <div class="form-row">
           <div class="form-group">
             <label>Código Dealer *</label>
-            <input type="text" [(ngModel)]="nuevoItem.codigoDealer" placeholder="Ej: AA001" required>
+            <input type="text" [(ngModel)]="nuevoItem.codigoDealer" placeholder="Ej: AA001" required #codDealer="ngModel">
           </div>
           <div class="form-group">
             <label>Clasificación *</label>
@@ -114,8 +132,8 @@
       </div>
 
       <div *ngIf="tipo === 'abonados'" class="form-group">
-        <label>Cantidad Total</label>
-        <input type="number" [(ngModel)]="nuevoItem.cantidad" placeholder="Ej: 1500">
+        <label>Cantidad Total *</label>
+        <input type="number" [(ngModel)]="nuevoItem.cantidad" placeholder="Ej: 1500" required #cant="ngModel">
       </div>
     </div>
 

@@ -4,18 +4,13 @@ import { TipoElemento, RadioBase, Abonado, Oficina, Agente, Estado } from '../..
 import { CoordService } from '../coord/coordService';
 import { GeocodingService } from '../gis/geocodingService';
 
-/**
- * ElementService — Principio SRP
- * Única responsabilidad: gestionar el ESTADO DE DATOS del sistema.
- * Sabe de la API, de los modelos y de los Mock Data. No sabe nada de colores ni de UI.
- */
 @Injectable({ providedIn: 'root' })
 export class ElementService {
   private http = inject(HttpClient);
   private coord = inject(CoordService);
   private geocoding = inject(GeocodingService);
-  private API_URL = 'http://localhost:3000/api';
-  // private API_URL = 'https://geobackend-api.onrender.com/api';
+  // private API_URL = 'http://localhost:3000/api';
+  private API_URL = 'https://geobackend-api.onrender.com/api';
 
   // Signals de datos
   estadosSignal = signal<Estado[]>([]);
@@ -86,6 +81,9 @@ export class ElementService {
 
   // Agregar elemento
   async construirYValidarElemento(tipoEdicion: TipoElemento, nuevoItem: any, obtenerRegion: (e: string) => string): Promise<any> {
+    // 1. Validación básica de estado
+    if (!nuevoItem.estado) throw new Error('Por favor, seleccione un estado.');
+
     const itemFinal: any = {
       estado: nuevoItem.estado,
       region: obtenerRegion(nuevoItem.estado),
@@ -94,19 +92,26 @@ export class ElementService {
       cantidad: Number(nuevoItem.cantidad) || 0
     };
 
+    // 2. Validación por tipo
     if (tipoEdicion === 'antenas' || tipoEdicion === 'agentes') {
+      // Nombre obligatorio para estos tipos
+      if (!nuevoItem.nombre) throw new Error('El nombre o razón social es obligatorio.');
+
       let lat = nuevoItem.latitud;
       let lng = nuevoItem.longitud;
 
+      // Validación de Coordenadas / Dirección
       if (!lat || !lng) {
+        if (!nuevoItem.direccion) {
+          throw new Error('Debe ingresar las coordenadas o una dirección para ubicar el elemento.');
+        }
+
+        // Intentar geocodificar si hay dirección pero no coordenadas
         const coordsAuto = await this.geocoding.obtenerCoordsDesdeDireccion(nuevoItem.direccion);
         if (coordsAuto) {
           lat = coordsAuto.lat; lng = coordsAuto.lng;
         } else {
-          const c = this.coord.getCoordEstado(nuevoItem.estado);
-          const jitter = () => (Math.random() - 0.5) * 0.04;
-          lat = c ? c.lat + jitter() : 0;
-          lng = c ? c.lng + jitter() : 0;
+          throw new Error('No se pudo determinar la ubicación desde la dirección. Por favor, ingrese las coordenadas manualmente.');
         }
       }
 
@@ -119,29 +124,30 @@ export class ElementService {
         itemFinal.tecnologia = (nuevoItem.tecnologia || []).join(' / ') || 'LTE';
         itemFinal.actividad = nuevoItem.actividad || 'Operativa';
       } else {
+        // Validación de Código Dealer para Agentes
+        if (!nuevoItem.codigoDealer) throw new Error('El Código Dealer es obligatorio para Agentes Autorizados.');
         itemFinal.codigoDealer = nuevoItem.codigoDealer;
-        itemFinal.clasificacion = nuevoItem.clasificacion;
-        itemFinal.tecnologia = null;
-        itemFinal.actividad = null;
+        itemFinal.clasificacion = nuevoItem.clasificacion || 'AA';
       }
     } else {
+      // Caso para Abonados y Oficinas
       const c = this.coord.getCoordEstado(nuevoItem.estado);
       itemFinal.latitud = c ? c.lat : 0;
       itemFinal.longitud = c ? c.lng : 0;
 
       if (tipoEdicion === 'abonados') {
+        // Validación de Cantidad para Abonados
+        if (!nuevoItem.cantidad || Number(nuevoItem.cantidad) <= 0) {
+          throw new Error('Debe ingresar una cantidad de abonados válida (mayor a 0).');
+        }
         itemFinal.segmentacion = nuevoItem.segmentacion_elegida || '4G';
         itemFinal.nombre = `Abonados ${itemFinal.segmentacion} ${nuevoItem.estado}`;
       } else {
-        itemFinal.nombre = `${tipoEdicion.toUpperCase()} - ${nuevoItem.estado}`;
-        itemFinal.segmentacion = null;
+        // Oficinas
+        if (!nuevoItem.nombre) throw new Error('El nombre de la oficina es obligatorio.');
+        itemFinal.nombre = nuevoItem.nombre;
       }
-      itemFinal.tecnologia = null;
-      itemFinal.actividad = null;
     }
-
-    if (!itemFinal.estado || itemFinal.cantidad < 0)
-      throw new Error('Por favor, seleccione un estado válido.');
 
     return itemFinal;
   }

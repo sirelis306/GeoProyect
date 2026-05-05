@@ -149,6 +149,14 @@ export class AddUser implements OnInit {
 
   ciudadesDisponibles: string[] = [];
 
+  modalConfig = {
+    show: false,
+    type: 'success' as 'success' | 'error' | 'warning',
+    title: '',
+    message: '',
+    buttonText: 'Entendido'
+  };
+
   ngOnInit() {
     const rol = this.auth.getUserRol();
     this.esSuperAdmin = rol === 'super_admin';
@@ -158,6 +166,18 @@ export class AddUser implements OnInit {
       this.esEdicion = true;
       this.userId = Number(id);
       this.cargarUsuario(this.userId);
+    }
+  }
+
+  mostrarModal(type: 'success' | 'error' | 'warning', title: string, message: string, buttonText: string = 'Entendido') {
+    this.modalConfig = { show: true, type, title, message, buttonText };
+    this.cdr.detectChanges();
+  }
+
+  cerrarModal() {
+    this.modalConfig.show = false;
+    if (this.modalConfig.type === 'success' && this.esEdicion) {
+      this.router.navigate(['/usuarios']);
     }
   }
 
@@ -177,7 +197,7 @@ export class AddUser implements OnInit {
       },
       error: (err) => {
         this.cargandoUsuario = false;
-        this.errorMsg = 'No se pudo cargar el usuario para editar.';
+        this.mostrarModal('error', 'Error de Carga', 'No se pudo cargar el usuario para editar.');
       }
     });
   }
@@ -191,11 +211,12 @@ export class AddUser implements OnInit {
     this.errorMsg = '';
     if (form.invalid) {
       this.showErrors = true;
+      this.mostrarModal('warning', 'Campos Incompletos', 'Por favor, rellene todos los campos obligatorios marcados con (*).');
       return;
     }
     const tieneRol = Object.values(this.user.roles).some(rol => rol === true);
     if (!tieneRol) {
-      this.errorMsg = 'Debe seleccionar al menos un rol para el usuario.';
+      this.mostrarModal('warning', 'Sin Roles', 'Debe seleccionar al menos un rol para el usuario.');
       return;
     }
 
@@ -204,12 +225,12 @@ export class AddUser implements OnInit {
       this.userService.actualizarUsuario(this.userId, this.user).subscribe({
         next: () => {
           this.cargando = false;
-          alert('Usuario actualizado con éxito');
-          this.router.navigate(['/usuarios']);
+          this.mostrarModal('success', '¡Actualizado!', 'El usuario ha sido actualizado con éxito.');
         },
         error: (err) => {
           this.cargando = false;
-          this.errorMsg = err.error?.mensaje || 'Error al actualizar el usuario.';
+          const msg = err.error?.mensaje || 'Error al actualizar el usuario.';
+          this.mostrarModal('error', 'Error', msg);
         }
       });
     } else {
@@ -217,10 +238,12 @@ export class AddUser implements OnInit {
         next: (res) => {
           this.cargando = false;
           this.passwordTemporal = res.passwordTemporal;
+          // No mostramos modal aquí porque ya tenemos el success-panel que muestra la contraseña
         },
         error: (err) => {
           this.cargando = false;
-          this.errorMsg = err.error?.mensaje || 'Error al crear el usuario.';
+          const msg = err.error?.mensaje || 'Error al crear el usuario.';
+          this.mostrarModal('error', 'Error', msg);
         }
       });
     }

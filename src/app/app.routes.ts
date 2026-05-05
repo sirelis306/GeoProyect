@@ -11,6 +11,6 @@ export const routes: Routes = [
     { path: 'usuarios', component: Users, canActivate: [authGuard] }, 
     { path: 'usuarios/nuevo', component: AddUser, canActivate: [authGuard] }, 
     { path: 'usuarios/editar/:id', component: AddUser, canActivate: [authGuard] },
-    { path: '', redirectTo: 'mapa', pathMatch: 'full' }, 
+    { path: '', redirectTo: 'login', pathMatch: 'full' }, 
     { path: '**', redirectTo: 'login' },
 ];

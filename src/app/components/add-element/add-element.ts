@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, inject, signal } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -21,6 +21,21 @@ export class AddElementComponent {
   @Output() onSaved = new EventEmitter<void>();
 
   enviando = false;
+  
+  modalConfig = {
+    show: false,
+    type: 'success' as 'success' | 'error' | 'warning',
+    title: '',
+    message: ''
+  };
+
+  mostrarModal(type: 'success' | 'error' | 'warning', title: string, message: string) {
+    this.modalConfig = { show: true, type, title, message };
+  }
+
+  cerrarModal() {
+    this.modalConfig.show = false;
+  }
   nuevoItem: any = { 
     nombre: '', 
     estado: null, 
@@ -45,9 +60,9 @@ export class AddElementComponent {
   listaActividad = ['Operativa', 'Mantenimiento', 'Vandalizada'];
   clasificaciones = ['AA', 'ACI', 'PYME', 'Compartida'];
 
-  get listaEstados(): string[] {
-    return this.gis.estadosSignal().map(e => e.nombre);
-  }
+  // Lista de estados computada para evitar refrescos constantes
+  listaEstados = computed(() => this.gis.estadosSignal().map(e => e.nombre));
+
 
   get todasSeleccionadas(): boolean {
     return this.nuevoItem.tecnologia?.length === this.opcionesTecnologia.length;
@@ -69,9 +84,18 @@ export class AddElementComponent {
     }
   }
 
+  marcarCamposComoTocados() {
+    const inputs = document.querySelectorAll('.modal-body input, .modal-body ng-select');
+    inputs.forEach(i => {
+      i.classList.add('ng-touched');
+      i.classList.add('ng-dirty');
+    });
+  }
+
   async guardar() {
     try {
       this.enviando = true;
+      this.marcarCamposComoTocados();
       
       // Si el usuario ingresó dirección pero no coordenadas, intentamos geocodificar
       if (this.nuevoItem.direccion && (!this.nuevoItem.latitud || !this.nuevoItem.longitud)) {
@@ -89,16 +113,23 @@ export class AddElementComponent {
           this.enviando = false;
           this.resetearFormulario();
           this.onSaved.emit();
-          this.onClose.emit();
+          // Mostramos éxito antes de cerrar
+          console.log('Mostrando modal de éxito...');
+          this.mostrarModal('success', '¡Éxito!', 'Elemento guardado correctamente.');
+          setTimeout(() => {
+            console.log('Cerrando formulario...');
+            this.onClose.emit();
+            this.cerrarModal();
+          }, 1500);
         },
         error: (err) => {
           this.enviando = false;
-          alert(err.error?.mensaje || 'Error al guardar');
+          this.mostrarModal('error', 'Error', err.error?.mensaje || 'Error al guardar');
         }
       });
     } catch (error: any) {
       this.enviando = false;
-      alert(error.message);
+      this.mostrarModal('error', 'Error', error.message);
     }
   }
 

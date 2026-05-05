@@ -9,9 +9,9 @@ import { Router } from '@angular/router';
 export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
-  private URL_API = 'http://localhost:3000/api/auth';
-  // private URL_API = 'https://geobackend-api.onrender.com/api/auth';
-  
+  // private URL_API = 'http://localhost:3000/api/auth';
+  private URL_API = 'https://geobackend-api.onrender.com/api/auth';
+
   currentUser = signal<any>(JSON.parse(localStorage.getItem('user_geo') || 'null'));
 
   login(creds: any) {
@@ -20,7 +20,7 @@ export class AuthService {
       tap(res => {
         if (res && res.token) {
           localStorage.setItem('token_geo', res.token);
-          localStorage.setItem('user_geo', JSON.stringify(res.user)); 
+          localStorage.setItem('user_geo', JSON.stringify(res.user));
           this.currentUser.set(res.user);
         }
       })

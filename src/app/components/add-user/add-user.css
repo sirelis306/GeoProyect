@@ -345,3 +345,112 @@
   padding: 6px 14px;
   border-radius: 6px;
 }
+
+/* --- MODAL PREMIUM --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border-top: 6px solid #4155e9;
+}
+
+.modal-content.success { border-top-color: #10b981; }
+.modal-content.error { border-top-color: #ef4444; }
+.modal-content.warning { border-top-color: #f59e0b; }
+
+.modal-icon {
+  font-size: 50px;
+  margin-bottom: 20px;
+}
+
+.success .modal-icon { color: #10b981; }
+.error .modal-icon { color: #ef4444; }
+.warning .modal-icon { color: #f59e0b; }
+
+.modal-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 12px;
+}
+
+.modal-message {
+  font-size: 15px;
+  color: #6b7280;
+  margin-bottom: 25px;
+  line-height: 1.5;
+}
+
+.btn-modal {
+  background: #4155e9;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.success .btn-modal { background: #10b981; }
+.error .btn-modal { background: #ef4444; }
+.warning .btn-modal { background: #f59e0b; }
+
+.btn-modal:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px) scale(0.9); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Estilos para validación de errores */
+.input-modern.ng-invalid.ng-touched,
+form.ng-submitted .input-modern.ng-invalid {
+  border-color: #ef4444 !important;
+  background-color: #fffafb !important;
+}
+
+.input-modern.ng-invalid.ng-touched::placeholder,
+form.ng-submitted .input-modern.ng-invalid::placeholder {
+  color: #fca5a5 !important;
+}
+
+::ng-deep .select-simple.ng-invalid.ng-touched .ng-select-container,
+form.ng-submitted .select-simple.ng-invalid .ng-select-container {
+  border-color: #ef4444 !important;
+  background-color: #fffafb !important;
+}
+
+::ng-deep .select-simple.ng-invalid.ng-touched .ng-placeholder,
+form.ng-submitted .select-simple.ng-invalid .ng-placeholder {
+  color: #ef4444 !important;
+}
