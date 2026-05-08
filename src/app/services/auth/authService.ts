@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
 export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
-  // private URL_API = 'http://localhost:3000/api/auth';
+  //private URL_API = 'http://localhost:3000/api/auth';
   private URL_API = 'https://geobackend-api.onrender.com/api/auth';
 
   currentUser = signal<any>(JSON.parse(localStorage.getItem('user_geo') || 'null'));

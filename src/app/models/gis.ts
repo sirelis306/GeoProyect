@@ -18,7 +18,7 @@ export interface RadioBase {
   latitud: number;
   longitud: number;
   tecnologia: string;
-  actividad: 'Operativa' | 'Mantenimiento' | 'Vandalizada';
+  actividad: 'Operativa' | 'Mantenimiento' | 'Vandalizada' | 'Inoperativa';
   direccion?: string;
 }
 

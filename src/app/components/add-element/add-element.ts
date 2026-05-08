@@ -57,7 +57,7 @@ export class AddElementComponent {
     { value: 'NR', label: 'NR' }
   ];
 
-  listaActividad = ['Operativa', 'Mantenimiento', 'Vandalizada'];
+  listaActividad = ['Operativa', 'Mantenimiento', 'Vandalizada', 'Inoperativa'];
   clasificaciones = ['AA', 'ACI', 'PYME', 'Compartida'];
 
   // Lista de estados computada para evitar refrescos constantes

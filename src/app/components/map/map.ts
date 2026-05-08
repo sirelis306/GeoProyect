@@ -108,7 +108,7 @@ export class Map implements AfterViewInit {
       }
 
       // --- LÓGICA DE VISUALIZACIÓN SEGÚN ZOOM ---
-      const esVistaDetalle = this.gis.zoomLevel() >= 8;
+      const esVistaDetalle = this.gis.zoomLevel() >= 10;
       if (estado.operaciones) {
         if (esVistaDetalle) this.renderIndividualMarkers(estado.detalleOperaciones);
         else this.renderStateTotals(estado.detalleOperaciones);
@@ -160,6 +160,12 @@ export class Map implements AfterViewInit {
       borderPane.style.pointerEvents = 'none';
     }
 
+    // Panel para elementos (marcadores) para que estén por encima de todo
+    const elementsPane = this.map.createPane('elementsPane');
+    if (elementsPane) {
+      elementsPane.style.zIndex = '610'; // Por encima de markerPane (600) y etiquetas
+    }
+
     this.map.on('zoomend', () => this.gis.zoomLevel.set(this.map.getZoom()));
     this.layerAggregated.addTo(this.map);
 
@@ -179,7 +185,8 @@ export class Map implements AfterViewInit {
 
     const estadosConDatos = new Set(this.gis.getEstadosConDatos().map(e => e.nombre));
     const regionesActivas = this.gis.getRegionesConDatos();
-    const cotasActivas = this.gis.capasVisibles().cotas;
+    const capas = this.gis.capasVisibles();
+    const hayCapasEspeciales = capas.cotas || capas.electricidad || capas.vias;
 
     this.capaGeoJsonRegiones.setStyle((f: any) => {
       const nombre = f.properties.estado || f.properties.name;
@@ -192,7 +199,7 @@ export class Map implements AfterViewInit {
         weight: tieneDatos ? 1.5 : 0.5,
         opacity: tieneDatos ? 1 : 0.3,
         color: '#FFFFFF',
-        fillOpacity: tieneDatos ? (cotasActivas ? 0.4 : 0.7) : 0 // Menos opacidad si hay cotas para ver el relieve
+        fillOpacity: tieneDatos ? (hayCapasEspeciales ? 0.3 : 0.7) : 0 // Más transparente si hay capas de info extra
       };
     });
   }
@@ -211,7 +218,9 @@ export class Map implements AfterViewInit {
             { label: 'Dirección', value: a.direccion },
             { label: 'Coordenadas', value: this.renderer.formatCoords(a.latitud, a.longitud), coords: true }
           ]);
-          L.marker([a.latitud, a.longitud], { icon }).bindPopup(popup, { maxWidth: 290 }).addTo(this.radioBases);
+          if (a.latitud && a.longitud) {
+            L.marker([a.latitud, a.longitud], { icon, pane: 'elementsPane' }).bindPopup(popup, { maxWidth: 400 }).addTo(this.radioBases);
+          }
         });
       this.radioBases.addTo(this.map);
     }
@@ -225,7 +234,9 @@ export class Map implements AfterViewInit {
           { label: 'Dirección', value: o.direccion },
           { label: 'Coordenadas', value: this.renderer.formatCoords(o.latitud, o.longitud), coords: true }
         ]);
-        L.marker([o.latitud, o.longitud], { icon }).bindPopup(popup, { maxWidth: 270 }).addTo(this.oficinas);
+        if (o.latitud && o.longitud) {
+          L.marker([o.latitud, o.longitud], { icon, pane: 'elementsPane' }).bindPopup(popup, { maxWidth: 400 }).addTo(this.oficinas);
+        }
       });
       this.oficinas.addTo(this.map);
     }
@@ -241,7 +252,9 @@ export class Map implements AfterViewInit {
           { label: 'Dirección', value: ag.direccion },
           { label: 'Coordenadas', value: this.renderer.formatCoords(ag.latitud, ag.longitud), coords: true }
         ]);
-        L.marker([ag.latitud, ag.longitud], { icon }).bindPopup(popup, { maxWidth: 310 }).addTo(this.agentes);
+        if (ag.latitud && ag.longitud) {
+          L.marker([ag.latitud, ag.longitud], { icon, pane: 'elementsPane' }).bindPopup(popup, { maxWidth: 400 }).addTo(this.agentes);
+        }
       });
       this.agentes.addTo(this.map);
     }
@@ -267,7 +280,9 @@ export class Map implements AfterViewInit {
         if (g.direccion) rows.push({ label: 'Dirección', value: g.direccion });
         rows.push({ label: 'Coordenadas', value: this.renderer.formatCoords(g.latitud, g.longitud), coords: true });
 
-        L.marker([g.latitud, g.longitud], { icon }).bindPopup(this.renderer.crearPopupDetalle('abonados', rows), { maxWidth: 300 }).addTo(this.abonados);
+        if (g.latitud && g.longitud) {
+          L.marker([g.latitud, g.longitud], { icon, pane: 'elementsPane' }).bindPopup(this.renderer.crearPopupDetalle('abonados', rows), { maxWidth: 400 }).addTo(this.abonados);
+        }
       });
       this.abonados.addTo(this.map);
     }
@@ -279,7 +294,7 @@ export class Map implements AfterViewInit {
       if (items.length > 0) {
         const segBreakdown = tipos.includes('abonados') ? this.gis.abonadosSignal().filter(ab => ab.estado === est.nombre)
           .reduce((acc: any, ab) => { acc[ab.segmentacion] = (acc[ab.segmentacion] || 0) + (Number(ab.cantidad) || 0); return acc; }, {}) : null;
-        L.marker([est.latitud, est.longitud], { icon: this.renderer.crearBadgeGroupIcon(items), zIndexOffset: 1000 })
+        L.marker([est.latitud, est.longitud], { icon: this.renderer.crearBadgeGroupIcon(items), zIndexOffset: 1000, pane: 'elementsPane' })
           .bindPopup(this.renderer.crearPopupAgregado(est.nombre, 'estado', items, segBreakdown)).addTo(this.layerAggregated);
       }
     });
@@ -292,7 +307,7 @@ export class Map implements AfterViewInit {
       if (items.length > 0 && centro) {
         const segBreakdown = tipos.includes('abonados') ? this.gis.abonadosSignal().filter(ab => ab.region === reg.nombre)
           .reduce((acc: any, ab) => { acc[ab.segmentacion] = (acc[ab.segmentacion] || 0) + (Number(ab.cantidad) || 0); return acc; }, {}) : null;
-        L.marker([centro.lat, centro.lng], { icon: this.renderer.crearBadgeGroupIcon(items, true), zIndexOffset: 2000 })
+        L.marker([centro.lat, centro.lng], { icon: this.renderer.crearBadgeGroupIcon(items, true), zIndexOffset: 2000, pane: 'elementsPane' })
           .bindPopup(this.renderer.crearPopupAgregado(reg.nombre, 'region', items, segBreakdown)).addTo(this.layerAggregated);
       }
     });
@@ -307,7 +322,7 @@ export class Map implements AfterViewInit {
           style: (f) => this.renderer.getEstiloElectricidad(f),
           pointToLayer: (f, latlng) => L.marker(latlng, {
             icon: this.renderer.crearIconoSubestacion(),
-            pane: 'electricPane'
+            pane: 'elementsPane'
           }),
           onEachFeature: (f, l) => l.bindPopup(this.renderer.crearPopupElectricidad(f.properties))
         });

@@ -9,7 +9,7 @@ export class ElementService {
   private http = inject(HttpClient);
   private coord = inject(CoordService);
   private geocoding = inject(GeocodingService);
-  // private API_URL = 'http://localhost:3000/api';
+  //private API_URL = 'http://localhost:3000/api';
   private API_URL = 'https://geobackend-api.onrender.com/api';
 
   // Signals de datos
@@ -28,6 +28,8 @@ export class ElementService {
   }
 
   // Carga de elementos desde la API
+  private reparandoEnBackground = false;
+
   cargarDatos() {
     this.http.get<any[]>(`${this.API_URL}/elementos`).subscribe({
       next: (data) => {
@@ -36,16 +38,42 @@ export class ElementService {
         this.oficinasSignal.set(rawData.filter(i => i.tipo === 'oficinas'));
         this.abonadosSignal.set(rawData.filter(i => i.tipo === 'abonados'));
         this.agentesSignal.set(rawData.filter(i => i.tipo === 'agentes'));
+
+        // Disparar reparación automática silenciosa si es necesario
+        if (!this.reparandoEnBackground) {
+          this.repararCoordenadasSilencioso();
+        }
       },
       error: (err) => {
         console.error('Error al cargar datos desde la API:', err);
-        // Limpiamos señales en caso de error para evitar datos residuales
         this.radioBasesSignal.set([]);
         this.oficinasSignal.set([]);
         this.abonadosSignal.set([]);
         this.agentesSignal.set([]);
       }
     });
+  }
+
+  private async repararCoordenadasSilencioso() {
+    this.reparandoEnBackground = true;
+    const todos = [...this.radioBasesSignal(), ...this.agentesSignal(), ...this.oficinasSignal(), ...this.abonadosSignal()];
+    const faltantes = todos.filter(item => (!item.latitud || !item.longitud || Number(item.latitud) === 0) && item.direccion);
+
+    if (faltantes.length > 0) {
+      console.log(`[Background] Geocodificando ${faltantes.length} elementos faltantes...`);
+      for (const item of faltantes) {
+        const coords = await this.geocoding.obtenerCoordsDesdeDireccion(item.direccion);
+        if (coords) {
+          try {
+            await this.http.put(`${this.API_URL}/elementos/${item.id}/coordenadas`, coords).toPromise();
+            // Actualizar localmente para que aparezca en el mapa de inmediato
+            item.latitud = coords.lat; item.longitud = coords.lng;
+          } catch (e) { }
+        }
+        await new Promise(r => setTimeout(r, 1200)); // Respetar rate limit
+      }
+    }
+    this.reparandoEnBackground = false;
   }
 
   // Helpers de datos
@@ -121,7 +149,10 @@ export class ElementService {
       itemFinal.cantidad = 1;
 
       if (tipoEdicion === 'antenas') {
-        itemFinal.tecnologia = (nuevoItem.tecnologia || []).join(' / ') || 'LTE';
+        const orden = ['GSM', 'UMTS', 'LTE', 'NR'];
+        itemFinal.tecnologia = orden
+          .map(t => ((nuevoItem.tecnologia || []).includes(t) ? t : ''))
+          .join(' / ');
         itemFinal.actividad = nuevoItem.actividad || 'Operativa';
       } else {
         // Validación de Código Dealer para Agentes

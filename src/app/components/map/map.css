@@ -92,7 +92,8 @@
 
 ::ng-deep .popup-detalle {
   font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-  min-width: 200px;
+  min-width: 300px;
+  max-width: 400px;
 }
 
 ::ng-deep .popup-header {
@@ -143,6 +144,8 @@
   font-size: 11.5px;
   vertical-align: middle;
   line-height: 1.3;
+  word-break: break-word; /* Permite que el texto largo (direcciones) se rompa */
+  overflow-wrap: anywhere;
 }
 
 ::ng-deep .popup-lbl {
@@ -234,7 +237,7 @@
 
 ::ng-deep .pagg {
   font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-  min-width: 170px;
+  min-width: 220px;
 }
 
 ::ng-deep .pagg-header {
@@ -372,8 +375,8 @@
   ::ng-deep .pagg,
   ::ng-deep .popup-agregado,
   ::ng-deep .popup-detalle {
-    min-width: 140px !important;
-    max-width: 200px !important;
+    min-width: 200px !important;
+    max-width: 280px !important;
   }
 
   ::ng-deep .pagg-header,
@@ -397,8 +400,8 @@
   ::ng-deep .pagg,
   ::ng-deep .popup-agregado,
   ::ng-deep .popup-detalle {
-    min-width: 100px !important;
-    max-width: 160px !important;
+    min-width: 160px !important;
+    max-width: 240px !important;
   }
 
   ::ng-deep .pagg-header,
