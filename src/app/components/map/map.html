@@ -3,8 +3,13 @@
   <app-totales></app-totales>
 
   <!-- Leyenda: Estados activos (cuando Capa 2 / Operaciones está activa) -->
-  <div class="map-legend-overlay" *ngIf="gis.capasVisibles().operaciones && gis.getEstadosConDatos().length > 0">
-    <div class="legend-header">ESTADOS ACTIVOS</div>
+  <div class="map-legend-overlay" [class.collapsed]="!leyendaAbierta()" *ngIf="gis.capasVisibles().operaciones && gis.getEstadosConDatos().length > 0">
+    <div class="legend-header" (click)="leyendaAbierta.set(!leyendaAbierta())" style="cursor: pointer; user-select: none;">
+      <span>ESTADOS ACTIVOS</span>
+      <button class="legend-toggle">
+        <i class="fas fa-chevron-down"></i>
+      </button>
+    </div>
     <div class="legend-body">
       <div class="legend-item-map" *ngFor="let est of gis.getEstadosConDatos()">
         <span class="color-indicator" [style.backgroundColor]="est.color"></span>
@@ -14,8 +19,13 @@
   </div>
 
   <!-- Leyenda: Regiones activas (solo Capa 1, sin operaciones) -->
-  <div class="map-legend-overlay" *ngIf="gis.capasVisibles().regiones && !gis.capasVisibles().operaciones">
-    <div class="legend-header">REGIONES ACTIVAS</div>
+  <div class="map-legend-overlay" [class.collapsed]="!leyendaAbierta()" *ngIf="gis.capasVisibles().regiones && !gis.capasVisibles().operaciones">
+    <div class="legend-header" (click)="leyendaAbierta.set(!leyendaAbierta())" style="cursor: pointer; user-select: none;">
+      <span>REGIONES ACTIVAS</span>
+      <button class="legend-toggle">
+        <i class="fas fa-chevron-down"></i>
+      </button>
+    </div>
     <div class="legend-body">
       <div class="legend-item-map" *ngFor="let region of gis.getRegionesConColores()">
         <span class="color-indicator" [style.backgroundColor]="region.color"></span>

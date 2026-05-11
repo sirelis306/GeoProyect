@@ -94,56 +94,41 @@
         </button>
 
         <!-- Subcapas de Operaciones (solo visibles cuando Capa 2 está activa) -->
-        <div class="subcapas-container" *ngIf="gis.capasVisibles().operaciones">
-          <div class="section-label" *ngIf="!gis.sidebarColapsado()">TIPO DE ELEMENTO</div>
-
-          <!-- Grupo: Radio Bases -->
-          <div class="subcapa-group">
-            <button class="subcapa-item" [class.active]="isActive('antenas')" (click)="setDetalle('antenas')"
-              [title]="gis.sidebarColapsado() ? 'Radio Bases' : ''">
-              <i class="fas fa-broadcast-tower layer-icon" style="color: #FF1493;"></i>
-              <span *ngIf="!gis.sidebarColapsado()">Radio Bases</span>
+        <div class="subcapas-container mini" *ngIf="gis.capasVisibles().operaciones">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0 8px;">
+            <div class="section-label" style="margin: 0;" *ngIf="!gis.sidebarColapsado()">ESTADOS / ELEMENTOS</div>
+            <button class="add-item-btn-circle" (click)="abrirModal('ninguno')" title="Agregar Nuevo"
+              *ngIf="!gis.sidebarColapsado()" style="margin-right: 8px;">
+              <i class="fas fa-plus"></i>
             </button>
-            <button class="add-item-btn" (click)="abrirModal('antenas')" *ngIf="!gis.sidebarColapsado()">+</button>
+          </div>
+
+          <div class="tipo-selector-grid">
+            <button class="tipo-btn" [class.active]="isActive('antenas')" (click)="setDetalle('antenas')"
+              title="Radio Bases">
+              <i class="fas fa-broadcast-tower layer-icon" style="color: #FF1493;"></i>
+            </button>
+            <button class="tipo-btn" [class.active]="isActive('abonados')" (click)="setDetalle('abonados')"
+              title="Abonados">
+              <i class="fas fa-user-check layer-icon" style="color: #00BFFF;"></i>
+            </button>
+            <button class="tipo-btn" [class.active]="isActive('oficinas')" (click)="setDetalle('oficinas')"
+              title="Oficinas">
+              <i class="fas fa-building layer-icon" style="color: #32CD32;"></i>
+            </button>
+            <button class="tipo-btn" [class.active]="isActive('agentes')" (click)="setDetalle('agentes')"
+              title="Agentes">
+              <i class="fas fa-store layer-icon" style="color: #FF8C00;"></i>
+            </button>
           </div>
 
           <!-- Buscador de Radio Bases -->
-          <div class="subcapa-search" *ngIf="isActive('antenas') && !gis.sidebarColapsado()">
+          <div class="subcapa-search" *ngIf="isActive('antenas') && !gis.sidebarColapsado()" style="margin-top: 12px;">
             <div class="search-input-wrapper">
               <i class="fas fa-search search-icon"></i>
               <input type="text" placeholder="Buscar..." [ngModel]="gis.busquedaAntena()"
                 (ngModelChange)="gis.busquedaAntena.set($event)" class="search-input">
             </div>
-          </div>
-
-          <!-- Grupo: Abonados -->
-          <div class="subcapa-group">
-            <button class="subcapa-item" [class.active]="isActive('abonados')" (click)="setDetalle('abonados')"
-              [title]="gis.sidebarColapsado() ? 'Abonados' : ''">
-              <i class="fas fa-user-check layer-icon" style="color: #00BFFF;"></i>
-              <span *ngIf="!gis.sidebarColapsado()">Abonados</span>
-            </button>
-            <button class="add-item-btn" (click)="abrirModal('abonados')" *ngIf="!gis.sidebarColapsado()">+</button>
-          </div>
-
-          <!-- Grupo: Oficinas -->
-          <div class="subcapa-group">
-            <button class="subcapa-item" [class.active]="isActive('oficinas')" (click)="setDetalle('oficinas')"
-              [title]="gis.sidebarColapsado() ? 'Oficinas Comerciales' : ''">
-              <i class="fas fa-building layer-icon" style="color: #32CD32;"></i>
-              <span *ngIf="!gis.sidebarColapsado()">Oficinas</span>
-            </button>
-            <button class="add-item-btn" (click)="abrirModal('oficinas')" *ngIf="!gis.sidebarColapsado()">+</button>
-          </div>
-
-          <!-- Grupo: Agentes -->
-          <div class="subcapa-group">
-            <button class="subcapa-item" [class.active]="isActive('agentes')" (click)="setDetalle('agentes')"
-              [title]="gis.sidebarColapsado() ? 'Agentes Autorizados' : ''">
-              <i class="fas fa-store layer-icon" style="color: #FF8C00;"></i>
-              <span *ngIf="!gis.sidebarColapsado()">Agentes</span>
-            </button>
-            <button class="add-item-btn" (click)="abrirModal('agentes')" *ngIf="!gis.sidebarColapsado()">+</button>
           </div>
         </div>
       </div>

@@ -15,10 +15,25 @@ import { TipoElemento } from '../../models/gis';
 export class AddElementComponent {
   private gis = inject(GisService);
 
-  @Input() tipo: TipoElemento = 'ninguno';
+  private _tipo: TipoElemento = 'ninguno';
+  @Input() set tipo(val: TipoElemento) {
+    this._tipo = val;
+    this.tipoSeleccionado = val;
+  }
+  get tipo() { return this._tipo; }
+
   @Input() visible = false;
   @Output() onClose = new EventEmitter<void>();
   @Output() onSaved = new EventEmitter<void>();
+
+  tipoSeleccionado: TipoElemento = 'ninguno';
+
+  tiposDisponibles = [
+    { id: 'antenas', nombre: 'Radio Base', icono: 'fas fa-broadcast-tower', color: '#FF1493' },
+    { id: 'abonados', nombre: 'Abonado', icono: 'fas fa-user-check', color: '#00BFFF' },
+    { id: 'oficinas', nombre: 'Oficina', icono: 'fas fa-building', color: '#32CD32' },
+    { id: 'agentes', nombre: 'Agente', icono: 'fas fa-store', color: '#FF8C00' }
+  ];
 
   enviando = false;
   
@@ -49,6 +64,10 @@ export class AddElementComponent {
     codigoDealer: '',
     clasificacion: null
   };
+
+  get effectiveType(): TipoElemento {
+    return this.tipo === 'ninguno' ? this.tipoSeleccionado : this.tipo;
+  }
 
   opcionesTecnologia = [
     { value: 'GSM', label: 'GSM' },
@@ -106,9 +125,10 @@ export class AddElementComponent {
         }
       }
 
-      const itemFinal = await this.gis.construirYValidarElemento(this.tipo, this.nuevoItem);
+      const tipoFinal = this.tipo === 'ninguno' ? this.tipoSeleccionado : this.tipo;
+      const itemFinal = await this.gis.construirYValidarElemento(tipoFinal, this.nuevoItem);
 
-      this.gis.agregarElemento(this.tipo, itemFinal).subscribe({
+      this.gis.agregarElemento(tipoFinal, itemFinal).subscribe({
         next: () => {
           this.enviando = false;
           this.resetearFormulario();

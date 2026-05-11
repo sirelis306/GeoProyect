@@ -21,12 +21,33 @@
     <div class="modal-header">
       <div>
         <h3>Agregar Nuevo</h3>
-        <small class="text-blue">{{ tipo | titlecase }}</small>
+        <small class="text-blue">{{ (tipo === 'ninguno' ? (tipoSeleccionado !== 'ninguno' ? tipoSeleccionado : 'Elemento') : tipo) | titlecase }}</small>
       </div>
       <button class="close-x" (click)="cerrar()">&times;</button>
     </div>
 
     <div class="modal-body">
+      <!-- Selector de Tipo (Solo si tipo es 'ninguno') -->
+      <div class="form-group" *ngIf="tipo === 'ninguno'" style="margin-bottom: 20px;">
+        <label>Tipo de Elemento *</label>
+        <ng-select [(ngModel)]="tipoSeleccionado" [items]="tiposDisponibles" bindLabel="nombre" bindValue="id"
+          [clearable]="false" [searchable]="false" placeholder="Seleccione tipo de elemento" class="select-simple"
+          (change)="resetearFormulario()" appendTo="body">
+          <ng-template ng-label-tmp let-item="item">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <i [class]="item.icono" [style.color]="item.color"></i>
+              <span>{{ item.nombre }}</span>
+            </div>
+          </ng-template>
+          <ng-template ng-option-tmp let-item="item">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <i [class]="item.icono" [style.color]="item.color"></i>
+              <span>{{ item.nombre }}</span>
+            </div>
+          </ng-template>
+        </ng-select>
+      </div>
+
       <div class="form-row">
         <div class="form-group">
           <label>Estado *</label>
@@ -40,12 +61,12 @@
         </div>
       </div>
 
-      <ng-container *ngIf="tipo === 'antenas' || tipo === 'agentes' || tipo === 'oficinas'">
+      <ng-container *ngIf="effectiveType === 'antenas' || effectiveType === 'agentes' || effectiveType === 'oficinas'">
         <div class="form-row">
           <div class="form-group">
-            <label>{{ tipo === 'agentes' ? 'Razón Social *' : 'Nombre *' }}</label>
+            <label>{{ effectiveType === 'agentes' ? 'Razón Social *' : 'Nombre *' }}</label>
             <input type="text" [(ngModel)]="nuevoItem.nombre"
-              [placeholder]="tipo === 'agentes' ? 'Razón Social del Agente' : 'Nombre'" required>
+              [placeholder]="effectiveType === 'agentes' ? 'Razón Social del Agente' : 'Nombre'" required>
           </div>
           <div class="form-group">
             <label>Dirección</label>
@@ -54,7 +75,7 @@
         </div>
       </ng-container>
 
-      <div class="form-group" *ngIf="tipo === 'antenas'">
+      <div class="form-group" *ngIf="effectiveType === 'antenas'">
         <div class="form-row">
           <div class="form-group">
             <label>Tecnología</label>
@@ -93,7 +114,7 @@
         </div>
       </div>
 
-      <div class="form-group" *ngIf="tipo === 'antenas' || tipo === 'agentes' || tipo === 'oficinas'">
+      <div class="form-group" *ngIf="effectiveType === 'antenas' || effectiveType === 'agentes' || effectiveType === 'oficinas'">
         <div class="form-row">
           <div class="form-group">
             <label>Longitud</label>
@@ -106,7 +127,7 @@
         </div>
       </div>
 
-      <div *ngIf="tipo === 'abonados'" class="form-group">
+      <div *ngIf="effectiveType === 'abonados'" class="form-group">
         <label>Segmentación de Cartera</label>
         <ng-select [(ngModel)]="nuevoItem.segmentacion_elegida" class="select-simple" [clearable]="false"
           [searchable]="false" placeholder="Seleccione segmentación" appendTo="body">
@@ -116,7 +137,7 @@
         </ng-select>
       </div>
 
-      <div *ngIf="tipo === 'agentes'">
+      <div *ngIf="effectiveType === 'agentes'">
         <div class="form-row">
           <div class="form-group">
             <label>Código Dealer *</label>
@@ -131,7 +152,7 @@
         </div>
       </div>
 
-      <div *ngIf="tipo === 'abonados'" class="form-group">
+      <div *ngIf="effectiveType === 'abonados'" class="form-group">
         <label>Cantidad Total *</label>
         <input type="number" [(ngModel)]="nuevoItem.cantidad" placeholder="Ej: 1500" required #cant="ngModel">
       </div>

@@ -5,8 +5,8 @@ import { Observable } from 'rxjs';
 @Injectable({ providedIn: 'root' })
 export class UserService {
   private http = inject(HttpClient);
-  //private API_URL = 'http://localhost:3000/api/users';
-  private API_URL = 'https://geobackend-api.onrender.com/api/users';
+  private API_URL = 'http://localhost:3000/api/users';
+  //private API_URL = 'https://geobackend-api.onrender.com/api/users';
 
   /* Obtiene la lista completa de usuarios desde el backend. */
   obtenerUsuarios(): Observable<any[]> {

@@ -9,8 +9,8 @@ export class ElementService {
   private http = inject(HttpClient);
   private coord = inject(CoordService);
   private geocoding = inject(GeocodingService);
-  //private API_URL = 'http://localhost:3000/api';
-  private API_URL = 'https://geobackend-api.onrender.com/api';
+  private API_URL = 'http://localhost:3000/api';
+  // private API_URL = 'https://geobackend-api.onrender.com/api';
 
   // Signals de datos
   estadosSignal = signal<Estado[]>([]);

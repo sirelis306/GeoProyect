@@ -144,7 +144,8 @@
   font-size: 11.5px;
   vertical-align: middle;
   line-height: 1.3;
-  word-break: break-word; /* Permite que el texto largo (direcciones) se rompa */
+  word-break: break-word;
+  /* Permite que el texto largo (direcciones) se rompa */
   overflow-wrap: anywhere;
 }
 
@@ -495,23 +496,127 @@
   right: 20px;
   z-index: 1100;
   background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px);
   padding: 15px 20px;
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  min-width: 180px;
+  border-radius: 20px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  min-width: 200px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.map-legend-overlay.collapsed {
+  padding: 12px 20px;
+  /* Padding simétrico cuando está cerrado */
+  min-width: 160px;
 }
 
 .legend-header {
-  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
   font-weight: 800;
   color: #3240A5;
-  letter-spacing: 1px;
+  letter-spacing: 1.2px;
   margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  font-family: Arial, sans-serif;
+  padding: 0 0 8px 0;
+  /* Padding inferior uniforme para la línea */
+  border-bottom: 1px solid rgba(50, 64, 165, 0.1);
+  font-family: 'Inter', sans-serif;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.collapsed .legend-header {
+  margin-bottom: 0;
+  border-bottom: none;
+  padding: 0;
+  height: 24px;
+  display: flex;
+  align-items: center;
+}
+
+.legend-header span {
+  display: flex;
+  align-items: center;
+  line-height: 24px;
+  /* Alinear con la altura del botón */
+}
+
+.legend-toggle {
+  background: rgba(50, 64, 165, 0.08);
+  border: none;
+  margin: 0;
+  /* Reset de margen */
+  padding: 0;
+  /* Reset de padding */
+  color: #3240A5;
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  /* Que no se encoja */
+}
+
+.legend-toggle:hover {
+  background: rgba(50, 64, 165, 0.15);
+  transform: translateY(-1px);
+}
+
+.legend-toggle i {
+  font-size: 10px;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.collapsed .legend-toggle i {
+  transform: rotate(-180deg);
+}
+
+.legend-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: opacity 0.3s ease, max-height 0.4s ease;
+  max-height: 60vh;
+  /* Altura máxima controlada (60% del alto de la pantalla) */
+  overflow-y: auto;
+  padding-right: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(50, 64, 165, 0.2) transparent;
+}
+
+/* Scrollbar elegante para navegadores Webkit (Chrome, Safari, Edge) */
+.legend-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.legend-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.legend-body::-webkit-scrollbar-thumb {
+  background: rgba(50, 64, 165, 0.2);
+  border-radius: 10px;
+}
+
+.legend-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(50, 64, 165, 0.4);
+}
+
+.collapsed .legend-body {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+  margin-top: -10px;
+  overflow: hidden;
+  /* Evitar scroll cuando está cerrado */
 }
 
 .legend-body {

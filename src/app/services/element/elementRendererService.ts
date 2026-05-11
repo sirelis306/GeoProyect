@@ -29,7 +29,7 @@ export class ElementRendererService {
   /* Genera el HTML para el popup de un elemento individual */
   crearPopupDetalle(
     tipo: TipoElemento,
-    rows: { label: string; value?: string | number | null; badge?: boolean; coords?: boolean; breakdown?: Record<string, number> }[]
+    rows: { label: string; value?: string | number | null; badge?: boolean; badgeColor?: string; coords?: boolean; breakdown?: Record<string, number> }[]
   ) {
     const cfg = this.configIconos[tipo];
     const filas = rows
@@ -45,7 +45,8 @@ export class ElementRendererService {
         } else if (r.coords) {
           cell = `<span class="popup-coords"><i class="fas fa-map-pin"></i>${r.value}</span>`;
         } else if (r.badge) {
-          cell = `<span class="popup-badge" style="--bdg-color:${cfg.color}">${r.value}</span>`;
+          const color = r.badgeColor || cfg.color;
+          cell = `<span class="popup-badge" style="--bdg-color:${color}">${r.value}</span>`;
         } else {
           cell = `<span class="popup-val">${r.value}</span>`;
         }
@@ -157,16 +158,21 @@ export class ElementRendererService {
     };
   }
 
-  /* Popup para infraestructura eléctrica */
+  /* Popup para infraestructura eléctrica mejorado */
   crearPopupElectricidad(properties: any) {
     const t = properties;
+    // Priorizamos el nombre de la estructura para el título
+    const titulo = t.name || (t.substation ? 'Subestación Eléctrica' : 'Infraestructura Eléctrica');
+
     return `
       <div class="electric-popup">
-        <strong>Infraestructura Eléctrica</strong><br/>
-        ${t.name ? `<b>Nombre:</b> ${t.name}<br/>` : ""}
-        ${t.voltage ? `<b>Voltaje:</b> ${t.voltage} V<br/>` : ""}
-        ${t.operator ? `<b>Operador:</b> ${t.operator}<br/>` : ""}
-        ${t.substation ? `<b>Tipo:</b> ${t.substation}<br/>` : ""}
+        <strong>${titulo}</strong>
+        <div style="margin-top: 5px; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 5px;">
+          ${t.voltage ? `<b>Voltaje:</b> ${t.voltage} V<br/>` : ""}
+          ${t.operator ? `<b>Operador:</b> ${t.operator}<br/>` : ""}
+          ${t.substation ? `<b>Tipo:</b> ${t.substation}<br/>` : ""}
+          ${!t.name ? "" : `<small style="opacity: 0.7; font-size: 10px; display: block; margin-top: 4px;">Infraestructura Eléctrica</small>`}
+        </div>
       </div>
     `;
   }
@@ -175,4 +181,16 @@ export class ElementRendererService {
   formatCoords(lat: number, lng: number): string {
     return `${Number(lat).toFixed(5)}, ${Number(lng).toFixed(5)}`;
   }
+
+  /* Retorna el color según el estado de actividad */
+  getColorActividad(actividad: string): string {
+    const act = (actividad || '').toLowerCase();
+    if (act.includes('inoperativa')) return '#ef4444'; // Rojo
+    if (act.includes('operativa')) return '#22c55e';   // Verde
+    if (act.includes('mantenimiento')) return '#eab308'; // Amarillo/Oro
+    if (act.includes('vandalizada')) return '#f97316';  // Naranja
+
+    return this.configIconos.antenas.color; // Color por defecto (Rosa)
+  }
 }
+

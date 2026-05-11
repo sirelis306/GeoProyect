@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, inject, ElementRef, ViewChild, effect } from '@angular/core';
+import { Component, AfterViewInit, inject, ElementRef, ViewChild, effect, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { GisService as Gis } from '../../services/gis/gisService';
@@ -18,6 +18,7 @@ export class Map implements AfterViewInit {
   public gis = inject(Gis);
   private http = inject(HttpClient);
   private renderer = inject(ElementRendererService);
+  public leyendaAbierta = signal(true);
 
   private capaGeoJsonRegiones: L.GeoJSON | null = null;
   private capaEtiquetas = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
@@ -214,8 +215,9 @@ export class Map implements AfterViewInit {
             { label: 'Nombre', value: a.nombre },
             { label: 'Ubicación', value: `${a.estado} (${a.region})` },
             { label: 'Tecnología', value: a.tecnologia },
-            { label: 'Actividad', value: a.actividad, badge: true },
+            { label: 'Actividad', value: a.actividad, badge: true, badgeColor: this.renderer.getColorActividad(a.actividad) },
             { label: 'Dirección', value: a.direccion },
+
             { label: 'Coordenadas', value: this.renderer.formatCoords(a.latitud, a.longitud), coords: true }
           ]);
           if (a.latitud && a.longitud) {

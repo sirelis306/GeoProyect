@@ -353,6 +353,28 @@
   border-color: #3542a7;
 }
 
+.add-item-btn-circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid #3240A5;
+  background: #f0f1fa;
+  color: #3240A5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 10px;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(50, 64, 165, 0.1);
+}
+
+.add-item-btn-circle:hover {
+  background: #3240A5;
+  color: white;
+  transform: scale(1.1);
+}
+
 /* MODO COLAPSADO */
 :host.collapsed .sidebar {
   width: clamp(60px, 15vw, 75px) !important;
