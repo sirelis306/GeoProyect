@@ -133,8 +133,9 @@ export class Map implements AfterViewInit {
     });
 
     this.map = L.map(this.mapContainer.nativeElement, {
-      center: [7.1291, -66.1818], zoom: 7, zoomControl: false, minZoom: 6, maxZoom: 18,
-      maxBounds: [[-15, -85], [20, -55]], maxBoundsViscosity: 1.0
+      center: [7.5, -66.1818], zoom: 6.3, zoomControl: false, minZoom: 5, maxZoom: 18,
+      maxBounds: [[-15, -95], [25, -45]], maxBoundsViscosity: 1.0,
+      preferCanvas: true // Renderizado por hardware mucho más rápido
     });
 
     this.tileBase.addTo(this.map);
@@ -211,17 +212,17 @@ export class Map implements AfterViewInit {
       const termino = this.gis.busquedaAntena().toLowerCase();
       this.gis.radioBasesSignal().filter(a => !termino || a.nombre?.toLowerCase().includes(termino) || a.direccion?.toLowerCase().includes(termino))
         .forEach(a => {
-          const popup = this.renderer.crearPopupDetalle('antenas', [
-            { label: 'Nombre', value: a.nombre },
-            { label: 'Ubicación', value: `${a.estado} (${a.region})` },
-            { label: 'Tecnología', value: a.tecnologia },
-            { label: 'Actividad', value: a.actividad, badge: true, badgeColor: this.renderer.getColorActividad(a.actividad) },
-            { label: 'Dirección', value: a.direccion },
-
-            { label: 'Coordenadas', value: this.renderer.formatCoords(a.latitud, a.longitud), coords: true }
-          ]);
           if (a.latitud && a.longitud) {
-            L.marker([a.latitud, a.longitud], { icon, pane: 'elementsPane' }).bindPopup(popup, { maxWidth: 400 }).addTo(this.radioBases);
+            L.marker([a.latitud, a.longitud], { icon, pane: 'elementsPane' })
+              .bindPopup(() => this.renderer.crearPopupDetalle('antenas', [
+                { label: 'Nombre', value: a.nombre },
+                { label: 'Ubicación', value: `${a.estado} (${a.region})` },
+                { label: 'Tecnología', value: a.tecnologia },
+                { label: 'Actividad', value: a.actividad, badge: true, badgeColor: this.renderer.getColorActividad(a.actividad) },
+                { label: 'Dirección', value: a.direccion },
+                { label: 'Coordenadas', value: this.renderer.formatCoords(a.latitud, a.longitud), coords: true }
+              ]), { maxWidth: 400 })
+              .addTo(this.radioBases);
           }
         });
       this.radioBases.addTo(this.map);
@@ -230,14 +231,15 @@ export class Map implements AfterViewInit {
     if (tipos.includes('oficinas')) {
       const icon = this.renderer.crearPinIcon('oficinas');
       this.gis.oficinasSignal().forEach(o => {
-        const popup = this.renderer.crearPopupDetalle('oficinas', [
-          { label: 'Nombre', value: o.nombre },
-          { label: 'Ubicación', value: `${o.estado} (${o.region})` },
-          { label: 'Dirección', value: o.direccion },
-          { label: 'Coordenadas', value: this.renderer.formatCoords(o.latitud, o.longitud), coords: true }
-        ]);
         if (o.latitud && o.longitud) {
-          L.marker([o.latitud, o.longitud], { icon, pane: 'elementsPane' }).bindPopup(popup, { maxWidth: 400 }).addTo(this.oficinas);
+          L.marker([o.latitud, o.longitud], { icon, pane: 'elementsPane' })
+            .bindPopup(() => this.renderer.crearPopupDetalle('oficinas', [
+              { label: 'Nombre', value: o.nombre },
+              { label: 'Ubicación', value: `${o.estado} (${o.region})` },
+              { label: 'Dirección', value: o.direccion },
+              { label: 'Coordenadas', value: this.renderer.formatCoords(o.latitud, o.longitud), coords: true }
+            ]), { maxWidth: 400 })
+            .addTo(this.oficinas);
         }
       });
       this.oficinas.addTo(this.map);
@@ -246,16 +248,17 @@ export class Map implements AfterViewInit {
     if (tipos.includes('agentes')) {
       const icon = this.renderer.crearPinIcon('agentes');
       this.gis.agentesSignal().forEach(ag => {
-        const popup = this.renderer.crearPopupDetalle('agentes', [
-          { label: 'Nombre', value: ag.nombre },
-          { label: 'Ubicación', value: `${ag.estado} (${ag.region})` },
-          { label: 'Cód. Dealer', value: ag.codigoDealer },
-          { label: 'Clasificación', value: ag.clasificacion, badge: true },
-          { label: 'Dirección', value: ag.direccion },
-          { label: 'Coordenadas', value: this.renderer.formatCoords(ag.latitud, ag.longitud), coords: true }
-        ]);
         if (ag.latitud && ag.longitud) {
-          L.marker([ag.latitud, ag.longitud], { icon, pane: 'elementsPane' }).bindPopup(popup, { maxWidth: 400 }).addTo(this.agentes);
+          L.marker([ag.latitud, ag.longitud], { icon, pane: 'elementsPane' })
+            .bindPopup(() => this.renderer.crearPopupDetalle('agentes', [
+              { label: 'Nombre', value: ag.nombre },
+              { label: 'Ubicación', value: `${ag.estado} (${ag.region})` },
+              { label: 'Cód. Dealer', value: ag.codigoDealer },
+              { label: 'Clasificación', value: ag.clasificacion, badge: true },
+              { label: 'Dirección', value: ag.direccion },
+              { label: 'Coordenadas', value: this.renderer.formatCoords(ag.latitud, ag.longitud), coords: true }
+            ]), { maxWidth: 400 })
+            .addTo(this.agentes);
         }
       });
       this.agentes.addTo(this.map);
@@ -271,19 +274,22 @@ export class Map implements AfterViewInit {
       });
 
       Object.values(grupos).forEach(g => {
-        const total = Object.values(g.segs).reduce((a: any, b: any) => a + b, 0) as number;
-        const rows: any[] = [{ label: 'Nombre', value: g.nombre }, { label: 'Ubicación', value: `${g.estado} (${g.region})` }];
-        if (Object.keys(g.segs).length > 1) {
-          rows.push({ label: 'Desglose', breakdown: g.segs }, { label: 'Total General', value: total.toLocaleString(), badge: true });
-        } else {
-          const [s, c] = Object.entries(g.segs)[0];
-          rows.push({ label: 'Segmentación', value: s, badge: true }, { label: 'Cantidad', value: (c as number).toLocaleString() });
-        }
-        if (g.direccion) rows.push({ label: 'Dirección', value: g.direccion });
-        rows.push({ label: 'Coordenadas', value: this.renderer.formatCoords(g.latitud, g.longitud), coords: true });
-
         if (g.latitud && g.longitud) {
-          L.marker([g.latitud, g.longitud], { icon, pane: 'elementsPane' }).bindPopup(this.renderer.crearPopupDetalle('abonados', rows), { maxWidth: 400 }).addTo(this.abonados);
+          L.marker([g.latitud, g.longitud], { icon, pane: 'elementsPane' })
+            .bindPopup(() => {
+              const total = Object.values(g.segs).reduce((a: any, b: any) => a + b, 0) as number;
+              const rows: any[] = [{ label: 'Nombre', value: g.nombre }, { label: 'Ubicación', value: `${g.estado} (${g.region})` }];
+              if (Object.keys(g.segs).length > 1) {
+                rows.push({ label: 'Desglose', breakdown: g.segs }, { label: 'Total General', value: total.toLocaleString(), badge: true });
+              } else {
+                const [s, c] = Object.entries(g.segs)[0];
+                rows.push({ label: 'Segmentación', value: s, badge: true }, { label: 'Cantidad', value: (c as number).toLocaleString() });
+              }
+              if (g.direccion) rows.push({ label: 'Dirección', value: g.direccion });
+              rows.push({ label: 'Coordenadas', value: this.renderer.formatCoords(g.latitud, g.longitud), coords: true });
+              return this.renderer.crearPopupDetalle('abonados', rows);
+            }, { maxWidth: 400 })
+            .addTo(this.abonados);
         }
       });
       this.abonados.addTo(this.map);
@@ -291,25 +297,89 @@ export class Map implements AfterViewInit {
   }
 
   private renderStateTotals(tipos: TipoElemento[]) {
+    const renderedPoints: L.Point[] = [];
+    const minDistance = 45; // Distancia mínima en píxeles para evitar solapamiento
+
     this.gis.estadosSignal().forEach(est => {
       const items = tipos.map(t => ({ tipo: t, total: this.gis.getTotalesPorEstado(t).get(est.nombre) || 0 })).filter(i => i.total > 0);
       if (items.length > 0) {
         const segBreakdown = tipos.includes('abonados') ? this.gis.abonadosSignal().filter(ab => ab.estado === est.nombre)
           .reduce((acc: any, ab) => { acc[ab.segmentacion] = (acc[ab.segmentacion] || 0) + (Number(ab.cantidad) || 0); return acc; }, {}) : null;
-        L.marker([est.latitud, est.longitud], { icon: this.renderer.crearBadgeGroupIcon(items), zIndexOffset: 1000, pane: 'elementsPane' })
+
+        // --- LÓGICA DE EVITACIÓN DE COLISIONES ---
+        const originalPoint = this.map.latLngToLayerPoint([est.latitud, est.longitud]);
+        let adjustedPoint = originalPoint;
+        let attempts = 0;
+        let angle = 0;
+        let radius = 0;
+        let collision = true;
+
+        while (collision && attempts < 15) {
+          collision = renderedPoints.some(p => p.distanceTo(adjustedPoint) < minDistance);
+          if (collision) {
+            attempts++;
+            angle += 1.1; // Ángulo de la espiral
+            radius = 12 + (attempts * 3);
+            adjustedPoint = L.point(
+              originalPoint.x + radius * Math.cos(angle),
+              originalPoint.y + radius * Math.sin(angle)
+            );
+          }
+        }
+
+        renderedPoints.push(adjustedPoint);
+        const finalLatLng = this.map.layerPointToLatLng(adjustedPoint);
+
+        L.marker(finalLatLng, {
+          icon: this.renderer.crearBadgeGroupIcon(items),
+          zIndexOffset: 1000 + attempts,
+          pane: 'elementsPane'
+        })
           .bindPopup(this.renderer.crearPopupAgregado(est.nombre, 'estado', items, segBreakdown)).addTo(this.layerAggregated);
       }
     });
   }
 
   private renderRegionTotals(tipos: TipoElemento[]) {
+    const renderedPoints: L.Point[] = [];
+    const minDistance = 50;
+
     this.gis.regionesSignal().forEach(reg => {
       const items = tipos.map(t => ({ tipo: t, total: this.gis.getTotalesPorRegion(t).get(reg.nombre) || 0 })).filter(i => i.total > 0);
       const centro = this.gis.getCentroRegion(reg.nombre);
       if (items.length > 0 && centro) {
         const segBreakdown = tipos.includes('abonados') ? this.gis.abonadosSignal().filter(ab => ab.region === reg.nombre)
           .reduce((acc: any, ab) => { acc[ab.segmentacion] = (acc[ab.segmentacion] || 0) + (Number(ab.cantidad) || 0); return acc; }, {}) : null;
-        L.marker([centro.lat, centro.lng], { icon: this.renderer.crearBadgeGroupIcon(items, true), zIndexOffset: 2000, pane: 'elementsPane' })
+
+        // --- LÓGICA DE EVITACIÓN DE COLISIONES ---
+        const originalPoint = this.map.latLngToLayerPoint([centro.lat, centro.lng]);
+        let adjustedPoint = originalPoint;
+        let attempts = 0;
+        let angle = 0;
+        let radius = 0;
+        let collision = true;
+
+        while (collision && attempts < 15) {
+          collision = renderedPoints.some(p => p.distanceTo(adjustedPoint) < minDistance);
+          if (collision) {
+            attempts++;
+            angle += 1.1;
+            radius = 15 + (attempts * 4);
+            adjustedPoint = L.point(
+              originalPoint.x + radius * Math.cos(angle),
+              originalPoint.y + radius * Math.sin(angle)
+            );
+          }
+        }
+
+        renderedPoints.push(adjustedPoint);
+        const finalLatLng = this.map.layerPointToLatLng(adjustedPoint);
+
+        L.marker(finalLatLng, {
+          icon: this.renderer.crearBadgeGroupIcon(items, true),
+          zIndexOffset: 2000 + attempts,
+          pane: 'elementsPane'
+        })
           .bindPopup(this.renderer.crearPopupAgregado(reg.nombre, 'region', items, segBreakdown)).addTo(this.layerAggregated);
       }
     });

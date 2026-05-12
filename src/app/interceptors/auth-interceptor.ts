@@ -6,7 +6,7 @@ import { catchError, throwError } from 'rxjs';
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const token = localStorage.getItem('token_geo');
   const router = inject(Router);
-  
+
   let authReq = req;
   if (token) {
     authReq = req.clone({

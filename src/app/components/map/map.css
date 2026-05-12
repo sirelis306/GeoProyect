@@ -507,9 +507,9 @@
 }
 
 .map-legend-overlay.collapsed {
-  padding: 12px 20px;
-  /* Padding simétrico cuando está cerrado */
-  min-width: 160px;
+  padding: 10px 16px;
+  /* Reducido para mejor centrado */
+  min-width: 150px;
 }
 
 .legend-header {
@@ -541,8 +541,8 @@
 .legend-header span {
   display: flex;
   align-items: center;
-  line-height: 24px;
-  /* Alinear con la altura del botón */
+  line-height: 1;
+  /* Removido line-height fijo para evitar desvío vertical */
 }
 
 .legend-toggle {
@@ -650,23 +650,29 @@
   font-family: Arial, sans-serif;
 }
 
-@media (max-width: 768px) {
+/* RESPONSIVIDAD PARA LA LEYENDA */
+@media (max-width: 1440px) {
   .map-legend-overlay {
+    padding: 12px 16px;
+    min-width: 180px;
     bottom: 15px;
     right: 15px;
-    padding: 10px 12px;
-    min-width: 140px;
-    border-radius: 12px;
+  }
+
+  .region-label {
+    font-size: 12px;
   }
 
   .legend-header {
-    font-size: 8px;
-    margin-bottom: 8px;
-    padding-bottom: 5px;
+    font-size: 10px;
+    margin-bottom: 10px;
   }
+}
 
-  .legend-body {
-    gap: 6px;
+@media (max-width: 1024px) {
+  .map-legend-overlay {
+    padding: 10px 14px;
+    min-width: 160px;
   }
 
   .region-label {
@@ -674,25 +680,77 @@
   }
 
   .color-indicator {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .map-legend-overlay {
+    bottom: 10px;
+    right: 10px;
+    padding: 8px 12px;
+    min-width: 140px;
+    border-radius: 12px;
+  }
+
+  .legend-header {
+    font-size: 9px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    letter-spacing: 0.8px;
+  }
+
+  .legend-body {
+    gap: 6px;
+    max-height: 50vh;
+  }
+
+  .region-label {
+    font-size: 10.5px;
+  }
+
+  .color-indicator {
     width: 10px;
     height: 10px;
+    border-radius: 3px;
+  }
+
+  .legend-toggle {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+  }
+
+  .legend-toggle i {
+    font-size: 8px;
   }
 }
 
 @media (max-width: 480px) {
   .map-legend-overlay {
-    bottom: 10px;
-    right: 10px;
-    padding: 8px 10px;
+    padding: 6px 10px;
     min-width: 120px;
+    bottom: 8px;
+    right: 8px;
+  }
+
+  .legend-header {
+    font-size: 8px;
+    letter-spacing: 0.5px;
   }
 
   .region-label {
-    font-size: 10px;
+    font-size: 9.5px;
   }
 
   .legend-body {
     gap: 4px;
+    max-height: 40vh;
+  }
+
+  .legend-item-map {
+    gap: 8px;
   }
 }
 

@@ -19,10 +19,43 @@ export class ElementService {
   abonadosSignal = signal<Abonado[]>([]);
   agentesSignal = signal<Agente[]>([]);
 
+  constructor() {
+    this.cargarDesdeCache();
+  }
+
+  private cargarDesdeCache() {
+    const cachedElements = localStorage.getItem('geoproyect_elements_cache');
+    const cachedStates = localStorage.getItem('geoproyect_states_cache');
+    
+    if (cachedElements) {
+      try {
+        this.procesarDatos(JSON.parse(cachedElements));
+        console.log('[Cache] Elementos cargados desde almacenamiento local.');
+      } catch (e) { }
+    }
+    
+    if (cachedStates) {
+      try {
+        this.estadosSignal.set(JSON.parse(cachedStates));
+        console.log('[Cache] Estados cargados desde almacenamiento local.');
+      } catch (e) { }
+    }
+  }
+
+  private procesarDatos(rawData: any[]) {
+    this.radioBasesSignal.set(rawData.filter(i => i.tipo === 'antenas'));
+    this.oficinasSignal.set(rawData.filter(i => i.tipo === 'oficinas'));
+    this.abonadosSignal.set(rawData.filter(i => i.tipo === 'abonados'));
+    this.agentesSignal.set(rawData.filter(i => i.tipo === 'agentes'));
+  }
+
   // Carga geográfica
   cargarConfiguracionGeografica() {
     this.http.get<Estado[]>(`${this.API_URL}/estados`).subscribe({
-      next: (data) => this.estadosSignal.set(data),
+      next: (data) => {
+        this.estadosSignal.set(data);
+        localStorage.setItem('geoproyect_states_cache', JSON.stringify(data));
+      },
       error: (err) => console.error('Error cargando estados:', err)
     });
   }
@@ -34,10 +67,8 @@ export class ElementService {
     this.http.get<any[]>(`${this.API_URL}/elementos`).subscribe({
       next: (data) => {
         const rawData = data || [];
-        this.radioBasesSignal.set(rawData.filter(i => i.tipo === 'antenas'));
-        this.oficinasSignal.set(rawData.filter(i => i.tipo === 'oficinas'));
-        this.abonadosSignal.set(rawData.filter(i => i.tipo === 'abonados'));
-        this.agentesSignal.set(rawData.filter(i => i.tipo === 'agentes'));
+        this.procesarDatos(rawData);
+        localStorage.setItem('geoproyect_elements_cache', JSON.stringify(rawData));
 
         // Disparar reparación automática silenciosa si es necesario
         if (!this.reparandoEnBackground) {
@@ -46,10 +77,7 @@ export class ElementService {
       },
       error: (err) => {
         console.error('Error al cargar datos desde la API:', err);
-        this.radioBasesSignal.set([]);
-        this.oficinasSignal.set([]);
-        this.abonadosSignal.set([]);
-        this.agentesSignal.set([]);
+        // Si hay error de red, mantenemos los datos de caché si existen
       }
     });
   }
