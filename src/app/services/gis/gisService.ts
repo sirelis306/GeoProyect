@@ -68,6 +68,8 @@ export class GisService {
   }
 
   agregarElemento(tipo: TipoElemento, data: any) { return this.element.agregarElemento(tipo, data); }
+  actualizarElemento(id: number, data: any) { return this.element.actualizarElemento(id, data); }
+  eliminarElemento(id: number) { return this.element.eliminarElemento(id); }
   enviarAlServidor(datos: any) { this.element.enviarAlServidor(datos); }
 
   async obtenerCoordsDesdeDireccion(dir: string | null | undefined) {

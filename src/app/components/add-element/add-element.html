@@ -20,7 +20,7 @@
   <div class="modal-content">
     <div class="modal-header">
       <div>
-        <h3>Agregar Nuevo</h3>
+        <h3>{{ modoEdicion ? 'Editar' : 'Agregar Nuevo' }}</h3>
         <small class="text-blue">{{ (tipo === 'ninguno' ? (tipoSeleccionado !== 'ninguno' ? tipoSeleccionado : 'Elemento') : tipo) | titlecase }}</small>
       </div>
       <button class="close-x" (click)="cerrar()">&times;</button>

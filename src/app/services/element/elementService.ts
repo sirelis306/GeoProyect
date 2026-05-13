@@ -215,6 +215,14 @@ export class ElementService {
     return this.http.post(`${this.API_URL}/elementos`, data);
   }
 
+  actualizarElemento(id: number, data: any) {
+    return this.http.put(`${this.API_URL}/elementos/${id}`, data);
+  }
+
+  eliminarElemento(id: number) {
+    return this.http.delete(`${this.API_URL}/elementos/${id}`);
+  }
+
   enviarAlServidor(datos: any) {
     this.http.post(`${this.API_URL}/elementos`, datos).subscribe({
       next: () => alert('Elemento guardado con éxito'),

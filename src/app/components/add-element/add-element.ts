@@ -22,11 +22,32 @@ export class AddElementComponent {
   }
   get tipo() { return this._tipo; }
 
+  @Input() set itemAEditar(val: any) {
+    if (val) {
+      this.modoEdicion = true;
+      this.idEditar = val.id;
+      this.tipoSeleccionado = val.tipoReal || val.tipo;
+      this.nuevoItem = {
+        ...val,
+        tecnologia: val.tecnologia ? val.tecnologia.split(' / ').filter((t: string) => t !== '') : [],
+        segmentacion_elegida: val.segmentacion || '4G',
+        codigoDealer: val.codigoDealer || val.codigo_dealer || '',
+        clasificacion: val.clasificacion || ''
+      };
+    } else {
+      this.modoEdicion = false;
+      this.idEditar = null;
+      this.resetearFormulario();
+    }
+  }
+
   @Input() visible = false;
   @Output() onClose = new EventEmitter<void>();
   @Output() onSaved = new EventEmitter<void>();
 
   tipoSeleccionado: TipoElemento = 'ninguno';
+  modoEdicion = false;
+  idEditar: number | null = null;
 
   tiposDisponibles = [
     { id: 'antenas', nombre: 'Radio Base', icono: 'fas fa-broadcast-tower', color: '#FF1493' },
@@ -128,16 +149,17 @@ export class AddElementComponent {
       const tipoFinal = this.tipo === 'ninguno' ? this.tipoSeleccionado : this.tipo;
       const itemFinal = await this.gis.construirYValidarElemento(tipoFinal, this.nuevoItem);
 
-      this.gis.agregarElemento(tipoFinal, itemFinal).subscribe({
+      const request = this.modoEdicion && this.idEditar 
+        ? this.gis.actualizarElemento(this.idEditar, itemFinal)
+        : this.gis.agregarElemento(tipoFinal, itemFinal);
+
+      request.subscribe({
         next: () => {
           this.enviando = false;
           this.resetearFormulario();
           this.onSaved.emit();
-          // Mostramos éxito antes de cerrar
-          console.log('Mostrando modal de éxito...');
-          this.mostrarModal('success', '¡Éxito!', 'Elemento guardado correctamente.');
+          this.mostrarModal('success', '¡Éxito!', `Elemento ${this.modoEdicion ? 'actualizado' : 'guardado'} correctamente.`);
           setTimeout(() => {
-            console.log('Cerrando formulario...');
             this.onClose.emit();
             this.cerrarModal();
           }, 1500);

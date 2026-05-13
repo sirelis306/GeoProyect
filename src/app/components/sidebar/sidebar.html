@@ -1,11 +1,11 @@
-<div class="sidebar">
+<div class="sidebar" [class.collapsed]="gis.sidebarColapsado()">
   <div class="sidebar-main-content">
     <div class="sidebar-header" [class.collapsed]="gis.sidebarColapsado()">
-      <div class="brand">
+      <div class="brand" *ngIf="!gis.sidebarColapsado()">
         <div class="brand-icon">
-          <i class="fas fa-map"></i>
+          <i class="fas fa-map-marked-alt"></i>
         </div>
-        <div class="brand-text" *ngIf="!gis.sidebarColapsado()">
+        <div class="brand-text">
           <strong>STERIÁ</strong>
         </div>
       </div>
@@ -25,10 +25,18 @@
     </button>
 
     <div class="section-label" *ngIf="!gis.sidebarColapsado()">MAPA</div>
+    
     <button class="layer-item" routerLink="/mapa" routerLinkActive="active"
       [title]="gis.sidebarColapsado() ? 'Visualización General' : ''">
       <i class="fas fa-globe-americas layer-icon" style="color: #3240A5;"></i>
       <span *ngIf="!gis.sidebarColapsado()">Visualización General</span>
+    </button>
+
+    <!-- Botón de Buscador Global -->
+    <button class="layer-item" (click)="abrirBuscador()"
+      [title]="gis.sidebarColapsado() ? 'Buscador Global' : ''">
+      <i class="fas fa-search layer-icon" style="color: #3240A5;"></i>
+      <span *ngIf="!gis.sidebarColapsado()">Buscador Global</span>
     </button>
 
     <ng-container *ngIf="router.url === '/mapa'">
@@ -49,14 +57,12 @@
 
       <div class="section-label" *ngIf="!gis.sidebarColapsado()">CONTROL DE CAPAS</div>
       <div class="layer-list">
-        <!-- Capa Cotas -->
         <button class="layer-item" [class.active]="gis.capasVisibles().cotas" (click)="toggle('cotas')"
           [title]="gis.sidebarColapsado() ? 'Cotas' : ''">
           <i class="fas fa-mountain layer-icon" style="color: #3240A5;"></i>
           <span *ngIf="!gis.sidebarColapsado()">Cotas</span>
         </button>
 
-        <!-- Regiones -->
         <button class="layer-item" [class.active]="gis.capasVisibles().regiones" (click)="toggle('regiones')"
           [title]="gis.sidebarColapsado() ? 'Regiones' : ''">
           <i class="fas fa-layer-group layer-icon" style="color: #3240A5;"></i>
@@ -65,7 +71,7 @@
 
         <!-- Selección de elemento para Regiones -->
         <div class="subcapas-container mini" *ngIf="gis.capasVisibles().regiones">
-          <div class="section-label">MOSTRAR TOTAL DE:</div>
+          <div class="section-label" *ngIf="!gis.sidebarColapsado()" style="font-size: 9px; margin-bottom: 4px;">MOSTRAR TOTAL DE:</div>
           <div class="tipo-selector-grid">
             <button class="tipo-btn" [class.active]="gis.capasVisibles().detalleRegiones.includes('antenas')"
               (click)="setDetalleRegiones('antenas')" title="Radio Bases">
@@ -86,49 +92,34 @@
           </div>
         </div>
 
-        <!-- Operaciones -->
         <button class="layer-item" [class.active]="gis.capasVisibles().operaciones" (click)="toggle('operaciones')"
           [title]="gis.sidebarColapsado() ? 'Operaciones' : ''">
           <i class="fas fa-network-wired layer-icon" style="color: #3240A5;"></i>
           <span *ngIf="!gis.sidebarColapsado()">Operaciones</span>
         </button>
 
-        <!-- Subcapas de Operaciones (solo visibles cuando Capa 2 está activa) -->
+        <!-- Sub-capas de Operaciones -->
         <div class="subcapas-container mini" *ngIf="gis.capasVisibles().operaciones">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0 8px;">
-            <div class="section-label" style="margin: 0;" *ngIf="!gis.sidebarColapsado()">ESTADOS / ELEMENTOS</div>
-            <button class="add-item-btn-circle" (click)="abrirModal('ninguno')" title="Agregar Nuevo"
-              *ngIf="!gis.sidebarColapsado()" style="margin-right: 8px;">
+          <div class="section-label" *ngIf="!gis.sidebarColapsado()" style="font-size: 9px; margin-bottom: 4px;">
+            ESTADOS / ELEMENTOS
+            <div class="add-item-btn-circle" (click)="abrirModal('antenas')" title="Agregar Elemento" style="float: right; margin-right: 12px;">
               <i class="fas fa-plus"></i>
-            </button>
+            </div>
           </div>
-
+          
           <div class="tipo-selector-grid">
-            <button class="tipo-btn" [class.active]="isActive('antenas')" (click)="setDetalle('antenas')"
-              title="Radio Bases">
+            <button class="tipo-btn" [class.active]="isActive('antenas')" (click)="setDetalle('antenas')" title="Antenas">
               <i class="fas fa-broadcast-tower layer-icon" style="color: #FF1493;"></i>
             </button>
-            <button class="tipo-btn" [class.active]="isActive('abonados')" (click)="setDetalle('abonados')"
-              title="Abonados">
+            <button class="tipo-btn" [class.active]="isActive('abonados')" (click)="setDetalle('abonados')" title="Abonados">
               <i class="fas fa-user-check layer-icon" style="color: #00BFFF;"></i>
             </button>
-            <button class="tipo-btn" [class.active]="isActive('oficinas')" (click)="setDetalle('oficinas')"
-              title="Oficinas">
+            <button class="tipo-btn" [class.active]="isActive('oficinas')" (click)="setDetalle('oficinas')" title="Oficinas">
               <i class="fas fa-building layer-icon" style="color: #32CD32;"></i>
             </button>
-            <button class="tipo-btn" [class.active]="isActive('agentes')" (click)="setDetalle('agentes')"
-              title="Agentes">
+            <button class="tipo-btn" [class.active]="isActive('agentes')" (click)="setDetalle('agentes')" title="Agentes">
               <i class="fas fa-store layer-icon" style="color: #FF8C00;"></i>
             </button>
-          </div>
-
-          <!-- Buscador de Radio Bases -->
-          <div class="subcapa-search" *ngIf="isActive('antenas') && !gis.sidebarColapsado()" style="margin-top: 12px;">
-            <div class="search-input-wrapper">
-              <i class="fas fa-search search-icon"></i>
-              <input type="text" placeholder="Buscar..." [ngModel]="gis.busquedaAntena()"
-                (ngModelChange)="gis.busquedaAntena.set($event)" class="search-input">
-            </div>
           </div>
         </div>
       </div>
@@ -140,7 +131,18 @@
     <span *ngIf="!gis.sidebarColapsado()">Cerrar Sesión</span>
   </button>
 
-  <app-add-element [tipo]="tipoEdicion" [visible]="mostrarForm()" (onClose)="mostrarForm.set(false)"
+  <!-- Modales -->
+  <app-add-element 
+    [tipo]="tipoEdicion" 
+    [itemAEditar]="itemAEditar" 
+    [visible]="mostrarForm()" 
+    (onClose)="mostrarForm.set(false)"
     (onSaved)="onElementSaved()">
   </app-add-element>
+
+  <app-search-modal 
+    [visible]="mostrarSearchModal()" 
+    (onClose)="mostrarSearchModal.set(false)" 
+    (onEdit)="onEditFromSearch($event)">
+  </app-search-modal>
 </div>

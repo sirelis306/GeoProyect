@@ -1,0 +1,58 @@
+<div class="search-modal-overlay" *ngIf="visible" (click)="close()">
+  <div class="search-modal-content" (click)="$event.stopPropagation()">
+    <div class="search-header">
+      <i class="fas fa-search search-icon-large"></i>
+      <input 
+        type="text" 
+        #searchInput
+        class="search-input-large" 
+        placeholder="Buscar antenas, abonados, agentes..." 
+        [ngModel]="busqueda()"
+        (ngModelChange)="busqueda.set($event)"
+        (keyup.esc)="close()">
+      <button class="close-btn" (click)="close()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="results-container">
+      <!-- Estado vacío -->
+      <div class="results-empty" *ngIf="resultados().length === 0 && busqueda().length >= 2">
+        <i class="fas fa-search"></i>
+        <p>No se encontraron resultados para "{{ busqueda() }}"</p>
+      </div>
+
+      <div class="results-empty" *ngIf="busqueda().length < 2">
+        <i class="fas fa-keyboard"></i>
+        <p>Escribe al menos 2 letras para buscar...</p>
+      </div>
+
+      <!-- Lista de resultados -->
+      <div class="result-row" *ngFor="let item of resultados()" (click)="irAlMapa(item)">
+        <div class="res-main-info">
+          <div class="res-icon-circle">
+            <i [class]="getIcon(item)" [style.color]="getColor(item)"></i>
+          </div>
+          <div class="res-text">
+            <div class="res-title">{{ item.nombre }}</div>
+            <div class="res-meta">
+              <span class="res-tag">{{ item.tipoReal }}</span>
+              <span>•</span>
+              <span>{{ item.estado }}</span>
+              <span *ngIf="item.codigoDealer"> • {{ item.codigoDealer }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="res-actions">
+          <button class="action-btn" (click)="$event.stopPropagation(); editar(item)" title="Editar">
+            <i class="fas fa-pencil-alt"></i>
+          </button>
+          <button class="action-btn delete" (click)="$event.stopPropagation(); eliminar(item)" title="Eliminar">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

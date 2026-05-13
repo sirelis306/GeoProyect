@@ -37,4 +37,8 @@ export class Totales {
     const capas = this.gis.capasVisibles();
     return capas.operaciones || capas.regiones;
   });
+
+  formatear(valor: number): string {
+    return new Intl.NumberFormat('de-DE').format(valor);
+  }
 }
