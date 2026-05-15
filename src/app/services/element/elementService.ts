@@ -18,6 +18,7 @@ export class ElementService {
   oficinasSignal = signal<Oficina[]>([]);
   abonadosSignal = signal<Abonado[]>([]);
   agentesSignal = signal<Agente[]>([]);
+  resumenSignal = signal<any[]>([]); // Almacena el resumen agregado del servidor
 
   constructor() {
     this.cargarDesdeCache();
@@ -74,11 +75,21 @@ export class ElementService {
         if (!this.reparandoEnBackground) {
           this.repararCoordenadasSilencioso();
         }
+        
+        // Cargar también el resumen agregado
+        this.cargarResumen();
       },
       error: (err) => {
         console.error('Error al cargar datos desde la API:', err);
         // Si hay error de red, mantenemos los datos de caché si existen
       }
+    });
+  }
+
+  cargarResumen() {
+    this.http.get<any[]>(`${this.API_URL}/elementos/resumen`).subscribe({
+      next: (data) => this.resumenSignal.set(data || []),
+      error: (err) => console.error('Error cargando resumen:', err)
     });
   }
 
@@ -117,21 +128,21 @@ export class ElementService {
 
   getTotalesPorEstado(tipo: TipoElemento): Map<string, number> {
     const m = new Map<string, number>();
-    this.getDataPorTipo(tipo).forEach((item: any) => {
-      const cantidad = Number(item.cantidad);
-      const val = !isNaN(cantidad) ? cantidad : 1;
-      m.set(item.estado, (m.get(item.estado) || 0) + val);
-    });
+    this.resumenSignal()
+      .filter(r => r.tipo === tipo)
+      .forEach(r => {
+        m.set(r.estado, (m.get(r.estado) || 0) + Number(r.total));
+      });
     return m;
   }
 
   getTotalesPorRegion(tipo: TipoElemento): Map<string, number> {
     const m = new Map<string, number>();
-    this.getDataPorTipo(tipo).forEach((item: any) => {
-      const cantidad = Number(item.cantidad);
-      const val = !isNaN(cantidad) ? cantidad : 1;
-      m.set(item.region, (m.get(item.region) || 0) + val);
-    });
+    this.resumenSignal()
+      .filter(r => r.tipo === tipo)
+      .forEach(r => {
+        m.set(r.region, (m.get(r.region) || 0) + Number(r.total));
+      });
     return m;
   }
 

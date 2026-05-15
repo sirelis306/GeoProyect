@@ -1,11 +1,11 @@
 <div class="sidebar" [class.collapsed]="gis.sidebarColapsado()">
   <div class="sidebar-main-content">
     <div class="sidebar-header" [class.collapsed]="gis.sidebarColapsado()">
-      <div class="brand" *ngIf="!gis.sidebarColapsado()">
+      <div class="brand" [class.collapsed]="gis.sidebarColapsado()">
         <div class="brand-icon">
           <i class="fas fa-map-marked-alt"></i>
         </div>
-        <div class="brand-text">
+        <div class="brand-text" *ngIf="!gis.sidebarColapsado()">
           <strong>STERIÁ</strong>
         </div>
       </div>
@@ -25,7 +25,7 @@
     </button>
 
     <div class="section-label" *ngIf="!gis.sidebarColapsado()">MAPA</div>
-    
+
     <button class="layer-item" routerLink="/mapa" routerLinkActive="active"
       [title]="gis.sidebarColapsado() ? 'Visualización General' : ''">
       <i class="fas fa-globe-americas layer-icon" style="color: #3240A5;"></i>
@@ -33,8 +33,7 @@
     </button>
 
     <!-- Botón de Buscador Global -->
-    <button class="layer-item" (click)="abrirBuscador()"
-      [title]="gis.sidebarColapsado() ? 'Buscador Global' : ''">
+    <button class="layer-item" (click)="abrirBuscador()" [title]="gis.sidebarColapsado() ? 'Buscador Global' : ''">
       <i class="fas fa-search layer-icon" style="color: #3240A5;"></i>
       <span *ngIf="!gis.sidebarColapsado()">Buscador Global</span>
     </button>
@@ -71,7 +70,7 @@
 
         <!-- Selección de elemento para Regiones -->
         <div class="subcapas-container mini" *ngIf="gis.capasVisibles().regiones">
-          <div class="section-label" *ngIf="!gis.sidebarColapsado()" style="font-size: 9px; margin-bottom: 4px;">MOSTRAR TOTAL DE:</div>
+          <div class="section-label-mini" *ngIf="!gis.sidebarColapsado()">MOSTRAR TOTAL DE:</div>
           <div class="tipo-selector-grid">
             <button class="tipo-btn" [class.active]="gis.capasVisibles().detalleRegiones.includes('antenas')"
               (click)="setDetalleRegiones('antenas')" title="Radio Bases">
@@ -98,26 +97,29 @@
           <span *ngIf="!gis.sidebarColapsado()">Operaciones</span>
         </button>
 
-        <!-- Sub-capas de Operaciones -->
         <div class="subcapas-container mini" *ngIf="gis.capasVisibles().operaciones">
-          <div class="section-label" *ngIf="!gis.sidebarColapsado()" style="font-size: 9px; margin-bottom: 4px;">
-            ESTADOS / ELEMENTOS
-            <div class="add-item-btn-circle" (click)="abrirModal('antenas')" title="Agregar Elemento" style="float: right; margin-right: 12px;">
+          <div class="section-label-with-btn" *ngIf="!gis.sidebarColapsado()">
+            <span>ESTADOS / ELEMENTOS</span>
+            <div class="add-item-btn-circle" (click)="abrirModal('ninguno')" title="Agregar Elemento">
               <i class="fas fa-plus"></i>
             </div>
           </div>
-          
+
           <div class="tipo-selector-grid">
-            <button class="tipo-btn" [class.active]="isActive('antenas')" (click)="setDetalle('antenas')" title="Antenas">
+            <button class="tipo-btn" [class.active]="isActive('antenas')" (click)="setDetalle('antenas')"
+              title="Antenas">
               <i class="fas fa-broadcast-tower layer-icon" style="color: #FF1493;"></i>
             </button>
-            <button class="tipo-btn" [class.active]="isActive('abonados')" (click)="setDetalle('abonados')" title="Abonados">
+            <button class="tipo-btn" [class.active]="isActive('abonados')" (click)="setDetalle('abonados')"
+              title="Abonados">
               <i class="fas fa-user-check layer-icon" style="color: #00BFFF;"></i>
             </button>
-            <button class="tipo-btn" [class.active]="isActive('oficinas')" (click)="setDetalle('oficinas')" title="Oficinas">
+            <button class="tipo-btn" [class.active]="isActive('oficinas')" (click)="setDetalle('oficinas')"
+              title="Oficinas">
               <i class="fas fa-building layer-icon" style="color: #32CD32;"></i>
             </button>
-            <button class="tipo-btn" [class.active]="isActive('agentes')" (click)="setDetalle('agentes')" title="Agentes">
+            <button class="tipo-btn" [class.active]="isActive('agentes')" (click)="setDetalle('agentes')"
+              title="Agentes">
               <i class="fas fa-store layer-icon" style="color: #FF8C00;"></i>
             </button>
           </div>
@@ -132,17 +134,11 @@
   </button>
 
   <!-- Modales -->
-  <app-add-element 
-    [tipo]="tipoEdicion" 
-    [itemAEditar]="itemAEditar" 
-    [visible]="mostrarForm()" 
-    (onClose)="mostrarForm.set(false)"
-    (onSaved)="onElementSaved()">
+  <app-add-element [tipo]="tipoEdicion" [itemAEditar]="itemAEditar" [visible]="mostrarForm()"
+    (onClose)="mostrarForm.set(false)" (onSaved)="onElementSaved()">
   </app-add-element>
 
-  <app-search-modal 
-    [visible]="mostrarSearchModal()" 
-    (onClose)="mostrarSearchModal.set(false)" 
+  <app-search-modal [visible]="mostrarSearchModal()" (onClose)="mostrarSearchModal.set(false)"
     (onEdit)="onEditFromSearch($event)">
   </app-search-modal>
 </div>

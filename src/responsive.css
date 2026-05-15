@@ -1,0 +1,77 @@
+/* --- GLOBAL TOKENS (Desktop / Large Screens) --- */
+:root {
+  --sidebar-width: 280px;
+  --sidebar-padding: 20px;
+  
+  --brand-icon-size: 45px;
+  --brand-text-size: 1.5rem;
+  
+  --layer-item-height: 48px;
+  --layer-item-padding: 8px 16px;
+  --layer-item-font-size: 15px;
+  
+  --section-label-margin: 20px 0 8px;
+  --section-label-font-size: 11px;
+  
+  --layer-icon-size: 18px;
+  --layer-icon-margin: 10px;
+
+  /* Collapsed Sidebar Tokens (DEFAULT / LARGE) */
+  --collapsed-width: 75px;
+  --collapsed-btn-size: 42px;
+  --collapsed-item-size: 32px;
+  --collapsed-icon-size: 18px;
+  --collapsed-item-icon-size: 12px;
+}
+
+/* --- LAPTOPS & SMALL DESKTOPS (Max 1440px) --- */
+@media (max-width: 1440px) {
+  :root {
+    --sidebar-width: 220px; /* Más compacto */
+    --sidebar-padding: 12px;
+    
+    --brand-icon-size: 34px;
+    --brand-text-size: 1.2rem;
+    
+    --layer-item-height: 34px; /* Altura reducida */
+    --layer-item-font-size: 12px; /* Fuente más pequeña */
+    --layer-item-padding: 4px 10px;
+    
+    --section-label-margin: 10px 0 4px;
+    --section-label-font-size: 9px;
+    
+    --layer-icon-size: 14px;
+    
+    --collapsed-width: 60px;
+    --collapsed-btn-size: 36px;
+    --collapsed-item-size: 26px;
+  }
+}
+
+/* --- TABLETS (Max 1024px) --- */
+@media (max-width: 1024px) {
+  :root {
+    --sidebar-width: 200px;
+    --sidebar-padding: 10px;
+    --layer-item-height: 32px;
+    --layer-item-font-size: 11.5px;
+    
+    --collapsed-width: 55px;
+    --collapsed-btn-size: 34px;
+    --collapsed-item-size: 24px;
+  }
+}
+
+/* --- MOBILE (Max 768px) --- */
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width: 190px;
+    --sidebar-padding: 8px;
+    --layer-item-font-size: 11px;
+    
+    --collapsed-width: 50px;
+    --collapsed-btn-size: 32px;
+    --collapsed-item-size: 22px;
+    --collapsed-icon-size: 14px;
+  }
+}

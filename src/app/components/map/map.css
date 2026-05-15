@@ -11,484 +11,6 @@
   display: block;
 }
 
-/* Panel de capas claro y moderno */
-::ng-deep .leaflet-control-layers {
-  border-radius: 12px !important;
-  border: none !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
-  padding: 12px !important;
-}
-
-/* ESTILOS PARA LOS BADGES AGREGADOS (TOTALES) */
-::ng-deep .custom-badge-container {
-  background: transparent !important;
-  border: none !important;
-  width: auto !important;
-  height: auto !important;
-  display: flex !important;
-  justify-content: center;
-  align-items: center;
-}
-
-::ng-deep .badge-group {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
-  transition: transform 0.2s;
-  pointer-events: auto;
-}
-
-::ng-deep .badge-group:hover {
-  transform: scale(1.1);
-  z-index: 5000 !important;
-}
-
-::ng-deep .badge-item {
-  background: white;
-  border-radius: 20px;
-  padding: 2px 8px 2px 4px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  border: 2px solid var(--bg-color);
-  min-width: 50px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-::ng-deep .badge-item i {
-  background: var(--bg-color);
-  color: white;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-}
-
-::ng-deep .badge-item span {
-  font-size: 12px;
-  font-weight: 700;
-  color: #2d3748;
-  white-space: nowrap;
-}
-
-/* POPUPS DETALLADOS (marcadores individuales) */
-::ng-deep .leaflet-popup-content-wrapper:has(.popup-detalle) {
-  padding: 0;
-  overflow: hidden;
-  border-radius: 14px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: none;
-}
-
-::ng-deep .leaflet-popup-content:has(.popup-detalle) {
-  margin: 0;
-  width: auto !important;
-}
-
-::ng-deep .popup-detalle {
-  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-  min-width: 300px;
-  max-width: 400px;
-}
-
-::ng-deep .popup-header {
-  color: white;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.2px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
-}
-
-::ng-deep .popup-header-icon {
-  width: 22px;
-  height: 22px;
-  background: rgba(255, 255, 255, 0.22);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  font-size: 11px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
-}
-
-::ng-deep .popup-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-::ng-deep .popup-table tr {
-  transition: background 0.15s;
-}
-
-::ng-deep .popup-table tr:nth-child(even) {
-  background: #f8f9fa;
-}
-
-::ng-deep .popup-table tr:hover {
-  background: #eef2ff;
-}
-
-
-::ng-deep .popup-table td {
-  padding: 4px 12px;
-  font-size: 11.5px;
-  vertical-align: middle;
-  line-height: 1.3;
-  word-break: break-word;
-  /* Permite que el texto largo (direcciones) se rompa */
-  overflow-wrap: anywhere;
-}
-
-::ng-deep .popup-lbl {
-  color: #9ca3af;
-  font-weight: 700;
-  white-space: nowrap;
-  padding-right: 10px !important;
-  text-transform: uppercase;
-  font-size: 9.5px !important;
-  letter-spacing: 0.6px;
-  width: 1px;
-}
-
-::ng-deep .popup-val {
-  color: #1e293b;
-  font-weight: 500;
-}
-
-::ng-deep .popup-badge {
-  display: inline-block;
-  background: color-mix(in srgb, var(--bdg-color, #3b5bdb) 12%, white);
-  color: var(--bdg-color, #3b5bdb);
-  border: 1.5px solid color-mix(in srgb, var(--bdg-color, #3b5bdb) 35%, white);
-  border-radius: 20px;
-  padding: 1px 10px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.2px;
-}
-
-::ng-deep .popup-coords {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  color: #64748b;
-  font-size: 11px;
-  font-family: 'Courier New', monospace;
-  font-weight: 600;
-  background: #f1f5f9;
-  border-radius: 6px;
-  padding: 2px 7px;
-}
-
-::ng-deep .popup-coords i {
-  color: #94a3b8;
-  font-size: 10px;
-}
-
-/* Pills de desglose de segmentación (abonados) */
-::ng-deep .popup-seg-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  padding: 2px 0;
-}
-
-::ng-deep .popup-seg-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: #f0f9ff;
-  border: 1px solid #bae6fd;
-  color: #0369a1;
-  border-radius: 20px;
-  padding: 1px 9px;
-  font-size: 11px;
-}
-
-::ng-deep .popup-seg-pill b {
-  font-weight: 800;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-/* POPUP DE TOTALES (estado/región) */
-::ng-deep .leaflet-popup-content-wrapper:has(.pagg) {
-  padding: 0;
-  overflow: hidden;
-  border-radius: 12px;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.16), 0 2px 6px rgba(0, 0, 0, 0.08);
-  border: none;
-}
-
-::ng-deep .leaflet-popup-content:has(.pagg) {
-  margin: 0;
-  width: auto !important;
-}
-
-::ng-deep .pagg {
-  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-  min-width: 220px;
-}
-
-::ng-deep .pagg-header {
-  color: white;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 13px;
-  font-size: 12.5px;
-  font-weight: 700;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-  letter-spacing: 0.2px;
-}
-
-::ng-deep .pagg-header i {
-  font-size: 12px;
-  opacity: 0.9;
-}
-
-::ng-deep .pagg-body {
-  padding: 6px 4px 4px;
-}
-
-::ng-deep .pagg-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 10px;
-  border-radius: 6px;
-  transition: background 0.15s;
-}
-
-::ng-deep .pagg-row:hover {
-  background: #f1f5f9;
-}
-
-::ng-deep .pagg-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-::ng-deep .pagg-label {
-  font-size: 12px;
-  color: #374151;
-  flex: 1;
-}
-
-::ng-deep .pagg-val {
-  font-size: 12.5px;
-  font-weight: 700;
-  color: #111827;
-}
-
-/* POPUPS PARA TOTALES (badge de estado/región) */
-::ng-deep .popup-agregado {
-  min-width: 170px;
-  padding: 6px 4px;
-  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-}
-
-::ng-deep .popup-agregado h3 {
-  margin: 0 0 8px 0;
-  font-size: 13px;
-  font-weight: 700;
-  color: #374151;
-}
-
-::ng-deep .popup-agregado hr {
-  border: none;
-  border-top: 1px solid #e5e7eb;
-  margin: 0 0 8px 0;
-}
-
-::ng-deep .popup-item {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  margin-bottom: 5px;
-  font-size: 13px;
-  color: #374151;
-}
-
-::ng-deep .popup-item i {
-  width: 16px;
-  text-align: center;
-  flex-shrink: 0;
-}
-
-::ng-deep .popup-item strong {
-  margin-left: auto;
-  color: #111827;
-  font-weight: 700;
-}
-
-/* Desglose por segmentación */
-::ng-deep .popup-seg-breakdown {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 5px 8px;
-  margin: 2px 0 6px 24px;
-}
-
-::ng-deep .popup-seg-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  padding: 2px 0;
-  font-size: 11.5px;
-}
-
-::ng-deep .popup-seg-row:not(:last-child) {
-  border-bottom: 1px dashed #e2e8f0;
-}
-
-::ng-deep .popup-seg-label {
-  color: #64748b;
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 10px;
-  letter-spacing: 0.4px;
-}
-
-::ng-deep .popup-seg-val {
-  color: #0f172a;
-  font-weight: 700;
-}
-
-/* RESPONSIVIDAD PARA POPUPS */
-@media (max-width: 768px) {
-
-  ::ng-deep .pagg,
-  ::ng-deep .popup-agregado,
-  ::ng-deep .popup-detalle {
-    min-width: 200px !important;
-    max-width: 280px !important;
-  }
-
-  ::ng-deep .pagg-header,
-  ::ng-deep .popup-header {
-    font-size: 10px !important;
-    padding: 5px 8px !important;
-  }
-
-  ::ng-deep .pagg-label,
-  ::ng-deep .pagg-val,
-  ::ng-deep .popup-item,
-  ::ng-deep .popup-table td,
-  ::ng-deep .popup-badge,
-  ::ng-deep .popup-seg-pill {
-    font-size: 9px !important;
-  }
-}
-
-@media (max-width: 480px) {
-
-  ::ng-deep .pagg,
-  ::ng-deep .popup-agregado,
-  ::ng-deep .popup-detalle {
-    min-width: 160px !important;
-    max-width: 240px !important;
-  }
-
-  ::ng-deep .pagg-header,
-  ::ng-deep .popup-header {
-    font-size: 8.5px !important;
-    padding: 2px 5px !important;
-  }
-
-  ::ng-deep .pagg-row,
-  ::ng-deep .popup-item,
-  ::ng-deep .popup-table td {
-    padding: 1px 3px !important;
-    line-height: 1 !important;
-  }
-
-  ::ng-deep .pagg-label,
-  ::ng-deep .pagg-val,
-  ::ng-deep .popup-item,
-  ::ng-deep .popup-table td,
-  ::ng-deep .popup-badge,
-  ::ng-deep .popup-lbl,
-  ::ng-deep .popup-val {
-    font-size: clamp(7.5px, 2.5vw, 9px) !important;
-  }
-
-  ::ng-deep .popup-lbl {
-    padding-right: 3px !important;
-    letter-spacing: 0px !important;
-  }
-
-  ::ng-deep .pagg-dot {
-    width: clamp(4px, 1.5vw, 6px) !important;
-    height: clamp(4px, 1.5vw, 6px) !important;
-  }
-
-  ::ng-deep .popup-header-icon {
-    width: clamp(14px, 4vw, 18px) !important;
-    height: clamp(14px, 4vw, 18px) !important;
-    font-size: clamp(7px, 2vw, 9px) !important;
-  }
-}
-
-/* PINES INDIVIDUALES */
-::ng-deep .marker-pin-container {
-  background: none !important;
-  border: none !important;
-}
-
-::ng-deep .custom-pin-marker {
-  width: 24px;
-  height: 24px;
-  border-radius: 50% 50% 50% 0;
-  transform: rotate(-45deg);
-  border: 2px solid white;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  margin: -12px 0 0 -12px;
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
-}
-
-::ng-deep .custom-pin-marker i {
-  transform: rotate(45deg);
-  color: white;
-  font-size: 10px;
-}
-
-::ng-deep .pin-antenas {
-  background-color: #FF1493 !important;
-}
-
-::ng-deep .pin-oficinas {
-  background-color: #32CD32 !important;
-}
-
-::ng-deep .pin-agentes {
-  background-color: #FF8C00 !important;
-}
-
-::ng-deep .pin-abonados {
-  background-color: #00BFFF !important;
-}
-
 /* LEYENDA DEL MAPA */
 .map-legend-overlay {
   position: absolute;
@@ -508,8 +30,11 @@
 
 .map-legend-overlay.collapsed {
   padding: 10px 16px;
-  /* Reducido para mejor centrado */
   min-width: 150px;
+}
+
+.map-legend-overlay.collapsed .legend-body {
+  display: none;
 }
 
 .legend-header {
@@ -522,7 +47,6 @@
   letter-spacing: 1.2px;
   margin-bottom: 12px;
   padding: 0 0 8px 0;
-  /* Padding inferior uniforme para la línea */
   border-bottom: 1px solid rgba(50, 64, 165, 0.1);
   font-family: 'Inter', sans-serif;
   user-select: none;
@@ -538,20 +62,9 @@
   align-items: center;
 }
 
-.legend-header span {
-  display: flex;
-  align-items: center;
-  line-height: 1;
-  /* Removido line-height fijo para evitar desvío vertical */
-}
-
 .legend-toggle {
   background: rgba(50, 64, 165, 0.08);
   border: none;
-  margin: 0;
-  /* Reset de margen */
-  padding: 0;
-  /* Reset de padding */
   color: #3240A5;
   width: 24px;
   height: 24px;
@@ -561,187 +74,75 @@
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  flex-shrink: 0;
-  /* Que no se encoja */
 }
 
-.legend-toggle:hover {
-  background: rgba(50, 64, 165, 0.15);
-  transform: translateY(-1px);
-}
-
-.legend-toggle i {
-  font-size: 10px;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.collapsed .legend-toggle i {
-  transform: rotate(-180deg);
+.map-legend-overlay.collapsed .legend-toggle i {
+  transform: rotate(180deg);
 }
 
 .legend-body {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  transition: opacity 0.3s ease, max-height 0.4s ease;
   max-height: 60vh;
-  /* Altura máxima controlada (60% del alto de la pantalla) */
   overflow-y: auto;
   padding-right: 8px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(50, 64, 165, 0.2) transparent;
-}
-
-/* Scrollbar elegante para navegadores Webkit (Chrome, Safari, Edge) */
-.legend-body::-webkit-scrollbar {
-  width: 4px;
-}
-
-.legend-body::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.legend-body::-webkit-scrollbar-thumb {
-  background: rgba(50, 64, 165, 0.2);
-  border-radius: 10px;
-}
-
-.legend-body::-webkit-scrollbar-thumb:hover {
-  background: rgba(50, 64, 165, 0.4);
-}
-
-.collapsed .legend-body {
-  max-height: 0;
-  opacity: 0;
-  pointer-events: none;
-  margin-top: -10px;
-  overflow: hidden;
-  /* Evitar scroll cuando está cerrado */
-}
-
-.legend-body {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 }
 
 .legend-item-map {
   display: flex;
   align-items: center;
   gap: 12px;
-  transition: transform 0.2s ease;
-}
-
-.legend-item-map:hover {
-  transform: translateX(4px);
 }
 
 .color-indicator {
   width: 14px;
   height: 14px;
   border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .region-label {
   font-size: 13px;
   font-weight: 500;
   color: #2c3e50;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter';
 }
 
-/* RESPONSIVIDAD PARA LA LEYENDA */
 @media (max-width: 1440px) {
   .map-legend-overlay {
     padding: 12px 16px;
     min-width: 180px;
-    bottom: 15px;
-    right: 15px;
-  }
-
-  .region-label {
-    font-size: 12px;
-  }
-
-  .legend-header {
-    font-size: 10px;
-    margin-bottom: 10px;
-  }
-}
-
-@media (max-width: 1024px) {
-  .map-legend-overlay {
-    padding: 10px 14px;
-    min-width: 160px;
-  }
-
-  .region-label {
-    font-size: 11px;
-  }
-
-  .color-indicator {
-    width: 12px;
-    height: 12px;
   }
 }
 
 @media (max-width: 768px) {
   .map-legend-overlay {
-    bottom: 10px;
-    right: 10px;
     padding: 8px 12px;
     min-width: 140px;
-    border-radius: 12px;
-  }
-
-  .legend-header {
-    font-size: 9px;
-    margin-bottom: 8px;
-    padding-bottom: 6px;
-    letter-spacing: 0.8px;
-  }
-
-  .legend-body {
-    gap: 6px;
-    max-height: 50vh;
-  }
-
-  .region-label {
-    font-size: 10.5px;
-  }
-
-  .color-indicator {
-    width: 10px;
-    height: 10px;
-    border-radius: 3px;
-  }
-
-  .legend-toggle {
-    width: 20px;
-    height: 20px;
-    border-radius: 6px;
-  }
-
-  .legend-toggle i {
-    font-size: 8px;
+    bottom: 10px;
+    right: 10px;
   }
 }
 
 @media (max-width: 480px) {
   .map-legend-overlay {
     padding: 6px 10px;
-    min-width: 120px;
-    bottom: 8px;
-    right: 8px;
+    min-width: 110px;
+    bottom: 5px;
+    right: 5px;
+    border-radius: 12px;
   }
 
   .legend-header {
     font-size: 8px;
+    margin-bottom: 6px;
+    padding-bottom: 4px;
     letter-spacing: 0.5px;
   }
 
-  .region-label {
-    font-size: 9.5px;
+  .legend-toggle {
+    width: 20px;
+    height: 20px;
   }
 
   .legend-body {
@@ -752,82 +153,13 @@
   .legend-item-map {
     gap: 8px;
   }
-}
 
-/* CAPA ELECTRICIDAD: Efecto de brillo y popups */
-::ng-deep .electric-line-glow {
-  filter: drop-shadow(0 0 3px rgba(255, 69, 0, 0.6));
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  transition: stroke-width 0.2s, opacity 0.2s;
-}
+  .color-indicator {
+    width: 10px;
+    height: 10px;
+  }
 
-::ng-deep .electric-line-glow:hover {
-  stroke-width: 5px !important;
-  opacity: 1 !important;
-  cursor: pointer;
-}
-
-::ng-deep .leaflet-popup-content-wrapper:has(.electric-popup) {
-  background: #1a202c;
-  color: #e2e8f0;
-  border-radius: 8px;
-  border-left: 4px solid #ff4500;
-}
-
-::ng-deep .electric-popup {
-  padding: 5px 8px;
-  font-family: 'Inter', sans-serif;
-  font-size: 12px;
-  line-height: 1.4;
-}
-
-::ng-deep .electric-popup strong {
-  color: #ff4500;
-  display: block;
-  margin-bottom: 4px;
-  font-size: 13px;
-}
-
-/* SUBESTACIONES ELÉCTRICAS */
-::ng-deep .substation-icon-container {
-  background: none !important;
-  border: none !important;
-}
-
-::ng-deep .substation-marker {
-  background: #ff4500 !important;
-  width: 22px !important;
-  height: 22px !important;
-  border-radius: 50% !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  border: 2px solid white !important;
-  box-shadow: 0 0 10px rgba(255, 69, 0, 0.8) !important;
-  transition: transform 0.2s;
-  z-index: 1000;
-}
-
-::ng-deep .substation-marker i {
-  color: white !important;
-  font-size: 11px !important;
-  display: block !important;
-}
-
-::ng-deep .substation-marker:hover {
-  transform: scale(1.3);
-  background: #ff6347 !important;
-}
-
-/* CAPA VÍAS: Resaltado de calles */
-::ng-deep .vias-line-highlight {
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-}
-
-::ng-deep .vias-line-highlight:hover {
-  opacity: 1 !important;
+  .region-label {
+    font-size: 10px;
+  }
 }

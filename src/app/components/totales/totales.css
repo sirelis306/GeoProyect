@@ -17,12 +17,12 @@
 @media (max-width: 768px) {
   .stats-floating-bar {
     transform: translateX(-50%);
-    width: max-content;
-    max-width: 90vw;
+    width: auto;
+    max-width: 95vw;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 8px 15px;
-    padding: 10px 15px;
+    gap: 4px 10px;
+    padding: 8px 12px;
     border-radius: 12px;
   }
 
@@ -31,48 +31,52 @@
   }
 
   .stat-item {
-    gap: 8px;
-    padding: 4px 5px;
+    gap: 6px;
+    padding: 2px 4px;
   }
 
   .icon-circle {
-    width: 24px;
-    height: 24px;
-    font-size: 11px;
+    width: 22px;
+    height: 22px;
+    font-size: 10px;
   }
 
   .value {
-    font-size: 13px;
+    font-size: 12px;
+    margin-top: 0;
   }
 
   .label {
-    font-size: 7.5px;
+    font-size: 7px;
+    letter-spacing: 0;
   }
 }
 
 @media (max-width: 480px) {
   .stats-floating-bar {
-    max-width: 85vw;
-    gap: 6px 10px;
-    padding: 8px 12px;
+    max-width: 98vw;
+    gap: 2px 4px;
+    padding: 4px 6px;
+    top: 5px; /* Más pegado al borde superior */
   }
 
   .stat-item {
-    padding: 2px;
+    padding: 1px 3px;
+    gap: 4px;
   }
 
   .icon-circle {
-    width: 20px;
-    height: 20px;
-    font-size: 9px;
+    width: 16px;
+    height: 16px;
+    font-size: 8px;
   }
 
   .value {
-    font-size: 11px;
+    font-size: 9px;
   }
 
   .label {
-    font-size: 6.5px;
+    font-size: 5.5px;
   }
 }
 

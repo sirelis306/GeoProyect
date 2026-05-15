@@ -197,3 +197,69 @@
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* RESPONSIVIDAD PARA CELULARES */
+@media (max-width: 768px) {
+  .search-modal-overlay {
+    padding-top: 5vh;
+  }
+
+  .search-modal-content {
+    width: 94%;
+    max-width: none;
+    margin: 0 auto;
+    border-radius: 16px;
+  }
+
+  .search-header {
+    padding: 12px 16px;
+    gap: 10px;
+  }
+
+  .search-icon-large {
+    font-size: 16px;
+  }
+
+  .search-input-large {
+    font-size: 0.95rem;
+  }
+
+  .close-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  .results-container {
+    max-height: 70vh;
+  }
+
+  .result-row {
+    padding: 10px 16px;
+  }
+
+  .res-icon-circle {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+    border-radius: 8px;
+  }
+
+  .res-title {
+    font-size: 13px;
+  }
+
+  .res-meta {
+    font-size: 11px;
+  }
+
+  .res-actions {
+    opacity: 1; /* Siempre visibles en táctil */
+  }
+
+  .action-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
+  }
+}
