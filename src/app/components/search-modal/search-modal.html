@@ -44,7 +44,7 @@
           </div>
         </div>
         
-        <div class="res-actions">
+        <div class="res-actions" *ngIf="esAdmin">
           <button class="action-btn" (click)="$event.stopPropagation(); editar(item)" title="Editar">
             <i class="fas fa-pencil-alt"></i>
           </button>

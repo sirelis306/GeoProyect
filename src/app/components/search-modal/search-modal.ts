@@ -14,6 +14,7 @@ export class SearchModal {
   private gis = inject(GisService);
 
   @Input() visible = false;
+  @Input() esAdmin = false;
   @Output() onClose = new EventEmitter<void>();
   @Output() onEdit = new EventEmitter<any>();
 
@@ -74,11 +75,13 @@ export class SearchModal {
   }
 
   editar(item: any) {
+    if (!this.esAdmin) return;
     this.onEdit.emit(item);
     this.close();
   }
 
   eliminar(item: any) {
+    if (!this.esAdmin) return;
     if (confirm(`¿Estás seguro de eliminar "${item.nombre}"?`)) {
       this.gis.eliminarElemento(item.id).subscribe(() => {
         this.gis.cargarDatos();

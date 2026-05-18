@@ -138,7 +138,7 @@
     (onClose)="mostrarForm.set(false)" (onSaved)="onElementSaved()">
   </app-add-element>
 
-  <app-search-modal [visible]="mostrarSearchModal()" (onClose)="mostrarSearchModal.set(false)"
+  <app-search-modal [visible]="mostrarSearchModal()" [esAdmin]="esAdmin" (onClose)="mostrarSearchModal.set(false)"
     (onEdit)="onEditFromSearch($event)">
   </app-search-modal>
 </div>

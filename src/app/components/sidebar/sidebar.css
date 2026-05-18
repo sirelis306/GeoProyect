@@ -68,14 +68,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 5px; /* Reducido de 12px */
+  margin-bottom: 5px;
+  /* Reducido de 12px */
   width: 100%;
 }
 
 .sidebar-header.collapsed {
   flex-direction: column-reverse;
   gap: 4px;
-  margin-bottom: 5px; /* Reducido de 10px */
+  margin-bottom: 5px;
+  /* Reducido de 10px */
 }
 
 .btn-logout {
@@ -99,7 +101,8 @@
 .header-divider {
   border: 0;
   border-top: 1px solid #f1f5f9;
-  margin: 4px 0; /* Reducido de 8px */
+  margin: 4px 0;
+  /* Reducido de 8px */
 }
 
 .brand {
@@ -128,14 +131,16 @@
   box-shadow: 0 6px 12px rgba(37, 99, 235, 0.25);
   margin-right: 8px;
   transition: all 0.3s ease;
-  flex-shrink: 0; /* Asegurar que no se encoja */
+  flex-shrink: 0;
+  /* Asegurar que no se encoja */
 }
 
 .brand.collapsed .brand-icon {
   margin-right: 0 !important;
   width: 40px !important;
   height: 40px !important;
-  font-size: 20px !important; /* Proporcional al nuevo tamaño */
+  font-size: 20px !important;
+  /* Proporcional al nuevo tamaño */
   border-radius: 8px;
   margin: 0 auto;
 }
@@ -176,10 +181,14 @@
   width: 100%;
   text-align: left;
   padding: var(--layer-item-padding);
-  margin-bottom: 6px;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  background: #fff;
+  margin-bottom: 4px;
+  /* Reducido para ahorrar espacio */
+  border: 1px solid transparent;
+  /* Sin bordes pesados */
+  border-radius: 6px;
+  /* Bordes más sutiles y elegantes */
+  background: transparent;
+  /* Fondo limpio y transparente */
   cursor: pointer;
   font-size: var(--layer-item-font-size);
   transition: all 0.2s ease;
@@ -187,16 +196,22 @@
   align-items: center;
   height: var(--layer-item-height);
   box-sizing: border-box;
+  color: #475569;
+  /* Gris oscuro moderno */
 }
 
 .layer-item:hover {
-  background: #f8f9fa;
-  border-color: #ddd;
+  background: #f1f5f9;
+  /* Fondo sutil al hover */
+  border-color: transparent;
+  color: #0f172a;
 }
 
 .layer-item.active {
-  border-color: #3240A5;
   background: #f0f1fa;
+  border-color: transparent;
+  color: #3240A5;
+  font-weight: 500;
 }
 
 .layer-icon {
@@ -224,12 +239,13 @@
 }
 
 .subcapas-container {
-  margin-left: 10px;
-  padding-left: 10px;
-  border-left: 2px solid #e0e0e0;
-  animation: slideDown 0.3s ease;
-  margin-top: 8px;
-  margin-bottom: 12px;
+  margin-left: 8px;
+  padding-left: 8px;
+  border-left: 2px solid #f1f5f9;
+  /* Línea de división más tenue */
+  animation: slideDown 0.2s ease;
+  margin-top: 4px;
+  margin-bottom: 8px;
 }
 
 .tipo-selector-grid {
@@ -241,10 +257,14 @@
 }
 
 .tipo-btn {
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 8px;
+  background: transparent;
+  /* Fondo limpio y transparente por defecto */
+  border: 1px solid transparent;
+  /* Sin bordes pesados */
+  border-radius: 6px;
+  padding: 6px;
+  height: 28px;
+  /* Altura compacta para ahorrar espacio vertical */
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
@@ -253,16 +273,15 @@
 }
 
 .tipo-btn:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  background: #f1f5f9;
+  /* Fondo sutil al hover */
+  border-color: transparent;
+  transform: translateY(-1px);
 }
 
 .tipo-btn.active {
   background: #f0f1fa;
-  border-color: #3240A5;
-  box-shadow: inset 0 2px 4px rgba(50, 64, 165, 0.05);
+  border-color: transparent;
 }
 
 .tipo-btn .layer-icon {
@@ -273,21 +292,20 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  border: 1px solid #3240A5;
-  background: #f0f1fa;
+  border: 1px solid transparent;
+  background: transparent;
   color: #3240A5;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   font-size: 10px;
-  box-shadow: 0 2px 4px rgba(50, 64, 165, 0.1);
   transition: all 0.2s ease;
 }
 
 .add-item-btn-circle:hover {
-  background: #3240A5;
-  color: white;
+  background: #f0f1fa;
+  color: #3240A5;
   transform: scale(1.15) rotate(90deg);
 }
 
