@@ -62,6 +62,12 @@
           <span *ngIf="!gis.sidebarColapsado()">Cotas</span>
         </button>
 
+        <button class="layer-item" [class.active]="gis.capasVisibles().poblacion" (click)="toggle('poblacion')"
+          [title]="gis.sidebarColapsado() ? 'Población' : ''">
+          <i class="fas fa-users layer-icon" style="color: #3240A5;"></i>
+          <span *ngIf="!gis.sidebarColapsado()">Población</span>
+        </button>
+
         <button class="layer-item" [class.active]="gis.capasVisibles().regiones" (click)="toggle('regiones')"
           [title]="gis.sidebarColapsado() ? 'Regiones' : ''">
           <i class="fas fa-layer-group layer-icon" style="color: #3240A5;"></i>

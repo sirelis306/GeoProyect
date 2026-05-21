@@ -158,19 +158,56 @@ export class ElementRendererService {
     };
   }
 
+  /* Formatea voltajes a unidades legibles como kV */
+  formatVoltage(voltage: string | number | undefined | null): string {
+    if (!voltage) return "";
+    const parts = String(voltage).split(';');
+    const formattedParts = parts.map(part => {
+      const trimmed = part.trim();
+      const num = parseInt(trimmed, 10);
+      if (isNaN(num)) return trimmed;
+      if (num >= 1000) {
+        return `${(num / 1000).toLocaleString('de-DE')} kV`;
+      }
+      return `${num} V`;
+    });
+    return formattedParts.join(' / ');
+  }
+
+  /* Traduce los tipos de subestaciones */
+  translateSubstationType(type: string | undefined | null): string {
+    if (!type) return "";
+    const lower = type.toLowerCase().trim();
+    switch (lower) {
+      case 'transmission':
+        return 'Transmisión';
+      case 'distribution':
+        return 'Distribución';
+      case 'generation':
+        return 'Generación';
+      case 'yes':
+        return 'Subestación';
+      default:
+        return type.charAt(0).toUpperCase() + type.slice(1);
+    }
+  }
+
   /* Popup para infraestructura eléctrica mejorado */
   crearPopupElectricidad(properties: any) {
     const t = properties;
     // Priorizamos el nombre de la estructura para el título
-    const titulo = t.name || (t.substation ? 'Subestación Eléctrica' : 'Infraestructura Eléctrica');
+    const isSubstation = t.substation || t.power === 'substation';
+    const titulo = t.name || (isSubstation ? 'Subestación Eléctrica' : 'Infraestructura Eléctrica');
+    const tipoTraducido = this.translateSubstationType(t.substation);
+    const voltajeFormateado = this.formatVoltage(t.voltage);
 
     return `
       <div class="electric-popup">
         <strong>${titulo}</strong>
-        <div style="margin-top: 5px; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 5px;">
-          ${t.voltage ? `<b>Voltaje:</b> ${t.voltage} V<br/>` : ""}
+        <div style="margin-top: 5px; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 5px; line-height: 1.4;">
+          ${voltajeFormateado ? `<b>Voltaje:</b> ${voltajeFormateado}<br/>` : ""}
           ${t.operator ? `<b>Operador:</b> ${t.operator}<br/>` : ""}
-          ${t.substation ? `<b>Tipo:</b> ${t.substation}<br/>` : ""}
+          ${tipoTraducido ? `<b>Tipo:</b> ${tipoTraducido}<br/>` : ""}
           ${!t.name ? "" : `<small style="opacity: 0.7; font-size: 10px; display: block; margin-top: 4px;">Infraestructura Eléctrica</small>`}
         </div>
       </div>
@@ -192,5 +229,59 @@ export class ElementRendererService {
 
     return this.configIconos.antenas.color; // Color por defecto (Rosa)
   }
+
+  /* Retorna el color según el rango de población (escala secuencial azul/indigo basada en #3240A5) */
+  getColorPoblacion(pob: number): string {
+    return pob > 4000000 ? '#1a2675' :
+           pob > 3000000 ? '#3240a5' :
+           pob > 2000000 ? '#3f5fc4' :
+           pob > 1000000 ? '#5a7cd9' :
+           pob > 500000  ? '#7e9beb' :
+           pob > 200000  ? '#adbeed' :
+                           '#e2e8f7';
+  }
+
+  /* Retorna el estilo para el polígono de población */
+  getEstiloPoblacion(pob: number, hayCapasEspeciales: boolean) {
+    const color = this.getColorPoblacion(pob);
+    return {
+      fillColor: color,
+      weight: 1.5,
+      opacity: 0.8,
+      color: '#FFFFFF',
+      fillOpacity: hayCapasEspeciales ? 0.35 : 0.7
+    };
+  }
+
+  /* Genera el HTML para el popup de la capa poblacional */
+  crearPopupPoblacion(nombre: string, poblacion: number) {
+    const color = this.getColorPoblacion(poblacion);
+    const textColor = poblacion > 500000 ? '#ffffff' : '#1e293b';
+    const textShadow = poblacion > 500000 ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.2);' : '';
+    const iconBg = poblacion > 500000 ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.06)';
+
+    return `
+      <div class="popup-detalle poblacion-popup">
+        <div class="popup-header" style="background: ${color}; color: ${textColor}; ${textShadow}">
+          <div class="popup-header-icon" style="background: ${iconBg}; color: ${textColor}"><i class="fas fa-users"></i></div>
+          <span style="font-weight: 700;">Demografía</span>
+        </div>
+        <table class="popup-table">
+          <tr>
+            <td class="popup-lbl">Estado</td>
+            <td><span class="popup-val" style="font-weight: 700; color: #1e293b;">${nombre}</span></td>
+          </tr>
+          <tr>
+            <td class="popup-lbl">Población</td>
+            <td>
+              <span class="popup-badge" style="--bdg-color: ${color}; color: ${textColor}; font-weight: 700;">
+                ${poblacion.toLocaleString('es-VE')} hab.
+              </span>
+            </td>
+          </tr>
+        </table>
+      </div>`;
+  }
 }
+
 

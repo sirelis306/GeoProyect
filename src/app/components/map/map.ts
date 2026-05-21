@@ -28,6 +28,7 @@ export class Map implements AfterViewInit {
   @ViewChild('mapContainer') mapContainer!: ElementRef;
 
   private map!: L.Map;
+  private poblacionData: Record<string, number> = {};
 
   private radioBases = L.layerGroup();
   private abonados = L.layerGroup();
@@ -100,12 +101,20 @@ export class Map implements AfterViewInit {
 
       // --- LÓGICA CAPA 1 (GEOMETRÍA) ---
       if (this.capaGeoJsonRegiones) {
-        if (estado.regiones || estado.operaciones) {
+        if (estado.regiones || estado.operaciones || estado.poblacion) {
           this.capaGeoJsonRegiones.addTo(this.map);
-          this.aplicarEstiloRegiones(estado.operaciones);
+          if (estado.poblacion) {
+            this.aplicarEstiloPoblacion();
+          } else {
+            this.aplicarEstiloRegiones(estado.operaciones);
+          }
         } else {
           this.map.removeLayer(this.capaGeoJsonRegiones);
         }
+      }
+
+      if (!estado.poblacion && this.capaGeoJsonRegiones) {
+        this.capaGeoJsonRegiones.closePopup();
       }
 
       // --- LÓGICA DE VISUALIZACIÓN SEGÚN ZOOM ---
@@ -172,10 +181,42 @@ export class Map implements AfterViewInit {
     this.layerAggregated.addTo(this.map);
 
     this.http.get('assets/geojson/venezuela.json').subscribe((data: any) => {
-      this.capaGeoJsonRegiones = L.geoJSON(data);
-      if (this.gis.capasVisibles().regiones) this.capaGeoJsonRegiones.addTo(this.map);
+      this.capaGeoJsonRegiones = L.geoJSON(data, {
+        onEachFeature: (feature, layer) => {
+          layer.on('click', (e) => {
+            if (this.gis.capasVisibles().poblacion) {
+              const nombre = feature.properties.estado || feature.properties.name;
+              const pob = this.poblacionData[nombre] || 0;
+              const popupHtml = this.renderer.crearPopupPoblacion(nombre, pob);
+              layer.bindPopup(popupHtml, { maxWidth: 300 }).openPopup();
+            } else {
+              layer.unbindPopup();
+            }
+          });
+        }
+      });
+      
+      const estado = this.gis.capasVisibles();
+      if (estado.regiones || estado.operaciones || estado.poblacion) {
+        this.capaGeoJsonRegiones.addTo(this.map);
+        if (estado.poblacion) {
+          this.aplicarEstiloPoblacion();
+        } else {
+          this.aplicarEstiloRegiones(estado.operaciones);
+        }
+      }
 
       this.crearMascaraTerritorial(data);
+    });
+
+    this.http.get('assets/geojson/poblacion.json').subscribe({
+      next: (pob: any) => {
+        this.poblacionData = pob;
+        if (this.gis.capasVisibles().poblacion) {
+          this.aplicarEstiloPoblacion();
+        }
+      },
+      error: (err) => console.error('Error cargando poblacion.json', err)
     });
 
     L.control.zoom({ position: 'topright' }).addTo(this.map);
@@ -203,6 +244,19 @@ export class Map implements AfterViewInit {
         color: '#FFFFFF',
         fillOpacity: tieneDatos ? (hayCapasEspeciales ? 0.3 : 0.7) : 0 // Más transparente si hay capas de info extra
       };
+    });
+  }
+
+  private aplicarEstiloPoblacion() {
+    if (!this.capaGeoJsonRegiones) return;
+
+    const capas = this.gis.capasVisibles();
+    const hayCapasEspeciales = capas.cotas || capas.electricidad || capas.vias;
+
+    this.capaGeoJsonRegiones.setStyle((f: any) => {
+      const nombre = f.properties.estado || f.properties.name;
+      const pob = this.poblacionData[nombre] || 0;
+      return this.renderer.getEstiloPoblacion(pob, hayCapasEspeciales);
     });
   }
 
@@ -396,7 +450,28 @@ export class Map implements AfterViewInit {
             icon: this.renderer.crearIconoSubestacion(),
             pane: 'elementsPane'
           }),
-          onEachFeature: (f, l) => l.bindPopup(this.renderer.crearPopupElectricidad(f.properties))
+          onEachFeature: (f, l) => {
+            l.bindPopup(this.renderer.crearPopupElectricidad(f.properties));
+            
+            // Si es una subestación, estación o generador y está representado como un polígono,
+            // calculamos su centro geográfico para posicionar el icono de rayo
+            const isStation = f.properties && (
+              f.properties.power === 'substation' ||
+              f.properties.power === 'station' ||
+              f.properties.power === 'generator' ||
+              f.properties.substation
+            );
+            
+            if (isStation && typeof (l as any).getBounds === 'function') {
+              const center = (l as any).getBounds().getCenter();
+              const marker = L.marker(center, {
+                icon: this.renderer.crearIconoSubestacion(),
+                pane: 'elementsPane'
+              });
+              marker.bindPopup(this.renderer.crearPopupElectricidad(f.properties));
+              this.capaElectricidad.addLayer(marker);
+            }
+          }
         });
         this.capaElectricidad.addLayer(this.capaElectricidadGeoJson);
       },

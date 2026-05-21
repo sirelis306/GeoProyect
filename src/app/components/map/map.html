@@ -3,8 +3,10 @@
   <app-totales></app-totales>
 
   <!-- Leyenda: Estados activos (cuando Capa 2 / Operaciones está activa) -->
-  <div class="map-legend-overlay" [class.collapsed]="!leyendaAbierta()" *ngIf="gis.capasVisibles().operaciones && gis.getEstadosConDatos().length > 0">
-    <div class="legend-header" (click)="leyendaAbierta.set(!leyendaAbierta())" style="cursor: pointer; user-select: none;">
+  <div class="map-legend-overlay" [class.collapsed]="!leyendaAbierta()"
+    *ngIf="gis.capasVisibles().operaciones && gis.getEstadosConDatos().length > 0">
+    <div class="legend-header" (click)="leyendaAbierta.set(!leyendaAbierta())"
+      style="cursor: pointer; user-select: none;">
       <span>ESTADOS ACTIVOS</span>
       <button class="legend-toggle">
         <i class="fas fa-chevron-down"></i>
@@ -19,8 +21,10 @@
   </div>
 
   <!-- Leyenda: Regiones activas (solo Capa 1, sin operaciones) -->
-  <div class="map-legend-overlay" [class.collapsed]="!leyendaAbierta()" *ngIf="gis.capasVisibles().regiones && !gis.capasVisibles().operaciones">
-    <div class="legend-header" (click)="leyendaAbierta.set(!leyendaAbierta())" style="cursor: pointer; user-select: none;">
+  <div class="map-legend-overlay" [class.collapsed]="!leyendaAbierta()"
+    *ngIf="gis.capasVisibles().regiones && !gis.capasVisibles().operaciones">
+    <div class="legend-header" (click)="leyendaAbierta.set(!leyendaAbierta())"
+      style="cursor: pointer; user-select: none;">
       <span>REGIONES ACTIVAS</span>
       <button class="legend-toggle">
         <i class="fas fa-chevron-down"></i>
@@ -30,6 +34,47 @@
       <div class="legend-item-map" *ngFor="let region of gis.getRegionesConColores()">
         <span class="color-indicator" [style.backgroundColor]="region.color"></span>
         <span class="region-label">{{ region.nombre }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leyenda: Población activa -->
+  <div class="map-legend-overlay" [class.collapsed]="!leyendaAbierta()" *ngIf="gis.capasVisibles().poblacion">
+    <div class="legend-header" (click)="leyendaAbierta.set(!leyendaAbierta())"
+      style="cursor: pointer; user-select: none;">
+      <span>POBLACIÓN (HAB.)</span>
+      <button class="legend-toggle">
+        <i class="fas fa-chevron-down"></i>
+      </button>
+    </div>
+    <div class="legend-body">
+      <div class="legend-item-map">
+        <span class="color-indicator" style="background-color: #1a2675;"></span>
+        <span class="region-label">> 4,000,000</span>
+      </div>
+      <div class="legend-item-map">
+        <span class="color-indicator" style="background-color: #3240a5;"></span>
+        <span class="region-label">3,000,000 - 4,000,000</span>
+      </div>
+      <div class="legend-item-map">
+        <span class="color-indicator" style="background-color: #3f5fc4;"></span>
+        <span class="region-label">2,000,000 - 3,000,000</span>
+      </div>
+      <div class="legend-item-map">
+        <span class="color-indicator" style="background-color: #5a7cd9;"></span>
+        <span class="region-label">1,000,000 - 2,000,000</span>
+      </div>
+      <div class="legend-item-map">
+        <span class="color-indicator" style="background-color: #7e9beb;"></span>
+        <span class="region-label">500,000 - 1,000,000</span>
+      </div>
+      <div class="legend-item-map">
+        <span class="color-indicator" style="background-color: #adbeed;"></span>
+        <span class="region-label">200,000 - 500,000</span>
+      </div>
+      <div class="legend-item-map">
+        <span class="color-indicator" style="background-color: #e2e8f7;"></span>
+        <span class="region-label">&lt; 200,000</span>
       </div>
     </div>
   </div>

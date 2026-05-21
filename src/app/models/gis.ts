@@ -6,6 +6,7 @@ export interface CapasEstado {
   cotas: boolean;
   electricidad: boolean;
   vias: boolean;
+  poblacion: boolean;
   detalleOperaciones: TipoElemento[];
   detalleRegiones: TipoElemento[];
 }
@@ -66,6 +67,7 @@ export interface Estado {
   nombre_region: string;
   color_region: string;
   color_estado?: string;
+  poblacion?: number;
 }
 
 export interface Region {

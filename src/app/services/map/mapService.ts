@@ -99,8 +99,9 @@ export class MapService {
 
       const activar = !e[nombre];
       const nuevo = { ...e, [nombre]: activar };
-      if (nombre === 'operaciones' && activar) { nuevo.regiones = false; nuevo.detalleRegiones = []; }
-      if (nombre === 'regiones' && activar) { nuevo.operaciones = false; nuevo.detalleOperaciones = []; }
+      if (nombre === 'operaciones' && activar) { nuevo.regiones = false; nuevo.poblacion = false; nuevo.detalleRegiones = []; }
+      if (nombre === 'regiones' && activar) { nuevo.operaciones = false; nuevo.poblacion = false; nuevo.detalleOperaciones = []; }
+      if (nombre === 'poblacion' && activar) { nuevo.regiones = false; nuevo.operaciones = false; nuevo.detalleRegiones = []; nuevo.detalleOperaciones = []; }
       if (nombre === 'operaciones' && !activar) nuevo.detalleOperaciones = [];
       return nuevo;
     });

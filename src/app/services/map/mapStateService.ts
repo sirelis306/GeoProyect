@@ -10,6 +10,7 @@ export class MapStateService {
     cotas: false,
     electricidad: false,
     vias: false,
+    poblacion: false,
     detalleOperaciones: [],
     detalleRegiones: ['antenas']
   });
