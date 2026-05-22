@@ -418,3 +418,9 @@
   box-shadow: 0 0 10px rgba(255, 69, 0, 0.8) !important;
   color: white !important;
 }
+
+/* Reducir el ancho de la ventana de demografía */
+.poblacion-popup {
+  min-width: 220px !important;
+  max-width: 260px !important;
+}

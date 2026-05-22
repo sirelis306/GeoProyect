@@ -24,6 +24,12 @@
       <span *ngIf="!gis.sidebarColapsado()">Gestión de Usuarios</span>
     </button>
 
+    <button class="layer-item" *ngIf="esAdmin" routerLink="/historial" routerLinkActive="active"
+      [title]="gis.sidebarColapsado() ? 'Historial de Cambios' : ''">
+      <i class="fas fa-history layer-icon" style="color: #3240A5;"></i>
+      <span *ngIf="!gis.sidebarColapsado()">Historial de Cambios</span>
+    </button>
+
     <div class="section-label" *ngIf="!gis.sidebarColapsado()">MAPA</div>
 
     <button class="layer-item" routerLink="/mapa" routerLinkActive="active"

@@ -274,7 +274,7 @@ export class ElementRendererService {
           <tr>
             <td class="popup-lbl">Población</td>
             <td>
-              <span class="popup-badge" style="--bdg-color: ${color}; color: ${textColor}; font-weight: 700;">
+              <span class="popup-badge" style="--bdg-color: ${color}; color: #000000; font-weight: 700;">
                 ${poblacion.toLocaleString('es-VE')} hab.
               </span>
             </td>

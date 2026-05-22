@@ -1,0 +1,223 @@
+<div class="historial-container">
+  <div class="header-section">
+    <div class="breadcrumb">
+      <span class="breadcrumb-link">Administración</span>
+      <span class="breadcrumb-separator">/</span>
+      <span class="breadcrumb-current">Historial de Cambios</span>
+    </div>
+  </div>
+
+  <div class="content-card">
+    <!-- Toolbar de Filtros -->
+    <div class="table-toolbar">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Buscar por elemento..." [(ngModel)]="searchTexto">
+      </div>
+
+      <div class="filters-group">
+        <!-- Filtro Operación -->
+        <div class="filter-dropdown">
+          <ng-select class="select-simple"
+            [(ngModel)]="filtroAccion"
+            [items]="accionesOptions"
+            bindLabel="label"
+            bindValue="value"
+            [clearable]="false"
+            [searchable]="false"
+            placeholder="Operación">
+          </ng-select>
+        </div>
+
+        <!-- Filtro Elemento (Entidades) -->
+        <div class="filter-dropdown">
+          <ng-select class="select-simple"
+            [(ngModel)]="filtroEntidad"
+            [items]="entidadesOptions"
+            bindLabel="label"
+            bindValue="value"
+            [clearable]="false"
+            [searchable]="false"
+            placeholder="Elementos">
+          </ng-select>
+        </div>
+
+        <!-- Filtro Rango de Fechas (Calendario Flatpickr) -->
+        <div class="date-filter-range">
+          <i class="far fa-calendar-alt date-icon"></i>
+          <input type="text" 
+                 #dateRangeInput 
+                 class="input-date-range" 
+                 placeholder="Filtrar por fechas..." 
+                 readonly>
+          <button *ngIf="fechaInicio || fechaFin" 
+                  class="btn-clear-dates" 
+                  (click)="limpiarFechas()" 
+                  title="Limpiar fechas">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla del Historial -->
+    <div class="table-responsive-wrapper">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>ELEMENTO</th>
+            <th>TIPO</th>
+            <th>RESPONSABLE</th>
+            <th>FECHA Y HORA</th>
+            <th>OPERACIÓN</th>
+            <th>ACCIONES</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Sin Resultados -->
+          <tr *ngIf="historialFiltrado.length === 0">
+            <td colspan="6" class="no-results-row">
+              <i class="fas fa-history-empty fas fa-folder-open"></i>
+              <p>No se encontraron registros que coincidan con los filtros.</p>
+            </td>
+          </tr>
+
+          <!-- Filas de Datos -->
+          <tr *ngFor="let item of historialFiltrado" [class.row-reverted]="item.revertido">
+            <td>
+              <span class="element-name-cell">
+                {{ item.identificador_elemento }}
+              </span>
+            </td>
+            <td>
+              <span class="badge-tipo">
+                <i class="fas" [ngClass]="getEntityIcon(item.tabla_afectada)"></i>
+                {{ item.tabla_afectada }}
+              </span>
+            </td>
+            <td>
+              <div class="user-details-cell">
+                <span class="user-name-text">{{ item.usuario_nombre }}</span>
+                <span class="user-email-text">{{ item.usuario_email }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="date-cell">{{ item.creado_en | date:'dd/MM/yyyy hh:mm a' }}</span>
+            </td>
+            <td>
+              <span class="badge-operacion" [ngClass]="getAccionClass(item.accion)">
+                <span class="status-dot-mini"></span>
+                {{ getAccionLabel(item.accion) }}
+              </span>
+            </td>
+            <td>
+              <div class="actions-panel">
+                <!-- Icono de Hoja para ver Detalle -->
+                <button class="btn-action-icon view" (click)="abrirModalDetalles(item)" title="Ver detalles del cambio">
+                  <i class="far fa-file-alt"></i>
+                </button>
+                
+                <!-- Icono de Revertir (Solo para acción eliminar) -->
+                <button class="btn-action-icon revert" 
+                  *ngIf="item.accion === 'eliminar' && !item.revertido" 
+                  (click)="revertirEliminacion(item)" 
+                  title="Revertir eliminación (Restaurar)">
+                  <i class="fas fa-undo-alt"></i>
+                </button>
+                <span class="reverted-label" *ngIf="item.revertido">Revertido</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer de la Tabla (Resumen de registros) -->
+    <div class="table-footer tw-flex-row tw-justify-between tw-align-middle">
+      <div class="showing-text">
+        Mostrando {{ historialFiltrado.length }} de {{ listaHistorial.length }} registros en el historial
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Detalles Comparativos (Diff Viewer) -->
+  <div class="modal-overlay" *ngIf="mostrarModalDetalles" (click)="cerrarModalDetalles()">
+    <div class="modal-content-wrapper" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="fas fa-file-signature"></i> Detalles de la Operación
+        </h3>
+        <button class="btn-close-modal" (click)="cerrarModalDetalles()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body" *ngIf="itemSeleccionado">
+        <!-- Detalles del Evento -->
+        <div class="modal-meta-grid">
+          <div class="meta-item">
+            <span class="meta-label">Elemento</span>
+            <span class="meta-value">{{ itemSeleccionado.identificador_elemento }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Tipo</span>
+            <span class="meta-value text-capitalize">{{ itemSeleccionado.tabla_afectada }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Responsable</span>
+            <span class="meta-value">{{ itemSeleccionado.usuario_nombre }} ({{ itemSeleccionado.usuario_email }})</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Fecha y Hora</span>
+            <span class="meta-value">{{ itemSeleccionado.creado_en | date:'dd/MM/yyyy, hh:mm a' }}</span>
+          </div>
+        </div>
+
+        <hr class="modal-divider">
+
+        <!-- Caso 1: Edición (Antes vs Después) -->
+        <ng-container *ngIf="itemSeleccionado.accion === 'editar'">
+          <h5 class="diff-title-header"><i class="fas fa-balance-scale"></i> Atributos Modificados</h5>
+          <div class="table-responsive">
+            <table class="diff-table">
+              <thead>
+                <tr>
+                  <th>Atributo</th>
+                  <th class="col-before">Antes</th>
+                  <th class="col-after">Después</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngFor="let key of getObjectKeys(itemSeleccionado.detalles.despues)">
+                  <tr *ngIf="itemSeleccionado.detalles.antes[key] !== itemSeleccionado.detalles.despues[key]">
+                    <td class="prop-key">{{ key }}</td>
+                    <td class="diff-removed">{{ itemSeleccionado.detalles.antes[key] !== undefined ? itemSeleccionado.detalles.antes[key] : '—' }}</td>
+                    <td class="diff-added">{{ itemSeleccionado.detalles.despues[key] }}</td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+
+        <!-- Caso 2: Crear / Eliminar -->
+        <ng-container *ngIf="itemSeleccionado.accion === 'crear' || itemSeleccionado.accion === 'eliminar'">
+          <h5 class="diff-title-header">
+            <i class="fas" [ngClass]="itemSeleccionado.accion === 'crear' ? 'fa-folder-plus' : 'fa-folder-minus'"></i>
+            Valores del Registro
+          </h5>
+          <div class="fields-grid-modal">
+            <div class="field-item-modal" *ngFor="let key of getObjectKeys(itemSeleccionado.detalles)">
+              <span class="field-label-modal">{{ key }}</span>
+              <span class="field-value-modal">{{ itemSeleccionado.detalles[key] }}</span>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-modal-close-action" (click)="cerrarModalDetalles()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,4 +1,5 @@
 @import "@ng-select/ng-select/themes/default.theme.css";
+@import "flatpickr/dist/flatpickr.css";
 @import "./map-styles.css";
 @import "./sidebar-styles.css";
 @import "./responsive.css";

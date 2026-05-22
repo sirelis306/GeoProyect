@@ -7,7 +7,8 @@ import { of, lastValueFrom } from 'rxjs';
 @Injectable({ providedIn: 'root' })
 export class GeocodingService {
   private http = inject(HttpClient);
-  private API_URL = 'http://localhost:3000/api'; // Cambiar a tu URL de API si es distinta en prod
+  private API_URL = 'http://localhost:3000/api';
+  //private API_URL = 'https://geobackend-api.onrender.com/api';
 
   /* Obtiene coordenadas (lat, lng) desde el Proxy de nuestro Backend para evitar CORS. */
   async obtenerCoordsDesdeDireccion(direccion: string | null | undefined): Promise<{ lat: number; lng: number } | null> {
@@ -18,7 +19,7 @@ export class GeocodingService {
 
     for (let i = 0; i < maxIntentos; i++) {
       let queryActual = i === 0 ? limpia : direccion;
-      
+
       if (i === 1 && queryActual.length > 80) {
         queryActual = queryActual.split(',').slice(0, 2).join(',');
       }
@@ -26,7 +27,7 @@ export class GeocodingService {
       try {
         // Llamamos a NUESTRA API (Proxy) en lugar de directamente a OSM
         const url = `${this.API_URL}/geocode?q=${encodeURIComponent(queryActual)}`;
-        
+
         const res: any = await lastValueFrom(
           this.http.get(url).pipe(
             timeout(15000), // Más tiempo de margen para el proxy
@@ -69,7 +70,7 @@ export class GeocodingService {
       /BASEMENT/gi,
       /PLANTA BAJA/gi,
       /ESTADO\s+/gi,
-      /A\s+\d+\s*MTS?\s+DE\s+L[OA]\s+.+/gi, 
+      /A\s+\d+\s*MTS?\s+DE\s+L[OA]\s+.+/gi,
       /CERCA\s+DE\s+.+/gi,
       /LOCAL\s+S\/N/gi,
       /S\/N/gi,

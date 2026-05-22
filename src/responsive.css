@@ -74,4 +74,38 @@
     --collapsed-item-size: 20px;
     --collapsed-icon-size: 14px;
   }
+
+  /* Auditoría / Historial de Cambios Responsive */
+  .table-toolbar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  .search-box {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+  }
+
+  .filters-group {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+
+  .filter-dropdown {
+    width: 100% !important;
+  }
+
+  .date-filter-range {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+
+  .input-date-range {
+    width: 100% !important;
+    text-align: center !important;
+  }
 }
+
