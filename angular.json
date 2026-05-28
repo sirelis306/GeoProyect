@@ -17,9 +17,7 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
-            "allowedCommonJsDependencies": [
-              "leaflet"
-            ],
+            "allowedCommonJsDependencies": ["leaflet", "flatpickr"],
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
             "assets": [
@@ -28,10 +26,7 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "node_modules/leaflet/dist/leaflet.css",
-              "src/styles.css"
-            ]
+            "styles": ["node_modules/leaflet/dist/leaflet.css", "src/styles.css"]
           },
           "configurations": {
             "production": {
@@ -43,7 +38,7 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "10kB",
+                  "maximumWarning": "15kB",
                   "maximumError": "20kB"
                 }
               ],

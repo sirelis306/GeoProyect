@@ -3,14 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { TipoElemento, RadioBase, Abonado, Oficina, Agente, Estado } from '../../models/gis';
 import { CoordService } from '../coord/coordService';
 import { GeocodingService } from '../gis/geocodingService';
-
+import { environment } from '../../../environments/environment';
 @Injectable({ providedIn: 'root' })
 export class ElementService {
   private http = inject(HttpClient);
   private coord = inject(CoordService);
   private geocoding = inject(GeocodingService);
-  private API_URL = 'http://localhost:3000/api';
-  // private API_URL = 'https://geobackend-api.onrender.com/api';
+  private API_URL = environment.apiUrl;
 
   // Signals de datos
   estadosSignal = signal<Estado[]>([]);
@@ -52,10 +51,25 @@ export class ElementService {
 
   // Carga geográfica
   cargarConfiguracionGeografica() {
-    this.http.get<Estado[]>(`${this.API_URL}/estados`).subscribe({
+    this.http.get<any[]>(`${this.API_URL}/geo/estados`).subscribe({
       next: (data) => {
-        this.estadosSignal.set(data);
-        localStorage.setItem('geoproyect_states_cache', JSON.stringify(data));
+        const mapeados = data.map(e => {
+          const nombreEstado = e.nombre_estado || e.nombre;
+          const nombreRegion = e.region_nombre || e.nombre_region;
+          const coords = this.coord.getCoordEstado(nombreEstado);
+          
+          return {
+            ...e,
+            nombre: nombreEstado,
+            nombre_region: nombreRegion,
+            color_region: e.color_region || this.coord.getColorRegion(nombreRegion),
+            color_estado: e.color_estado || e.color_region || this.coord.getColorRegion(nombreRegion),
+            latitud: coords ? coords.lat : 0,
+            longitud: coords ? coords.lng : 0
+          };
+        });
+        this.estadosSignal.set(mapeados);
+        localStorage.setItem('geoproyect_states_cache', JSON.stringify(mapeados));
       },
       error: (err) => console.error('Error cargando estados:', err)
     });
@@ -65,9 +79,16 @@ export class ElementService {
   private reparandoEnBackground = false;
 
   cargarDatos() {
-    this.http.get<any[]>(`${this.API_URL}/elementos`).subscribe({
+    this.http.get<any[]>(`${this.API_URL}/elementos/listado`).subscribe({
       next: (data) => {
-        const rawData = data || [];
+        let rawData = data || [];
+        rawData = rawData.map((e: any) => ({
+          ...e,
+          estado: e.estado_nombre || e.estado,
+          region: e.region_nombre || e.region,
+          latitud: Number(e.latitud) || 0,
+          longitud: Number(e.longitud) || 0
+        }));
         this.procesarDatos(rawData);
         localStorage.setItem('geoproyect_elements_cache', JSON.stringify(rawData));
 
@@ -104,7 +125,7 @@ export class ElementService {
         const coords = await this.geocoding.obtenerCoordsDesdeDireccion(item.direccion);
         if (coords) {
           try {
-            await this.http.put(`${this.API_URL}/elementos/${item.id}/coordenadas`, coords).toPromise();
+            await this.http.put(`${this.API_URL}/elementos/actualizar/${item.id}`, coords).toPromise();
             // Actualizar localmente para que aparezca en el mapa de inmediato
             item.latitud = coords.lat; item.longitud = coords.lng;
           } catch (e) { }
@@ -223,19 +244,19 @@ export class ElementService {
   }
 
   agregarElemento(tipo: TipoElemento, data: any) {
-    return this.http.post(`${this.API_URL}/elementos`, data);
+    return this.http.post(`${this.API_URL}/elementos/crear`, data);
   }
 
   actualizarElemento(id: number, data: any) {
-    return this.http.put(`${this.API_URL}/elementos/${id}`, data);
+    return this.http.put(`${this.API_URL}/elementos/actualizar/${id}`, data);
   }
 
   eliminarElemento(id: number) {
-    return this.http.delete(`${this.API_URL}/elementos/${id}`);
+    return this.http.put(`${this.API_URL}/elementos/desactivar/${id}`, {});
   }
 
   enviarAlServidor(datos: any) {
-    this.http.post(`${this.API_URL}/elementos`, datos).subscribe({
+    this.http.post(`${this.API_URL}/elementos/crear`, datos).subscribe({
       next: () => alert('Elemento guardado con éxito'),
       error: (err) => console.error('Error al guardar:', err)
     });

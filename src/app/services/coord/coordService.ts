@@ -44,6 +44,19 @@ export class CoordService {
     'Guayana': { lat: 6.0000, lng: -63.0000 },
   };
 
+  /* Colores de cada región */
+  private readonly COLORES_REGIONES: Record<string, string> = {
+    'Capital': '#8B5CF6',
+    'Central': '#EF4444',
+    'Los Llanos': '#F59E0B',
+    'Centro Occidental': '#10B981',
+    'Zuliana': '#3B82F6',
+    'Los Andes': '#6366F1',
+    'Nororiental': '#EC4899',
+    'Insular': '#06B6D4',
+    'Guayana': '#14B8A6',
+  };
+
   /* Mapeo estático estado → región */
   readonly MAPEO_ESTADOS_REGIONES: Record<string, string> = {
     'Distrito Capital': 'Capital', 'Miranda': 'Capital', 'La Guaira': 'Capital',
@@ -67,6 +80,10 @@ export class CoordService {
   /* Devuelve las coordenadas centrales de una región */
   getCoordRegion(nombre: string): { lat: number; lng: number } | null {
     return this.COORD_REGIONES[nombre] ?? null;
+  }
+
+  getColorRegion(nombre: string): string {
+    return this.COLORES_REGIONES[nombre] || '#DEE2E6';
   }
 
   /** Devuelve la región de un estado usando el mapeo estático */

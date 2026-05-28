@@ -331,10 +331,61 @@
   font-size: var(--collapsed-icon-size) !important;
 }
 
-.sidebar.collapsed .section-label,
 .sidebar.collapsed .section-label-mini,
 .sidebar.collapsed .section-label-with-btn {
   display: none !important;
+}
+
+.section-label .label-dot {
+  display: none;
+}
+
+.section-label .label-text {
+  animation: fadeInText 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.sidebar.collapsed .section-label {
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px !important;
+  font-weight: 900 !important;
+  color: #94a3b8 !important; /* Elegant slate-400 color */
+  margin: 12px 0 8px 0 !important;
+  opacity: 0.7;
+  pointer-events: none;
+  user-select: none;
+  letter-spacing: 0 !important;
+  text-align: center;
+}
+
+.sidebar.collapsed .section-label .label-text {
+  display: none !important;
+}
+
+.sidebar.collapsed .section-label .label-dot {
+  display: inline-block !important;
+  animation: fadeInDot 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes fadeInDot {
+  from {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  to {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeInText {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .sidebar.collapsed .subcapas-container {

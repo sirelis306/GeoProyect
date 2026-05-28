@@ -2,13 +2,13 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { timeout, catchError } from 'rxjs/operators';
 import { of, lastValueFrom } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 
 @Injectable({ providedIn: 'root' })
 export class GeocodingService {
   private http = inject(HttpClient);
-  private API_URL = 'http://localhost:3000/api';
-  //private API_URL = 'https://geobackend-api.onrender.com/api';
+  private API_URL = environment.apiUrl;
 
   /* Obtiene coordenadas (lat, lng) desde el Proxy de nuestro Backend para evitar CORS. */
   async obtenerCoordsDesdeDireccion(direccion: string | null | undefined): Promise<{ lat: number; lng: number } | null> {
@@ -26,7 +26,7 @@ export class GeocodingService {
 
       try {
         // Llamamos a NUESTRA API (Proxy) en lugar de directamente a OSM
-        const url = `${this.API_URL}/geocode?q=${encodeURIComponent(queryActual)}`;
+        const url = `${this.API_URL}/geo/buscar?q=${encodeURIComponent(queryActual)}`;
 
         const res: any = await lastValueFrom(
           this.http.get(url).pipe(

@@ -2,6 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -9,11 +10,19 @@ import { Router } from '@angular/router';
 export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
-  private URL_API = 'http://localhost:3000/api/auth';
-  // private URL_API = 'https://geobackend-api.onrender.com/api/auth';
+  private URL_API = `${environment.apiUrl}/auth`;
 
+  private getStoredUser() {
+    const data = localStorage.getItem('user_geo');
+    if (!data || data === 'undefined') return null;
+    try {
+      return JSON.parse(data);
+    } catch {
+      return null;
+    }
+  }
 
-  currentUser = signal<any>(JSON.parse(localStorage.getItem('user_geo') || 'null'));
+  currentUser = signal<any>(this.getStoredUser());
 
   login(creds: any) {
     // Llamada real al backend para obtener token y datos de usuario
@@ -29,15 +38,12 @@ export class AuthService {
   }
 
   getUserRol(): string {
-    const userJson = localStorage.getItem('user_geo');
-    if (userJson) {
-      const user = JSON.parse(userJson);
-      if (user.roles) {
-        if (user.roles.rol_super_administrador) return 'super_admin';
-        if (user.roles.rol_administrador) return 'admin';
-        if (user.roles.rol_analista) return 'analista';
-        if (user.roles.rol_regular) return 'regular';
-      }
+    const user = this.getStoredUser();
+    if (user && user.roles) {
+      if (user.roles.rol_super_administrador) return 'super_admin';
+      if (user.roles.rol_administrador) return 'admin';
+      if (user.roles.rol_analista) return 'analista';
+      if (user.roles.rol_regular) return 'regular';
     }
     return 'invitado';
   }
