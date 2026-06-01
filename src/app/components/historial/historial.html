@@ -12,7 +12,7 @@
     <div class="table-toolbar">
       <div class="search-box">
         <i class="fas fa-search"></i>
-        <input type="text" placeholder="Buscar por elemento..." [(ngModel)]="searchTexto">
+        <input type="text" placeholder="Buscar por elemento..." [(ngModel)]="searchTexto" (ngModelChange)="onSearchChange()">
       </div>
 
       <div class="filters-group">
@@ -20,6 +20,7 @@
         <div class="filter-dropdown">
           <ng-select class="select-simple"
             [(ngModel)]="filtroAccion"
+            (change)="onFilterChange()"
             [items]="accionesOptions"
             bindLabel="label"
             bindValue="value"
@@ -33,6 +34,7 @@
         <div class="filter-dropdown">
           <ng-select class="select-simple"
             [(ngModel)]="filtroEntidad"
+            (change)="onFilterChange()"
             [items]="entidadesOptions"
             bindLabel="label"
             bindValue="value"
@@ -91,8 +93,7 @@
             </td>
             <td>
               <span class="badge-tipo">
-                <i class="fas" [ngClass]="getEntityIcon(item.tabla_afectada)"></i>
-                {{ item.tabla_afectada }}
+                {{ getEntityLabel(item.elemento_tipo, item.tabla_afectada) }}
               </span>
             </td>
             <td>
@@ -106,7 +107,7 @@
             </td>
             <td>
               <span class="badge-operacion" [ngClass]="getAccionClass(item.accion)">
-                <span class="status-dot-mini"></span>
+                <i class="fas {{ getAccionIcon(item.accion) }} operacion-icon"></i>
                 {{ getAccionLabel(item.accion) }}
               </span>
             </td>
@@ -132,10 +133,30 @@
       </table>
     </div>
 
-    <!-- Footer de la Tabla (Resumen de registros) -->
-    <div class="table-footer tw-flex-row tw-justify-between tw-align-middle">
-      <div class="showing-text">
-        Mostrando {{ historialFiltrado.length }} de {{ listaHistorial.length }} registros en el historial
+    <!-- Footer de la Tabla (Resumen de registros + Paginador Emeria Style) -->
+    <div class="table-footer">
+      <div class="emeria-paginator">
+        <span class="paginator-label">Registros por página:</span>
+        <div class="paginator-select-wrapper">
+          <select [(ngModel)]="limiteActual" (change)="onLimiteChange()" class="paginator-select">
+            <option [value]="5">5</option>
+            <option [value]="10">10</option>
+            <option [value]="20">20</option>
+            <option [value]="50">50</option>
+          </select>
+          <i class="fas fa-chevron-down select-arrow"></i>
+        </div>
+        <span class="paginator-range">
+          {{ rangoInicio }} – {{ rangoFin }} of {{ totalRegistros }}
+        </span>
+        <div class="paginator-nav-buttons">
+          <button class="btn-paginator-nav" [disabled]="paginaActual === 1" (click)="onPrevPage()" title="Página anterior">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <button class="btn-paginator-nav" [disabled]="paginaActual >= totalPaginas" (click)="onNextPage()" title="Página siguiente">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -161,7 +182,7 @@
           </div>
           <div class="meta-item">
             <span class="meta-label">Tipo</span>
-            <span class="meta-value text-capitalize">{{ itemSeleccionado.tabla_afectada }}</span>
+            <span class="meta-value text-capitalize">{{ getEntityLabel(itemSeleccionado.elemento_tipo, itemSeleccionado.tabla_afectada) }}</span>
           </div>
           <div class="meta-item">
             <span class="meta-label">Responsable</span>
@@ -176,7 +197,7 @@
         <hr class="modal-divider">
 
         <!-- Caso 1: Edición (Antes vs Después) -->
-        <ng-container *ngIf="itemSeleccionado.accion === 'editar'">
+        <ng-container *ngIf="itemSeleccionado.accion === 'editar' || itemSeleccionado.accion === 'actualizar'">
           <h5 class="diff-title-header"><i class="fas fa-balance-scale"></i> Atributos Modificados</h5>
           <div class="table-responsive">
             <table class="diff-table">
@@ -188,11 +209,11 @@
                 </tr>
               </thead>
               <tbody>
-                <ng-container *ngFor="let key of getObjectKeys(itemSeleccionado.detalles.despues)">
-                  <tr *ngIf="itemSeleccionado.detalles.antes[key] !== itemSeleccionado.detalles.despues[key]">
+                <ng-container *ngFor="let key of getObjectKeys(itemSeleccionado.detalles)">
+                  <tr>
                     <td class="prop-key">{{ key }}</td>
-                    <td class="diff-removed">{{ itemSeleccionado.detalles.antes[key] !== undefined ? itemSeleccionado.detalles.antes[key] : '—' }}</td>
-                    <td class="diff-added">{{ itemSeleccionado.detalles.despues[key] }}</td>
+                    <td class="diff-removed">{{ itemSeleccionado.detalles[key].antes !== null && itemSeleccionado.detalles[key].antes !== undefined ? itemSeleccionado.detalles[key].antes : '—' }}</td>
+                    <td class="diff-added">{{ itemSeleccionado.detalles[key].despues !== null && itemSeleccionado.detalles[key].despues !== undefined ? itemSeleccionado.detalles[key].despues : '—' }}</td>
                   </tr>
                 </ng-container>
               </tbody>
@@ -201,7 +222,7 @@
         </ng-container>
 
         <!-- Caso 2: Crear / Eliminar -->
-        <ng-container *ngIf="itemSeleccionado.accion === 'crear' || itemSeleccionado.accion === 'eliminar'">
+        <ng-container *ngIf="itemSeleccionado.accion === 'crear' || itemSeleccionado.accion === 'eliminar' || itemSeleccionado.accion === 'desactivar'">
           <h5 class="diff-title-header">
             <i class="fas" [ngClass]="itemSeleccionado.accion === 'crear' ? 'fa-folder-plus' : 'fa-folder-minus'"></i>
             Valores del Registro
@@ -209,7 +230,9 @@
           <div class="fields-grid-modal">
             <div class="field-item-modal" *ngFor="let key of getObjectKeys(itemSeleccionado.detalles)">
               <span class="field-label-modal">{{ key }}</span>
-              <span class="field-value-modal">{{ itemSeleccionado.detalles[key] }}</span>
+              <span class="field-value-modal">
+                {{ isObject(itemSeleccionado.detalles[key]) ? (itemSeleccionado.detalles[key].antes + ' -> ' + itemSeleccionado.detalles[key].despues) : itemSeleccionado.detalles[key] }}
+              </span>
             </div>
           </div>
         </ng-container>

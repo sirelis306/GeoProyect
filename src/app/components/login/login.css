@@ -6,7 +6,7 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 
   background: #3240A5;
-  background: linear-gradient(211deg,rgba(50, 64, 165, 0.90) 33%, rgba(129, 209, 219, 0.9) 90%);
+  background: linear-gradient(211deg, rgba(50, 64, 165, 0.90) 33%, rgba(129, 209, 219, 0.9) 90%);
   background-size: 300% 300%;
   animation: animarGradiente 5s ease infinite;
 }
@@ -15,42 +15,69 @@
   background: white;
   padding: 40px;
   border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
   width: 100%;
   max-width: 400px;
   text-align: center;
 }
 
-.header h2 { margin: 10px 0 5px; color: #1e293b; }
-.header h2 span { color: #3240A5; font-weight: 300; }
-.header p { color: #64748b; font-size: 14px; margin-bottom: 30px; }
+.header h2 {
+  margin: 10px 0 5px;
+  color: #1e293b;
+}
+
+.header h2 span {
+  color: #3240A5;
+  font-weight: 300;
+}
+
+.header p {
+  color: #64748b;
+  font-size: 14px;
+  margin-bottom: 30px;
+}
 
 .logo-circle {
-  width: 60px; height: 60px;
+  width: 60px;
+  height: 60px;
   background: #3240A5;
   color: white;
   border-radius: 50%;
   display: flex;
-  align-items: center; justify-content: center;
+  align-items: center;
+  justify-content: center;
   margin: 0 auto;
   font-size: 24px;
 }
 
 .brand-icon {
-  width: 60px; height: 60px;
-  background: #4355e0; /* Azul moderno */
+  width: 60px;
+  height: 60px;
+  background: #4355e0;
+  /* Azul moderno */
   color: white;
   display: flex;
   align-items: center;
-  justify-content: center; justify-content: center;
+  justify-content: center;
+  justify-content: center;
   border-radius: 12px;
   font-size: 24px;
   box-shadow: 0 8px 16px rgba(37, 99, 235, 0.3);
   margin: 0 auto;
 }
 
-.form-group { text-align: left; margin-bottom: 20px; }
-.form-group label { display: block; margin-bottom: 8px; color: #1e293b; font-weight: 600; font-size: 14px; }
+.form-group {
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #1e293b;
+  font-weight: 600;
+  font-size: 14px;
+}
 
 input {
   width: 100%;
@@ -61,7 +88,11 @@ input {
   transition: all 0.3s;
 }
 
-input:focus { outline: none; border-color: #3240A5; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+input:focus {
+  outline: none;
+  border-color: #3240A5;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
 
 button {
   width: 100%;
@@ -76,8 +107,14 @@ button {
   margin-top: 10px;
 }
 
-button:hover { background: #5766dd; }
-button:disabled { background: #94a3b8; cursor: not-allowed; }
+button:hover {
+  background: #5766dd;
+}
+
+button:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
 
 .error-msg {
   background: #f8caca;
@@ -88,7 +125,11 @@ button:disabled { background: #94a3b8; cursor: not-allowed; }
   font-size: 13px;
 }
 
-.footer-text { margin-top: 30px; font-size: 11px; color: #94a3b8; }
+.footer-text {
+  margin-top: 30px;
+  font-size: 11px;
+  color: #94a3b8;
+}
 
 @media (max-width: 640px) {
   .login-card {
@@ -96,19 +137,73 @@ button:disabled { background: #94a3b8; cursor: not-allowed; }
     max-width: 320px;
     padding: 24px 20px;
   }
-  
+
   .brand-icon {
     width: 44px;
     height: 44px;
     font-size: 18px;
     border-radius: 10px;
   }
-  
-  .header h2 { font-size: 18px; margin-top: 8px; }
-  .header p { margin-bottom: 16px; font-size: 12px; }
-  
-  .form-group label { font-size: 13px; margin-bottom: 6px; }
-  input { padding: 8px 10px; font-size: 13px; }
-  button { padding: 10px; font-size: 13px; margin-top: 5px; }
-  .form-group { margin-bottom: 14px; }
+
+  .header h2 {
+    font-size: 18px;
+    margin-top: 8px;
+  }
+
+  .header p {
+    margin-bottom: 16px;
+    font-size: 12px;
+  }
+
+  .form-group label {
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+
+  input {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  button {
+    padding: 10px;
+    font-size: 13px;
+    margin-top: 5px;
+  }
+
+  .form-group {
+    margin-bottom: 14px;
+  }
+}
+
+.password-wrapper {
+  position: relative;
+}
+
+.password-wrapper input {
+  padding-right: 40px;
+}
+
+.password-toggle {
+  position: absolute !important;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  color: #b9c3d3;
+  cursor: pointer;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: auto !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  height: auto !important;
+}
+
+.password-toggle:hover {
+  color: #5a6194;
+  background: none !important;
 }

@@ -16,7 +16,12 @@
 
       <div class="form-group">
         <label>Contraseña</label>
-        <input type="password" name="pass" [(ngModel)]="creds.password" required>
+        <div class="password-wrapper">
+          <input [type]="verPassword ? 'text' : 'password'" name="pass" [(ngModel)]="creds.password" required>
+          <button type="button" class="password-toggle" (click)="verPassword = !verPassword" [title]="verPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+            <i class="fas" [ngClass]="verPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+          </button>
+        </div>
       </div>
 
       <div *ngIf="error" class="error-msg">

@@ -154,9 +154,13 @@
 
 /* --- VALIDATION STYLES --- */
 .form-group input.ng-invalid.ng-touched,
+form.ng-submitted .form-group input.ng-invalid,
 .form-group select.ng-invalid.ng-touched,
+form.ng-submitted .form-group select.ng-invalid,
 ::ng-deep .select-simple.ng-invalid.ng-touched .ng-select-container,
-::ng-deep .custom-ng-select.ng-invalid.ng-touched .ng-select-container {
+form.ng-submitted ::ng-deep .select-simple.ng-invalid .ng-select-container,
+::ng-deep .custom-ng-select.ng-invalid.ng-touched .ng-select-container,
+form.ng-submitted ::ng-deep .custom-ng-select.ng-invalid .ng-select-container {
   border-color: #ef4444 !important;
   background-color: #fef2f2 !important;
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;

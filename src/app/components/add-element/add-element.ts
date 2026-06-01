@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { GisService } from '../../services/gis/gisService';
 import { TipoElemento } from '../../models/gis';
@@ -124,18 +124,15 @@ export class AddElementComponent {
     }
   }
 
-  marcarCamposComoTocados() {
-    const inputs = document.querySelectorAll('.modal-body input, .modal-body ng-select');
-    inputs.forEach(i => {
-      i.classList.add('ng-touched');
-      i.classList.add('ng-dirty');
-    });
-  }
-
-  async guardar() {
+  async guardar(form: NgForm) {
     try {
+      form.control.markAllAsTouched();
+      if (form.invalid) {
+        this.mostrarModal('warning', 'Campos Incompletos', 'Por favor, rellene todos los campos obligatorios marcados con (*).');
+        return;
+      }
+
       this.enviando = true;
-      this.marcarCamposComoTocados();
       
       // Si el usuario ingresó dirección pero no coordenadas, intentamos geocodificar
       if (this.nuevoItem.direccion && (!this.nuevoItem.latitud || !this.nuevoItem.longitud)) {

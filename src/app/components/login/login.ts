@@ -18,6 +18,7 @@ export class Login implements OnInit {
   creds = { email: '', password: '' };
   error = '';
   cargando = false;
+  verPassword = false;
 
   ngOnInit() {
     // Si ya está logueado, lo mandamos al mapa directamente
