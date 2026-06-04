@@ -50,6 +50,14 @@
       <span *ngIf="!gis.sidebarColapsado()">Buscador Global</span>
     </button>
 
+    <!-- Módulo Polígonos y Rutas -->
+    <button class="layer-item" [class.active]="gis.moduloPoligonosActivo()" (click)="gis.toggleModuloPoligonos()"
+      [title]="gis.sidebarColapsado() ? 'Polígonos y Rutas' : ''">
+      <i class="fas fa-draw-polygon layer-icon" style="color: #3240A5;"></i>
+      <span *ngIf="!gis.sidebarColapsado()">Polígonos y Rutas</span>
+    </button>
+
+
     <ng-container *ngIf="router.url === '/mapa'">
       <div class="section-label">
         <span class="label-text">SERVICIOS</span>
@@ -116,9 +124,9 @@
         </div>
 
         <button class="layer-item" [class.active]="gis.capasVisibles().operaciones" (click)="toggle('operaciones')"
-          [title]="gis.sidebarColapsado() ? 'Operaciones' : ''">
-          <i class="fas fa-network-wired layer-icon" style="color: #3240A5;"></i>
-          <span *ngIf="!gis.sidebarColapsado()">Operaciones</span>
+          [title]="gis.sidebarColapsado() ? 'Estados' : ''">
+          <i class="fas fa-map-pin layer-icon" style="color: #3240A5;"></i>
+          <span *ngIf="!gis.sidebarColapsado()">Estados</span>
         </button>
 
         <div class="subcapas-container mini" *ngIf="gis.capasVisibles().operaciones">

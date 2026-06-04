@@ -1,3 +1,4 @@
+@import "@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css";
 @import "@ng-select/ng-select/themes/default.theme.css";
 @import "flatpickr/dist/flatpickr.css";
 @import "./map-styles.css";
@@ -51,4 +52,199 @@ html, body {
     border: 1px solid #e0e0e0 !important;
     min-height: 45px !important;
     font-family: 'Poppins', sans-serif;
+}
+
+/* ESTILO SUAVE PREMIUM PARA LA BARRA DE HERRAMIENTAS GEOMAN EN EL MAPA (ESTILO SIDEBAR) */
+.leaflet-pm-toolbar {
+  border: none !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06) !important;
+  background: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-radius: 10px !important;
+  padding: 5px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 5px !important;
+}
+
+.leaflet-pm-toolbar.leaflet-bar {
+  border: none !important;
+}
+
+.leaflet-pm-toolbar .leaflet-buttons-control-button,
+.leaflet-pm-toolbar .pm-button {
+  background-color: #ffffff !important;
+  color: #64748b !important; /* Gris de los iconos desactivados del sidebar */
+  border: 1px solid transparent !important;
+  border-radius: 6px !important; /* Esquinas redondeadas suaves como el sidebar */
+  width: 32px !important;
+  height: 32px !important;
+  line-height: 32px !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: none !important;
+}
+
+.leaflet-pm-toolbar .leaflet-buttons-control-button:hover,
+.leaflet-pm-toolbar .pm-button:hover {
+  background-color: #f1f5f9 !important; /* Fondo del hover del sidebar */
+  color: #0f172a !important; /* Color oscuro del hover */
+  border-color: transparent !important;
+}
+
+.leaflet-pm-toolbar .leaflet-buttons-control-button.active,
+.leaflet-pm-toolbar .pm-button.active,
+.leaflet-pm-toolbar .leaflet-buttons-control-button.active:hover {
+  background-color: #f0f1fa !important; /* Fondo activo lila del sidebar */
+  color: #3240A5 !important; /* Azul corporativo */
+  border-color: transparent !important;
+  font-weight: 500 !important;
+}
+
+/* Color azul corporativo para los iconos de la barra de dibujo */
+.leaflet-pm-toolbar .control-icon {
+  filter: brightness(0) saturate(100%) invert(58.02%) sepia(99.99%) saturate(185.53%) hue-rotate(195.27deg) brightness(55.32%) contrast(209.30%) !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Transparencia para los iconos desactivados */
+.leaflet-pm-toolbar .leaflet-buttons-control-button.pm-disabled .control-icon {
+  filter: brightness(0) saturate(100%) invert(58.02%) sepia(99.99%) saturate(185.53%) hue-rotate(195.27deg) brightness(55.32%) contrast(209.30%) opacity(0.6) !important;
+}
+
+/* Limpieza de bordes nativos de Leaflet */
+.leaflet-pm-toolbar.leaflet-bar a:first-child {
+  border-top-left-radius: 6px !important;
+  border-top-right-radius: 6px !important;
+}
+.leaflet-pm-toolbar.leaflet-bar a:last-child {
+  border-bottom-left-radius: 6px !important;
+  border-bottom-right-radius: 6px !important;
+  border-bottom: none !important;
+}
+.leaflet-pm-toolbar.leaflet-bar a {
+  border-bottom: none !important;
+}
+
+/* ESTILO SUAVE PREMIUM PARA LOS BOTONES DE ACCIÓN DE GEOMAN (FINALIZAR, ELIMINAR VÉRTICE, CANCELAR) */
+.button-container .leaflet-pm-actions-container,
+.leaflet-pm-actions-container {
+  background: transparent !important;
+  border: none !important;
+  flex-direction: row !important;
+  gap: 8px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  left: calc(100% + 15px) !important; /* 5px de padding de barra vertical + 10px de separación */
+  box-shadow: none !important;
+  top: 0 !important;
+  height: 32px !important;
+}
+
+/* Solo mostrar como flex el contenedor de acciones cuando el botón está activo */
+.leaflet-pm-toolbar .control-actions,
+.leaflet-pm-actions,
+.button-container.active .leaflet-pm-actions-container {
+  display: flex !important;
+}
+
+.leaflet-pm-toolbar .control-actions li,
+.leaflet-pm-actions li {
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.leaflet-pm-toolbar .control-actions li a,
+.leaflet-pm-toolbar .control-actions a,
+.leaflet-pm-actions li a,
+.leaflet-pm-actions .leaflet-pm-action,
+a.leaflet-pm-action,
+.leaflet-pm-actions-container a,
+.leaflet-pm-actions-container .leaflet-pm-action {
+  background-color: #ffffff !important;
+  color: #475569 !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  padding: 6px 14px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  font-family: 'Inter', sans-serif !important;
+  text-decoration: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  cursor: pointer !important;
+}
+
+/* Hover general */
+.leaflet-pm-toolbar .control-actions li a:hover,
+.leaflet-pm-toolbar .control-actions a:hover,
+.leaflet-pm-actions li a:hover,
+.leaflet-pm-actions .leaflet-pm-action:hover,
+a.leaflet-pm-action:hover,
+.leaflet-pm-actions-container a:hover,
+.leaflet-pm-actions-container .leaflet-pm-action:hover {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+  transform: translateY(-1px);
+}
+
+/* Botón "Finalizar" (Verde esmeralda suave) */
+.leaflet-pm-toolbar .control-actions li:nth-child(1) a,
+.leaflet-pm-toolbar .control-actions li a[action="finish"],
+.leaflet-pm-actions li:nth-child(1) a,
+.leaflet-pm-actions li a[action="finish"],
+.leaflet-pm-actions .leaflet-pm-action:first-of-type,
+a.leaflet-pm-action[action="finish"],
+.leaflet-pm-actions-container a[action="finish"],
+.leaflet-pm-actions-container a:first-child {
+  color: #10b981 !important;
+  border-color: rgba(16, 185, 129, 0.2) !important;
+}
+.leaflet-pm-toolbar .control-actions li:nth-child(1) a:hover,
+.leaflet-pm-toolbar .control-actions li a[action="finish"]:hover,
+.leaflet-pm-actions li:nth-child(1) a:hover,
+.leaflet-pm-actions li a[action="finish"]:hover,
+.leaflet-pm-actions .leaflet-pm-action:first-of-type:hover,
+a.leaflet-pm-action[action="finish"]:hover,
+.leaflet-pm-actions-container a[action="finish"]:hover,
+.leaflet-pm-actions-container a:first-child:hover {
+  background-color: #ecfdf5 !important;
+  color: #059669 !important;
+  border-color: transparent !important;
+}
+
+/* Botón "Cancelar" (Rojo carmín suave) */
+.leaflet-pm-toolbar .control-actions li:last-child a,
+.leaflet-pm-toolbar .control-actions li a[action="cancel"],
+.leaflet-pm-actions li:last-child a,
+.leaflet-pm-actions li a[action="cancel"],
+.leaflet-pm-actions .leaflet-pm-action:last-of-type,
+a.leaflet-pm-action[action="cancel"],
+.leaflet-pm-actions-container a[action="cancel"],
+.leaflet-pm-actions-container a:last-child {
+  color: #ef4444 !important;
+  border-color: rgba(239, 68, 68, 0.2) !important;
+}
+.leaflet-pm-toolbar .control-actions li:last-child a:hover,
+.leaflet-pm-toolbar .control-actions li a[action="cancel"]:hover,
+.leaflet-pm-actions li:last-child a:hover,
+.leaflet-pm-actions li a[action="cancel"]:hover,
+.leaflet-pm-actions .leaflet-pm-action:last-of-type:hover,
+a.leaflet-pm-action[action="cancel"]:hover,
+.leaflet-pm-actions-container a[action="cancel"]:hover,
+.leaflet-pm-actions-container a:last-child:hover {
+  background-color: #fef2f2 !important;
+  color: #dc2626 !important;
+  border-color: transparent !important;
 }

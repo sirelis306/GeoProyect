@@ -1,0 +1,100 @@
+<div class="analisis-panel-card" *ngIf="analisis">
+  <div class="panel-header">
+    <div class="panel-title-wrapper">
+      <i [class]="analisis.tipo === 'poligono' ? 'fas fa-draw-polygon' : 'fas fa-route'"></i>
+      <h3>{{ analisis.tipo === 'poligono' ? 'Análisis de Área' : 'Análisis de Ruta' }}</h3>
+    </div>
+    <button class="btn-close-analisis" (click)="cerrar()">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  
+  <div class="panel-body">
+    <!-- Sección de Mediciones Geográficas -->
+    <div class="mediciones-section">
+      <div class="medicion-row" *ngIf="analisis.tipo === 'poligono'">
+        <span class="med-label">Superficie (Área):</span>
+        <span class="med-val">
+          {{ analisis.mediciones.area >= 1000000 
+             ? (analisis.mediciones.area / 1000000).toFixed(2) + ' km²' 
+             : analisis.mediciones.area.toLocaleString('es-ES', {maximumFractionDigits: 1}) + ' m²' }}
+        </span>
+      </div>
+      <div class="medicion-row" *ngIf="analisis.tipo === 'poligono'">
+        <span class="med-label">Perímetro:</span>
+        <span class="med-val">
+          {{ analisis.mediciones.perimetro >= 1000 
+             ? (analisis.mediciones.perimetro / 1000).toFixed(2) + ' km' 
+             : analisis.mediciones.perimetro.toLocaleString('es-ES', {maximumFractionDigits: 0}) + ' m' }}
+        </span>
+      </div>
+      <div class="medicion-row" *ngIf="analisis.tipo === 'ruta'">
+        <span class="med-label">Longitud de Ruta:</span>
+        <span class="med-val">
+          {{ analisis.mediciones.longitud >= 1000 
+             ? (analisis.mediciones.longitud / 1000).toFixed(2) + ' km' 
+             : analisis.mediciones.longitud.toLocaleString('es-ES', {maximumFractionDigits: 0}) + ' m' }}
+        </span>
+      </div>
+      <div class="medicion-row" *ngIf="analisis.tipo === 'ruta'">
+        <span class="med-label">Orientación (Rumbo):</span>
+        <span class="med-val">
+          {{ analisis.mediciones.rumbo.toFixed(1) }}° ({{ analisis.mediciones.cardinal }})
+        </span>
+      </div>
+    </div>
+
+    <!-- Segmento de Proximidad / Contenido -->
+    <div class="panel-section-title">
+      {{ analisis.tipo === 'poligono' ? 'Elementos Contenidos' : 'Elementos en Influencia (500m)' }}
+    </div>
+
+    <!-- Grid de Métricas de Infraestructura -->
+    <div class="metrics-grid-analisis">
+      <div class="metric-card-analisis abonados">
+        <div class="card-icon"><i class="fas fa-users"></i></div>
+        <div class="card-info">
+          <span class="number">{{ analisis.conteos.abonados.toLocaleString() }}</span>
+          <span class="label">Abonados</span>
+        </div>
+      </div>
+      
+      <div class="metric-card-analisis antenas">
+        <div class="card-icon"><i class="fas fa-broadcast-tower"></i></div>
+        <div class="card-info">
+          <span class="number">{{ analisis.conteos.radioBases }}</span>
+          <span class="label">Radiobases</span>
+        </div>
+      </div>
+
+      <div class="metric-card-analisis agentes">
+        <div class="card-icon"><i class="fas fa-store"></i></div>
+        <div class="card-info">
+          <span class="number">{{ analisis.conteos.agentes }}</span>
+          <span class="label">Agentes</span>
+        </div>
+      </div>
+
+      <div class="metric-card-analisis oficinas">
+        <div class="card-icon"><i class="fas fa-building"></i></div>
+        <div class="card-info">
+          <span class="number">{{ analisis.conteos.oficinas }}</span>
+          <span class="label">Oficinas</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección de Recomendaciones del Asistente -->
+    <div class="recommendations-container">
+      <div class="recommendations-header">
+        <i class="fas fa-lightbulb"></i>
+        <span>Recomendaciones de Expansión</span>
+      </div>
+      <div class="recommendations-list">
+        <div class="recommendation-item" *ngFor="let rec of analisis.recomendaciones">
+          {{ rec }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

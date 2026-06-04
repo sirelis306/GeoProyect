@@ -15,6 +15,20 @@ export class MapService {
   get zoomLevel() { return this.state.zoomLevel; }
   get sidebarColapsado() { return this.state.sidebarColapsado; }
   get busquedaAntena() { return this.state.busquedaAntena; }
+  get moduloPoligonosActivo() { return this.state.moduloPoligonosActivo; }
+  get modoDibujo() { return this.state.modoDibujo; }
+
+  toggleModuloPoligonos() {
+    const nuevo = !this.moduloPoligonosActivo();
+    this.moduloPoligonosActivo.set(nuevo);
+    if (!nuevo) {
+      this.modoDibujo.set(null);
+    }
+  }
+
+  setModoDibujo(modo: string | null) {
+    this.modoDibujo.update(actual => actual === modo ? null : modo);
+  }
 
   // Paleta de colores
   COLORES_REGIONES_SIGNAL = computed(() => {

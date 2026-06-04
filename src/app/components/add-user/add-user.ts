@@ -185,11 +185,25 @@ export class AddUser implements OnInit {
     this.cargandoUsuario = true;
     this.userService.obtenerUsuarioPorId(id).subscribe({
       next: (userData) => {
+        const rolesObj: any = {
+          rol_super_administrador: false,
+          rol_administrador: false,
+          rol_analista: false,
+          rol_regular: false
+        };
+        if (Array.isArray(userData.roles)) {
+          userData.roles.forEach((r: string) => {
+            rolesObj[r] = true;
+          });
+        } else if (userData.roles && typeof userData.roles === 'object') {
+          Object.assign(rolesObj, userData.roles);
+        }
+
         // Fusión robusta para evitar que campos nulos rompan el formulario
         this.user = {
           ...this.user,
           ...userData,
-          roles: userData.roles || this.user.roles
+          roles: rolesObj
         };
         if (this.user.estado) this.onEstadoChange(false);
         this.cargandoUsuario = false;
@@ -220,9 +234,21 @@ export class AddUser implements OnInit {
       return;
     }
 
+    const rolesArray: string[] = [];
+    Object.keys(this.user.roles).forEach(key => {
+      if ((this.user.roles as any)[key] === true) {
+        rolesArray.push(key);
+      }
+    });
+
+    const payload = {
+      ...this.user,
+      roles: rolesArray
+    };
+
     this.cargando = true;
     if (this.esEdicion && this.userId) {
-      this.userService.actualizarUsuario(this.userId, this.user).subscribe({
+      this.userService.actualizarUsuario(this.userId, payload).subscribe({
         next: () => {
           this.cargando = false;
           this.mostrarModal('success', '¡Actualizado!', 'El usuario ha sido actualizado con éxito.');
@@ -234,7 +260,7 @@ export class AddUser implements OnInit {
         }
       });
     } else {
-      this.userService.crearUsuario(this.user).subscribe({
+      this.userService.crearUsuario(payload).subscribe({
         next: (res) => {
           this.cargando = false;
           this.passwordTemporal = res.passwordTemporal;

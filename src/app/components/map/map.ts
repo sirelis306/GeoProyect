@@ -6,11 +6,14 @@ import { TipoElemento } from '../../models/gis';
 import * as L from 'leaflet';
 import { Totales } from "../totales/totales";
 import { ElementRendererService } from '../../services/element/elementRendererService';
+import { GisMathService } from '../../services/gis/gisMathService';
+import { Polygons } from '../polygons/polygons';
+import '@geoman-io/leaflet-geoman-free';
 
 @Component({
   selector: 'app-map',
   standalone: true,
-  imports: [CommonModule, Totales],
+  imports: [CommonModule, Totales, Polygons],
   templateUrl: './map.html',
   styleUrl: './map.css',
 })
@@ -18,7 +21,11 @@ export class Map implements AfterViewInit {
   public gis = inject(Gis);
   private http = inject(HttpClient);
   private renderer = inject(ElementRendererService);
+  private mathService = inject(GisMathService);
+  
   public leyendaAbierta = signal(true);
+  public analisisFigura = signal<any | null>(null);
+  private activeDrawnLayer: L.Layer | null = null;
 
   private capaGeoJsonRegiones: L.GeoJSON | null = null;
   private capaEtiquetas = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
@@ -126,6 +133,43 @@ export class Map implements AfterViewInit {
         this.renderRegionTotals(estado.detalleRegiones);
       }
     });
+
+    // Efecto reactivo para controlar controles de dibujo de Geoman en el mapa
+    effect(() => {
+      const activo = this.gis.moduloPoligonosActivo();
+      if (!this.map) return;
+
+      if (!activo) {
+        // Desactivar herramientas de Geoman si el módulo no está activo
+        this.map.pm.disableDraw();
+        if (this.map.pm.globalEditModeEnabled()) this.map.pm.disableGlobalEditMode();
+        if (this.map.pm.globalRemovalModeEnabled()) this.map.pm.disableGlobalRemovalMode();
+        
+        // Quitar la barra de herramientas del mapa
+        this.map.pm.removeControls();
+
+        // Limpiar figura activa y panel de análisis
+        if (this.activeDrawnLayer) {
+          this.map.removeLayer(this.activeDrawnLayer);
+          this.activeDrawnLayer = null;
+        }
+        this.analisisFigura.set(null);
+      } else {
+        // Habilitar y mostrar la barra de herramientas de Geoman en el mapa
+        this.map.pm.addControls({
+          position: 'topleft',
+          drawMarker: false,
+          drawCircleMarker: false,
+          drawPolyline: true,
+          drawRectangle: true,
+          drawPolygon: true,
+          editMode: true,
+          dragMode: true,
+          cutPolygon: false,
+          removalMode: true
+        });
+      }
+    });
   }
 
   ngAfterViewInit() {
@@ -220,6 +264,52 @@ export class Map implements AfterViewInit {
     });
 
     L.control.zoom({ position: 'topright' }).addTo(this.map);
+
+    // Configurar idioma español para Leaflet Geoman
+    this.map.pm.setLang('es');
+
+    // Escuchar la creación de nuevas figuras
+    this.map.on('pm:create', (e: any) => {
+      const layer = e.layer;
+      
+      // Reemplazar la figura anterior por la nueva
+      if (this.activeDrawnLayer) {
+        this.map.removeLayer(this.activeDrawnLayer);
+      }
+      this.activeDrawnLayer = layer;
+
+      // Realizar análisis inicial
+      this.procesarFigura(layer);
+
+      // Escuchar modificaciones de la figura
+      layer.on('pm:edit', () => {
+        this.procesarFigura(layer);
+      });
+
+      // Escuchar eliminación de la figura
+      layer.on('pm:remove', () => {
+        if (this.activeDrawnLayer === layer) {
+          this.activeDrawnLayer = null;
+        }
+        this.analisisFigura.set(null);
+      });
+    });
+
+    // Sincronizar estados del mapa hacia el signal de modo de dibujo
+    this.map.on('pm:drawend', () => {
+      this.gis.modoDibujo.set(null);
+    });
+    this.map.on('pm:globaleditmodetoggled', (e: any) => {
+      if (!e.enabled && this.gis.modoDibujo() === 'Edit') {
+        this.gis.modoDibujo.set(null);
+      }
+    });
+    this.map.on('pm:globalremovalmodetoggled', (e: any) => {
+      if (!e.enabled && this.gis.modoDibujo() === 'Removal') {
+        this.gis.modoDibujo.set(null);
+      }
+    });
+
     this.gis.cargarDatos();
   }
 
@@ -523,6 +613,132 @@ export class Map implements AfterViewInit {
     if (this.gis.capasVisibles().vias) {
       this.capaBordeVenezuela?.addTo(this.map);
     }
+  }
+
+  /**
+   * Procesa la figura dibujada para calcular métricas físicas y evaluar elementos internos/cercanos.
+   */
+  private procesarFigura(layer: L.Layer) {
+    let tipo: 'poligono' | 'ruta' = 'poligono';
+    let vertices: L.LatLng[] = [];
+    let area = 0;
+    let perimetro = 0;
+    let longitud = 0;
+    let rumbo = 0;
+    let cardinal = '';
+
+    if (layer instanceof L.Polygon) {
+      tipo = 'poligono';
+      const latlngs = layer.getLatLngs();
+      vertices = (Array.isArray(latlngs[0]) ? latlngs[0] : latlngs) as L.LatLng[];
+      area = this.mathService.calcularAreaPoligono(vertices);
+      perimetro = this.mathService.calcularPerimetroPoligono(vertices);
+    } else if (layer instanceof L.Polyline) {
+      tipo = 'ruta';
+      vertices = layer.getLatLngs() as L.LatLng[];
+      longitud = this.mathService.calcularLongitudRuta(vertices);
+      if (vertices.length >= 2) {
+        rumbo = this.mathService.calcularRumboInicial(vertices[0], vertices[vertices.length - 1]);
+        cardinal = this.mathService.obtenerDireccionCardinal(rumbo);
+      }
+    }
+
+    // Filtrar elementos (Radiobases, Agentes, Oficinas, Abonados)
+    let radioBases = [];
+    let agentes = [];
+    let oficinas = [];
+    let abonados = [];
+
+    if (tipo === 'poligono') {
+      radioBases = this.gis.radioBasesSignal().filter(rb => this.mathService.puntoEnPoligono(rb.latitud, rb.longitud, vertices));
+      agentes = this.gis.agentesSignal().filter(ag => this.mathService.puntoEnPoligono(ag.latitud, ag.longitud, vertices));
+      oficinas = this.gis.oficinasSignal().filter(of => this.mathService.puntoEnPoligono(of.latitud, of.longitud, vertices));
+      abonados = this.gis.abonadosSignal().filter(ab => this.mathService.puntoEnPoligono(ab.latitud, ab.longitud, vertices));
+    } else {
+      const bufferMetros = 500; // Radio de búsqueda alrededor de la ruta
+      radioBases = this.gis.radioBasesSignal().filter(rb => this.mathService.puntoCercaDeRuta(rb.latitud, rb.longitud, vertices, bufferMetros));
+      agentes = this.gis.agentesSignal().filter(ag => this.mathService.puntoCercaDeRuta(ag.latitud, ag.longitud, vertices, bufferMetros));
+      oficinas = this.gis.oficinasSignal().filter(of => this.mathService.puntoCercaDeRuta(of.latitud, of.longitud, vertices, bufferMetros));
+      abonados = this.gis.abonadosSignal().filter(ab => this.mathService.puntoCercaDeRuta(ab.latitud, ab.longitud, vertices, bufferMetros));
+    }
+
+    const totalAbonados = abonados.reduce((acc, curr) => acc + (curr.cantidad || 0), 0);
+    const recomendaciones = this.calcularRecomendacionesAnalisis(
+      radioBases.length, 
+      agentes.length, 
+      oficinas.length, 
+      totalAbonados,
+      tipo
+    );
+
+    this.analisisFigura.set({
+      tipo,
+      mediciones: {
+        area,
+        perimetro,
+        longitud,
+        rumbo,
+        cardinal
+      },
+      conteos: {
+        radioBases: radioBases.length,
+        agentes: agentes.length,
+        oficinas: oficinas.length,
+        abonados: totalAbonados
+      },
+      recomendaciones
+    });
+  }
+
+  /**
+   * Genera recomendaciones de expansión basadas en los elementos encontrados.
+   */
+  private calcularRecomendacionesAnalisis(radiobases: number, agentes: number, oficinas: number, abonados: number, tipo: 'poligono' | 'ruta'): string[] {
+    const sugerencias: string[] = [];
+    const sufijo = tipo === 'poligono' ? 'en el área analizada' : 'en la proximidad de la ruta (500m)';
+    
+    if (abonados === 0) {
+      sugerencias.push(`El trazo ${sufijo} no posee abonados registrados. Considere campañas comerciales en este sector.`);
+      return sugerencias;
+    }
+    
+    // Regla 1: Radiobases (Antenas)
+    if (radiobases === 0) {
+      sugerencias.push(`⚠️ Alerta crítica: Se detectan ${abonados.toLocaleString()} abonados ${sufijo} sin cobertura de radiobases locales. Se sugiere instalar al menos 1 Radiobase prioritaria.`);
+    } else {
+      const ratioRB = abonados / radiobases;
+      if (ratioRB > 350) {
+        const necesarias = Math.ceil(abonados / 300) - radiobases;
+        sugerencias.push(`📡 Saturación de Red: Promedio de ${Math.round(ratioRB)} abonados por radiobase ${sufijo}. Se sugiere desplegar ${necesarias} nuevas radiobases para evitar problemas de velocidad.`);
+      }
+    }
+    
+    // Regla 2: Oficinas
+    if (oficinas === 0 && abonados > 300) {
+      sugerencias.push(`🏢 Atención Comercial: Hay ${abonados.toLocaleString()} abonados pero ninguna oficina comercial ${sufijo}. Se recomienda abrir 1 Oficina de Atención.`);
+    } else if (oficinas > 0) {
+      const ratioOfi = abonados / oficinas;
+      if (ratioOfi > 1000) {
+        const sugeridas = Math.ceil(abonados / 1000) - oficinas;
+        sugerencias.push(`🏢 Sobrecarga en Atención: Promedio de ${Math.round(ratioOfi)} abonados por oficina. Se sugiere habilitar ${sugeridas} nuevos puntos de atención.`);
+      }
+    }
+
+    // Regla 3: Agentes
+    if (agentes === 0 && abonados > 100) {
+      sugerencias.push(`🛍️ Red de Ventas: Se cuenta con ${abonados.toLocaleString()} abonados sin agentes autorizados cercanos. Se sugiere certificar al menos ${Math.max(1, Math.round(abonados/150))} puntos de venta.`);
+    } else if (agentes > 0) {
+      const ratioAg = abonados / agentes;
+      if (ratioAg > 150) {
+        sugerencias.push(`🛍️ Oportunidad de Expansión: Promedio de ${Math.round(ratioAg)} abonados por agente. Se sugiere certificar más distribuidores para ampliar la capacidad comercial.`);
+      }
+    }
+    
+    if (sugerencias.length === 0) {
+      sugerencias.push("✅ Distribución óptima: La zona analizada cuenta con un balance óptimo entre abonados y canales de cobertura/soporte.");
+    }
+    
+    return sugerencias;
   }
 
 }

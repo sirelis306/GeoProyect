@@ -19,6 +19,8 @@ export class MapStateService {
   zoomLevel = signal<number>(7);
   sidebarColapsado = signal<boolean>(false);
   busquedaAntena = signal<string>('');
+  moduloPoligonosActivo = signal<boolean>(false);
+  modoDibujo = signal<string | null>(null);
 
   constructor() {
     // Inicialización responsiva básica

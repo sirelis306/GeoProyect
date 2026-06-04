@@ -28,6 +28,10 @@ export class GisService {
   get sidebarColapsado() { return this.map.sidebarColapsado; }
   get busquedaAntena() { return this.map.busquedaAntena; }
   get regionesSignal() { return this.map.regionesSignal; }
+  get moduloPoligonosActivo() { return this.map.moduloPoligonosActivo; }
+  get modoDibujo() { return this.map.modoDibujo; }
+  toggleModuloPoligonos() { this.map.toggleModuloPoligonos(); }
+  setModoDibujo(modo: string | null) { this.map.setModoDibujo(modo); }
 
   // Colores
   get COLORES_REGIONES_SIGNAL() { return this.map.COLORES_REGIONES_SIGNAL; }

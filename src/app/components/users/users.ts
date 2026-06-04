@@ -84,7 +84,25 @@ export class Users implements OnInit {
   obtenerUsuarios() {
     this.userService.obtenerUsuarios().subscribe({
       next: (data) => {
-        this.listaUsuarios = data;
+        this.listaUsuarios = data.map(u => {
+          const rolesObj: any = {
+            rol_super_administrador: false,
+            rol_administrador: false,
+            rol_analista: false,
+            rol_regular: false
+          };
+          if (Array.isArray(u.roles)) {
+            u.roles.forEach((r: string) => {
+              rolesObj[r] = true;
+            });
+          } else if (u.roles && typeof u.roles === 'object') {
+            Object.assign(rolesObj, u.roles);
+          }
+          return {
+            ...u,
+            roles: rolesObj
+          };
+        });
         // No es estrictamente necesario llamar a detectChanges() aquí si usamos HttpClient 
         // y el componente está en la zona de Angular, pero markForCheck es más seguro.
         this.cdr.markForCheck();
