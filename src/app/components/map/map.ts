@@ -28,6 +28,7 @@ export class Map implements AfterViewInit {
   private activeDrawnLayer: L.Layer | null = null;
 
   private capaGeoJsonRegiones: L.GeoJSON | null = null;
+  private geoJsonData: any = null;
   private capaEtiquetas = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
     zIndex: 1000,
     pane: 'markerPane'
@@ -225,6 +226,7 @@ export class Map implements AfterViewInit {
     this.layerAggregated.addTo(this.map);
 
     this.http.get('assets/geojson/venezuela.json').subscribe((data: any) => {
+      this.geoJsonData = data;
       this.capaGeoJsonRegiones = L.geoJSON(data, {
         onEachFeature: (feature, layer) => {
           layer.on('click', (e) => {
@@ -615,19 +617,94 @@ export class Map implements AfterViewInit {
     }
   }
 
+  private obtenerEstadoPorCoordenada(lat: number, lng: number): string | null {
+    if (!this.geoJsonData) return null;
+    for (const feature of this.geoJsonData.features) {
+      const type = feature.geometry.type;
+      const coords = feature.geometry.coordinates;
+      const nombre = feature.properties.estado || feature.properties.name;
+
+      const puntoEnGeoJsonPoligono = (ring: number[][]) => {
+        const polyVertices = ring.map(p => L.latLng(p[1], p[0]));
+        return this.mathService.puntoEnPoligono(lat, lng, polyVertices);
+      };
+
+      if (type === 'Polygon') {
+        if (puntoEnGeoJsonPoligono(coords[0])) return nombre;
+      } else if (type === 'MultiPolygon') {
+        for (const poly of coords) {
+          if (puntoEnGeoJsonPoligono(poly[0])) return nombre;
+        }
+      }
+    }
+    return null;
+  }
+
+  private obtenerEstadosIntersectados(layer: any, tipo: string, centro: L.LatLng | null, radio: number): string[] {
+    const estados = new Set<string>();
+    
+    // Always add the centroid state just in case
+    if (centro) {
+      const estCentro = this.obtenerEstadoPorCoordenada(centro.lat, centro.lng);
+      if (estCentro) estados.add(estCentro);
+    }
+
+    if (typeof layer.getBounds !== 'function') return Array.from(estados);
+    const bounds = layer.getBounds();
+    if (!bounds || !bounds.isValid()) return Array.from(estados);
+
+    // Muestreo de 5x5 puntos dentro del bounding box
+    const latStep = (bounds.getNorth() - bounds.getSouth()) / 4;
+    const lngStep = (bounds.getEast() - bounds.getWest()) / 4;
+
+    for (let i = 0; i <= 4; i++) {
+      for (let j = 0; j <= 4; j++) {
+        const lat = bounds.getSouth() + (i * latStep);
+        const lng = bounds.getWest() + (j * lngStep);
+
+        let pointInside = false;
+        if (tipo === 'circulo' && centro) {
+           pointInside = this.mathService.puntoEnCirculo(lat, lng, centro, radio);
+        } else if (tipo === 'poligono') {
+           const latlngs = layer.getLatLngs();
+           const vertices = (Array.isArray(latlngs[0]) ? latlngs[0] : latlngs) as L.LatLng[];
+           pointInside = this.mathService.puntoEnPoligono(lat, lng, vertices);
+        } else if (tipo === 'ruta') {
+           const vertices = layer.getLatLngs() as L.LatLng[];
+           pointInside = this.mathService.puntoCercaDeRuta(lat, lng, vertices, 500);
+        }
+
+        if (pointInside) {
+          const est = this.obtenerEstadoPorCoordenada(lat, lng);
+          if (est) estados.add(est);
+        }
+      }
+    }
+
+    return Array.from(estados);
+  }
+
   /**
    * Procesa la figura dibujada para calcular métricas físicas y evaluar elementos internos/cercanos.
    */
   private procesarFigura(layer: L.Layer) {
-    let tipo: 'poligono' | 'ruta' = 'poligono';
+    let tipo: 'poligono' | 'ruta' | 'circulo' = 'poligono';
     let vertices: L.LatLng[] = [];
     let area = 0;
     let perimetro = 0;
     let longitud = 0;
     let rumbo = 0;
     let cardinal = '';
+    let centroCirculo: L.LatLng | null = null;
+    let radioCirculo = 0;
 
-    if (layer instanceof L.Polygon) {
+    if (layer instanceof L.Circle) {
+      tipo = 'circulo';
+      centroCirculo = layer.getLatLng();
+      radioCirculo = layer.getRadius();
+      area = Math.PI * Math.pow(radioCirculo, 2);
+      perimetro = 2 * Math.PI * radioCirculo;
+    } else if (layer instanceof L.Polygon) {
       tipo = 'poligono';
       const latlngs = layer.getLatLngs();
       vertices = (Array.isArray(latlngs[0]) ? latlngs[0] : latlngs) as L.LatLng[];
@@ -649,17 +726,34 @@ export class Map implements AfterViewInit {
     let oficinas = [];
     let abonados = [];
 
-    if (tipo === 'poligono') {
+    let centroide: L.LatLng | null = null;
+    if (tipo === 'circulo' && centroCirculo) {
+      centroide = centroCirculo;
+    } else if (vertices.length > 0) {
+      // Calcular centroide aproximado (promedio de vértices)
+      const latSum = vertices.reduce((sum, v) => sum + v.lat, 0);
+      const lngSum = vertices.reduce((sum, v) => sum + v.lng, 0);
+      centroide = L.latLng(latSum / vertices.length, lngSum / vertices.length);
+    }
+
+    const estadosFigura = this.obtenerEstadosIntersectados(layer, tipo, centroide, radioCirculo);
+
+    if (tipo === 'circulo' && centroCirculo) {
+      radioBases = this.gis.radioBasesSignal().filter(rb => this.mathService.puntoEnCirculo(rb.latitud, rb.longitud, centroCirculo!, radioCirculo));
+      agentes = this.gis.agentesSignal().filter(ag => this.mathService.puntoEnCirculo(ag.latitud, ag.longitud, centroCirculo!, radioCirculo));
+      oficinas = this.gis.oficinasSignal().filter(of => this.mathService.puntoEnCirculo(of.latitud, of.longitud, centroCirculo!, radioCirculo));
+      abonados = estadosFigura.length > 0 ? this.gis.abonadosSignal().filter(ab => estadosFigura.includes(ab.estado)) : [];
+    } else if (tipo === 'poligono') {
       radioBases = this.gis.radioBasesSignal().filter(rb => this.mathService.puntoEnPoligono(rb.latitud, rb.longitud, vertices));
       agentes = this.gis.agentesSignal().filter(ag => this.mathService.puntoEnPoligono(ag.latitud, ag.longitud, vertices));
       oficinas = this.gis.oficinasSignal().filter(of => this.mathService.puntoEnPoligono(of.latitud, of.longitud, vertices));
-      abonados = this.gis.abonadosSignal().filter(ab => this.mathService.puntoEnPoligono(ab.latitud, ab.longitud, vertices));
+      abonados = estadosFigura.length > 0 ? this.gis.abonadosSignal().filter(ab => estadosFigura.includes(ab.estado)) : [];
     } else {
       const bufferMetros = 500; // Radio de búsqueda alrededor de la ruta
       radioBases = this.gis.radioBasesSignal().filter(rb => this.mathService.puntoCercaDeRuta(rb.latitud, rb.longitud, vertices, bufferMetros));
       agentes = this.gis.agentesSignal().filter(ag => this.mathService.puntoCercaDeRuta(ag.latitud, ag.longitud, vertices, bufferMetros));
       oficinas = this.gis.oficinasSignal().filter(of => this.mathService.puntoCercaDeRuta(of.latitud, of.longitud, vertices, bufferMetros));
-      abonados = this.gis.abonadosSignal().filter(ab => this.mathService.puntoCercaDeRuta(ab.latitud, ab.longitud, vertices, bufferMetros));
+      abonados = estadosFigura.length > 0 ? this.gis.abonadosSignal().filter(ab => estadosFigura.includes(ab.estado)) : [];
     }
 
     const totalAbonados = abonados.reduce((acc, curr) => acc + (curr.cantidad || 0), 0);
@@ -668,7 +762,8 @@ export class Map implements AfterViewInit {
       agentes.length, 
       oficinas.length, 
       totalAbonados,
-      tipo
+      tipo,
+      estadosFigura
     );
 
     this.analisisFigura.set({
@@ -693,52 +788,57 @@ export class Map implements AfterViewInit {
   /**
    * Genera recomendaciones de expansión basadas en los elementos encontrados.
    */
-  private calcularRecomendacionesAnalisis(radiobases: number, agentes: number, oficinas: number, abonados: number, tipo: 'poligono' | 'ruta'): string[] {
-    const sugerencias: string[] = [];
-    const sufijo = tipo === 'poligono' ? 'en el área analizada' : 'en la proximidad de la ruta (500m)';
+  private calcularRecomendacionesAnalisis(radiobasesLocales: number, agentes: number, oficinas: number, abonados: number, tipo: 'poligono' | 'ruta' | 'circulo', estadosFigura: string[]): any {
+    const estadalSugerencias: string[] = [];
+    const localSugerencias: string[] = [];
+    const sufijo = (tipo === 'poligono' || tipo === 'circulo') ? 'dentro del área' : 'en la proximidad de la ruta';
     
-    if (abonados === 0) {
-      sugerencias.push(`El trazo ${sufijo} no posee abonados registrados. Considere campañas comerciales en este sector.`);
-      return sugerencias;
-    }
-    
-    // Regla 1: Radiobases (Antenas)
-    if (radiobases === 0) {
-      sugerencias.push(`⚠️ Alerta crítica: Se detectan ${abonados.toLocaleString()} abonados ${sufijo} sin cobertura de radiobases locales. Se sugiere instalar al menos 1 Radiobase prioritaria.`);
-    } else {
-      const ratioRB = abonados / radiobases;
-      if (ratioRB > 350) {
-        const necesarias = Math.ceil(abonados / 300) - radiobases;
-        sugerencias.push(`📡 Saturación de Red: Promedio de ${Math.round(ratioRB)} abonados por radiobase ${sufijo}. Se sugiere desplegar ${necesarias} nuevas radiobases para evitar problemas de velocidad.`);
-      }
-    }
-    
-    // Regla 2: Oficinas
-    if (oficinas === 0 && abonados > 300) {
-      sugerencias.push(`🏢 Atención Comercial: Hay ${abonados.toLocaleString()} abonados pero ninguna oficina comercial ${sufijo}. Se recomienda abrir 1 Oficina de Atención.`);
-    } else if (oficinas > 0) {
-      const ratioOfi = abonados / oficinas;
-      if (ratioOfi > 1000) {
-        const sugeridas = Math.ceil(abonados / 1000) - oficinas;
-        sugerencias.push(`🏢 Sobrecarga en Atención: Promedio de ${Math.round(ratioOfi)} abonados por oficina. Se sugiere habilitar ${sugeridas} nuevos puntos de atención.`);
+    // --- Métrica Estadal (Abonados vs Antenas) ---
+    if (estadosFigura && estadosFigura.length > 0) {
+      const nombresEstados = estadosFigura.join(', ');
+      if (abonados === 0) {
+        estadalSugerencias.push(`El área abarca ${nombresEstados}, pero no posee abonados registrados en este momento. Considere campañas comerciales.`);
+      } else {
+        const radiobasesEvaluadas = this.gis.radioBasesSignal().filter(rb => estadosFigura.includes(rb.estado)).length;
+        if (radiobasesEvaluadas === 0) {
+          estadalSugerencias.push(`📡 Alerta crítica: El área abarca ${nombresEstados} y cuenta con ${abonados.toLocaleString()} abonados totales sin cobertura de radiobases. Sugerencia: Instalar al menos 1 Radiobase prioritaria.`);
+        } else {
+          const ratioRB = abonados / radiobasesEvaluadas;
+          if (ratioRB > 350) {
+            const necesarias = Math.ceil(abonados / 300) - radiobasesEvaluadas;
+            estadalSugerencias.push(`📡 Saturación: La zona abarca ${nombresEstados} con ${abonados.toLocaleString()} abonados totales. Promedio de ${Math.round(ratioRB).toLocaleString()} clientes por antena. Sugerencia: Desplegar ${necesarias} nuevas radiobases en total para aliviar la carga general de los estados involucrados.`);
+          } else {
+            estadalSugerencias.push(`📡 Cobertura Óptima: La zona abarca ${nombresEstados} con ${abonados.toLocaleString()} abonados y ${radiobasesEvaluadas} antenas. Promedio de ${Math.round(ratioRB).toLocaleString()} clientes por antena.`);
+          }
+        }
       }
     }
 
-    // Regla 3: Agentes
-    if (agentes === 0 && abonados > 100) {
-      sugerencias.push(`🛍️ Red de Ventas: Se cuenta con ${abonados.toLocaleString()} abonados sin agentes autorizados cercanos. Se sugiere certificar al menos ${Math.max(1, Math.round(abonados/150))} puntos de venta.`);
-    } else if (agentes > 0) {
-      const ratioAg = abonados / agentes;
-      if (ratioAg > 150) {
-        sugerencias.push(`🛍️ Oportunidad de Expansión: Promedio de ${Math.round(ratioAg)} abonados por agente. Se sugiere certificar más distribuidores para ampliar la capacidad comercial.`);
+    // --- Métrica Local (Oficinas y Agentes dentro del polígono) ---
+    if (oficinas === 0) {
+      localSugerencias.push(`🏢 Atención Comercial: Se detectaron 0 oficinas ${sufijo}. Sugerencia: Instalar 1 Oficina de Atención en esta zona.`);
+    } else {
+      localSugerencias.push(`🏢 Atención Comercial: Se detectaron ${oficinas} oficinas ${sufijo}, cubriendo la atención al cliente de la zona.`);
+    }
+
+    if (agentes === 0) {
+      localSugerencias.push(`🛍️ Red de Ventas: Se detectaron 0 agentes autorizados en los límites del dibujo. Sugerencia: Certificar 2 nuevos agentes comerciales en este sector.`);
+    } else if (agentes < 3) {
+      localSugerencias.push(`🛍️ Red de Ventas: Se detectaron ${agentes} agentes autorizados. Sugerencia: Certificar al menos ${3 - agentes} nuevos agentes comerciales para fortalecer el sector.`);
+    } else {
+      localSugerencias.push(`🛍️ Red de Ventas: Presencia comercial sólida con ${agentes} agentes autorizados en los límites del dibujo.`);
+    }
+
+    return {
+      estadal: (estadosFigura && estadosFigura.length > 0) ? {
+        titulo: `Métrica Estadal (Datos Macroscópicos de ${estadosFigura.join(', ')})`,
+        sugerencias: estadalSugerencias
+      } : null,
+      local: {
+        titulo: 'Métrica Local (Dentro del Polígono Dibujado)',
+        sugerencias: localSugerencias
       }
-    }
-    
-    if (sugerencias.length === 0) {
-      sugerencias.push("✅ Distribución óptima: La zona analizada cuenta con un balance óptimo entre abonados y canales de cobertura/soporte.");
-    }
-    
-    return sugerencias;
+    };
   }
 
 }

@@ -5,6 +5,15 @@ import * as L from 'leaflet';
 export class GisMathService {
 
   /**
+   * Comprueba si un punto (lat, lng) está dentro de un círculo.
+   * Utiliza la distancia entre los dos puntos.
+   */
+  puntoEnCirculo(lat: number, lng: number, centro: L.LatLng, radioMetros: number): boolean {
+    const p = L.latLng(lat, lng);
+    return p.distanceTo(centro) <= radioMetros;
+  }
+
+  /**
    * Comprueba si un punto (lat, lng) está dentro de un polígono delimitado por sus vértices.
    * Utiliza el algoritmo de Ray-Casting (PNPOLY).
    */

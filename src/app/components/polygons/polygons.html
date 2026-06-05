@@ -1,8 +1,8 @@
 <div class="analisis-panel-card" *ngIf="analisis">
   <div class="panel-header">
     <div class="panel-title-wrapper">
-      <i [class]="analisis.tipo === 'poligono' ? 'fas fa-draw-polygon' : 'fas fa-route'"></i>
-      <h3>{{ analisis.tipo === 'poligono' ? 'Análisis de Área' : 'Análisis de Ruta' }}</h3>
+      <i [class]="analisis.tipo === 'ruta' ? 'fas fa-route' : (analisis.tipo === 'circulo' ? 'fas fa-circle' : 'fas fa-draw-polygon')"></i>
+      <h3>Análisis de {{ analisis.tipo === 'ruta' ? 'Ruta' : 'Área' }}</h3>
     </div>
     <button class="btn-close-analisis" (click)="cerrar()">
       <i class="fas fa-times"></i>
@@ -12,7 +12,7 @@
   <div class="panel-body">
     <!-- Sección de Mediciones Geográficas -->
     <div class="mediciones-section">
-      <div class="medicion-row" *ngIf="analisis.tipo === 'poligono'">
+      <div class="medicion-row" *ngIf="analisis.tipo === 'poligono' || analisis.tipo === 'circulo'">
         <span class="med-label">Superficie (Área):</span>
         <span class="med-val">
           {{ analisis.mediciones.area >= 1000000 
@@ -20,7 +20,7 @@
              : analisis.mediciones.area.toLocaleString('es-ES', {maximumFractionDigits: 1}) + ' m²' }}
         </span>
       </div>
-      <div class="medicion-row" *ngIf="analisis.tipo === 'poligono'">
+      <div class="medicion-row" *ngIf="analisis.tipo === 'poligono' || analisis.tipo === 'circulo'">
         <span class="med-label">Perímetro:</span>
         <span class="med-val">
           {{ analisis.mediciones.perimetro >= 1000 
@@ -46,7 +46,7 @@
 
     <!-- Segmento de Proximidad / Contenido -->
     <div class="panel-section-title">
-      {{ analisis.tipo === 'poligono' ? 'Elementos Contenidos' : 'Elementos en Influencia (500m)' }}
+      {{ analisis.tipo === 'ruta' ? 'Elementos en Influencia (500m)' : 'Elementos Contenidos' }}
     </div>
 
     <!-- Grid de Métricas de Infraestructura -->
@@ -87,11 +87,24 @@
     <!-- Sección de Recomendaciones del Asistente -->
     <div class="recommendations-container">
       <div class="recommendations-header">
-        <i class="fas fa-lightbulb"></i>
-        <span>Recomendaciones de Expansión</span>
+        <i class="fas fa-chart-pie"></i>
+        <span>Diagnóstico del Área Seleccionada</span>
       </div>
+      
+      <!-- Métrica Estadal -->
+      <ng-container *ngIf="analisis.recomendaciones.estadal">
+        <div class="rec-section-title">{{ analisis.recomendaciones.estadal.titulo }}</div>
+        <div class="recommendations-list">
+          <div class="recommendation-item" *ngFor="let rec of analisis.recomendaciones.estadal.sugerencias">
+            {{ rec }}
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Métrica Local -->
+      <div class="rec-section-title" [class.mt-3]="analisis.recomendaciones.estadal">{{ analisis.recomendaciones.local.titulo }}</div>
       <div class="recommendations-list">
-        <div class="recommendation-item" *ngFor="let rec of analisis.recomendaciones">
+        <div class="recommendation-item" *ngFor="let rec of analisis.recomendaciones.local.sugerencias">
           {{ rec }}
         </div>
       </div>

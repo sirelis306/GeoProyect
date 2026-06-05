@@ -11,8 +11,7 @@ export class GisService {
   private map = inject(MapService);
 
   constructor() {
-    // Al iniciar, carga la configuración geográfica (estados desde la BD)
-    this.element.cargarConfiguracionGeografica();
+    // La configuración geográfica se cargará junto con los datos
   }
 
   // Signals de datos
@@ -64,7 +63,10 @@ export class GisService {
   setDetalleRegiones(tipo: TipoElemento) { this.map.setDetalleRegiones(tipo); }
 
   // Carga de datos
-  cargarDatos() { this.element.cargarDatos(); }
+  cargarDatos() { 
+    this.element.cargarConfiguracionGeografica();
+    this.element.cargarDatos(); 
+  }
 
   // Agregar elementos
   async construirYValidarElemento(tipo: TipoElemento, data: any) {
