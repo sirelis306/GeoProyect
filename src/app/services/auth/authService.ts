@@ -22,6 +22,17 @@ export class AuthService {
     }
   }
 
+  private decodeToken(token: string): any {
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) return null;
+      const payloadDecoded = atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'));
+      return JSON.parse(payloadDecoded);
+    } catch (e) {
+      return null;
+    }
+  }
+
   currentUser = signal<any>(this.getStoredUser());
 
   login(creds: any) {
@@ -30,8 +41,48 @@ export class AuthService {
       tap(res => {
         if (res && res.token) {
           localStorage.setItem('token_geo', res.token);
-          localStorage.setItem('user_geo', JSON.stringify(res.user));
-          this.currentUser.set(res.user);
+          let user = res.user;
+          if (!user) {
+            const payload = this.decodeToken(res.token);
+            if (payload) {
+              const rolesList = payload.roles || [];
+              const isSuper = rolesList.includes('ROLE_SUPER_ADMINISTRADOR') || rolesList.includes('ROLE_SUPER_ADMIN') || rolesList.includes('super_administrador');
+              const isAdmin = rolesList.includes('ROLE_ADMINISTRADOR') || rolesList.includes('ROLE_ADMIN') || rolesList.includes('administrador');
+              const isAnalyst = rolesList.includes('ROLE_ANALISTA') || rolesList.includes('ROLE_ANALYST') || rolesList.includes('analista');
+              const isRegular = rolesList.includes('ROLE_REGULAR') || rolesList.includes('ROLE_USER') || rolesList.includes('regular');
+
+              user = {
+                id: payload.user_id,
+                email: payload.username || payload.email,
+                primer_nombre: payload.primer_nombre,
+                primer_apellido: payload.primer_apellido,
+                roles: {
+                  rol_super_administrador: isSuper,
+                  rol_administrador: isAdmin,
+                  rol_analista: isAnalyst,
+                  rol_regular: isRegular || (!isSuper && !isAdmin && !isAnalyst)
+                },
+                cambiar_password: payload.cambiar_password === true || payload.cambiar_password === 1
+              };
+            }
+          } else {
+            user.cambiar_password = res.user.cambiar_password === true || res.user.cambiar_password === 1;
+          }
+          localStorage.setItem('user_geo', JSON.stringify(user));
+          this.currentUser.set(user);
+        }
+      })
+    );
+  }
+
+  cambiarPassword(payload: any) {
+    return this.http.post<any>(`${environment.apiUrl}/users/change-password`, payload).pipe(
+      tap(res => {
+        const user = this.getStoredUser();
+        if (user) {
+          user.cambiar_password = false;
+          localStorage.setItem('user_geo', JSON.stringify(user));
+          this.currentUser.set(user);
         }
       })
     );

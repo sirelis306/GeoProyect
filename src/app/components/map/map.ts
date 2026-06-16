@@ -225,7 +225,8 @@ export class Map implements AfterViewInit {
     this.map.on('zoomend', () => this.gis.zoomLevel.set(this.map.getZoom()));
     this.layerAggregated.addTo(this.map);
 
-    this.http.get('assets/geojson/venezuela.json').subscribe((data: any) => {
+    const cachedVenezuela = this.gis.getVenezuelaGeoJson();
+    const procesarVenezuela = (data: any) => {
       this.geoJsonData = data;
       this.capaGeoJsonRegiones = L.geoJSON(data, {
         onEachFeature: (feature, layer) => {
@@ -253,17 +254,36 @@ export class Map implements AfterViewInit {
       }
 
       this.crearMascaraTerritorial(data);
-    });
+    };
 
-    this.http.get('assets/geojson/poblacion.json').subscribe({
-      next: (pob: any) => {
-        this.poblacionData = pob;
-        if (this.gis.capasVisibles().poblacion) {
-          this.aplicarEstiloPoblacion();
-        }
-      },
-      error: (err) => console.error('Error cargando poblacion.json', err)
-    });
+    if (cachedVenezuela) {
+      procesarVenezuela(cachedVenezuela);
+    } else {
+      this.http.get('assets/geojson/venezuela.json').subscribe((data: any) => {
+        this.gis.setVenezuelaGeoJson(data);
+        procesarVenezuela(data);
+      });
+    }
+
+    const cachedPoblacion = this.gis.getPoblacionData();
+    const procesarPoblacion = (pob: any) => {
+      this.poblacionData = pob;
+      if (this.gis.capasVisibles().poblacion) {
+        this.aplicarEstiloPoblacion();
+      }
+    };
+
+    if (cachedPoblacion) {
+      procesarPoblacion(cachedPoblacion);
+    } else {
+      this.http.get('assets/geojson/poblacion.json').subscribe({
+        next: (pob: any) => {
+          this.gis.setPoblacionData(pob);
+          procesarPoblacion(pob);
+        },
+        error: (err) => console.error('Error cargando poblacion.json', err)
+      });
+    }
 
     L.control.zoom({ position: 'topright' }).addTo(this.map);
 

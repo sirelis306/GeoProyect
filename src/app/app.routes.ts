@@ -5,6 +5,7 @@ import { authGuard } from './guards/auth-guard';
 import { Users } from './components/users/users';
 import { AddUser } from './components/add-user/add-user';
 import { Historial } from './components/historial/historial';
+import { ChangePassword } from './components/change-password/change-password';
 
 export const routes: Routes = [
     { path: 'login', component: Login },
@@ -13,6 +14,7 @@ export const routes: Routes = [
     { path: 'usuarios/nuevo', component: AddUser, canActivate: [authGuard] },
     { path: 'usuarios/editar/:id', component: AddUser, canActivate: [authGuard] },
     { path: 'historial', component: Historial, canActivate: [authGuard] },
+    { path: 'cambiar-contrasena', component: ChangePassword, canActivate: [authGuard] },
     { path: '', redirectTo: 'login', pathMatch: 'full' },
     { path: '**', redirectTo: 'login' },
 ];

@@ -160,6 +160,10 @@
     </ng-container>
   </div>
 
+  <button class="btn-change-pass" routerLink="/cambiar-contrasena" [title]="gis.sidebarColapsado() ? 'Seguridad' : ''">
+    <i class="fas fa-key layer-icon"></i>
+    <span *ngIf="!gis.sidebarColapsado()">Seguridad</span>
+  </button>
   <button class="btn-logout" (click)="salir()">
     <i class="fas fa-sign-out-alt layer-icon"></i>
     <span *ngIf="!gis.sidebarColapsado()">Cerrar Sesión</span>

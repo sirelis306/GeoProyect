@@ -21,9 +21,14 @@ export class Login implements OnInit {
   verPassword = false;
 
   ngOnInit() {
-    // Si ya está logueado, lo mandamos al mapa directamente
+    // Si ya está logueado, lo mandamos al mapa o a cambiar contraseña según corresponda
     if (this.auth.estaLogueado()) {
-      this.router.navigate(['/mapa']);
+      const user = this.auth.currentUser();
+      if (user && (user.cambiar_password === true || user.cambiar_password === 1)) {
+        this.router.navigate(['/cambiar-contrasena']);
+      } else {
+        this.router.navigate(['/mapa']);
+      }
     }
   }
 
@@ -35,7 +40,13 @@ export class Login implements OnInit {
       next: (res) => {
         this.cargando = false;
         console.log('Login exitoso', res);
-        this.router.navigate(['/mapa']);
+        
+        const user = this.auth.currentUser();
+        if (user && (user.cambiar_password === true || user.cambiar_password === 1)) {
+          this.router.navigate(['/cambiar-contrasena']);
+        } else {
+          this.router.navigate(['/mapa']);
+        }
       },
       error: (err) => {
         this.cargando = false;

@@ -56,3 +56,20 @@
     </div>
   </div>
 </div>
+
+<!-- Modal de Confirmación de Eliminación -->
+<div class="modal-overlay" *ngIf="mostrarConfirmarEliminar" (click)="cancelarEliminar()">
+  <div class="modal-content warning" (click)="$event.stopPropagation()">
+    <div class="modal-icon">
+      <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    <div class="modal-body">
+      <h3 class="modal-title">¿Eliminar Elemento?</h3>
+      <p class="modal-message">¿Estás seguro de que deseas eliminar "{{ itemAEliminar?.nombre }}"? Esta acción no se puede deshacer.</p>
+    </div>
+    <div class="modal-footer modal-footer-confirm">
+      <button class="btn-modal btn-cancelar" (click)="cancelarEliminar()">Cancelar</button>
+      <button class="btn-modal btn-confirmar" (click)="confirmarEliminar()">Confirmar</button>
+    </div>
+  </div>
+</div>

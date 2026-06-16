@@ -263,3 +263,118 @@
     font-size: 12px;
   }
 }
+
+/* --- MODAL PREMIUM (COMPACTO) --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(6px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000002; /* above search-modal overlay */
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 16px;
+  padding: 20px 24px;
+  width: 90%;
+  max-width: 320px;
+  text-align: center;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+  animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border-top: 5px solid #4155e9;
+}
+
+.modal-content.success { border-top-color: #10b981; }
+.modal-content.error { border-top-color: #ef4444; }
+.modal-content.warning { border-top-color: #f59e0b; }
+
+.modal-icon {
+  font-size: 38px;
+  margin-bottom: 12px;
+}
+
+.success .modal-icon { color: #10b981; }
+.error .modal-icon { color: #ef4444; }
+.warning .modal-icon { color: #f59e0b; }
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.modal-message {
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 18px;
+  line-height: 1.4;
+}
+
+.btn-modal {
+  background: #4155e9;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 13px;
+  width: 100%;
+}
+
+.success .btn-modal { background: #10b981; }
+.error .btn-modal { background: #ef4444; }
+.warning .btn-modal { background: #f59e0b; }
+
+.btn-modal:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+.modal-footer-confirm {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.modal-footer-confirm .btn-modal {
+  width: 50%;
+}
+
+.btn-cancelar {
+  background: #e5e7eb !important;
+  color: #374151 !important;
+}
+
+.btn-cancelar:hover {
+  background: #d1d5db !important;
+}
+
+.btn-confirmar {
+  background: #ef4444 !important;
+  color: white !important;
+}
+
+.btn-confirmar:hover {
+  background: #dc2626 !important;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px) scale(0.9); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}

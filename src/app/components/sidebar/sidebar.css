@@ -80,6 +80,26 @@
   /* Reducido de 10px */
 }
 
+.btn-change-pass {
+  margin-top: auto;
+  color: #4b5563;
+  padding: 10px 16px;
+  font-size: 14px;
+  background: transparent;
+  border: none;
+  border-top: 1px solid #f1f5f9;
+  cursor: pointer;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.btn-change-pass:hover {
+  background-color: #f8fafc;
+  color: #3240A5;
+}
+
 .btn-logout {
   margin-top: 0;
   color: #ef4444;
@@ -318,6 +338,7 @@
 
 .sidebar.collapsed .layer-item,
 .sidebar.collapsed .btn-logout,
+.sidebar.collapsed .btn-change-pass,
 .sidebar.collapsed .btn-toggle {
   justify-content: center !important;
   padding: 0 !important;

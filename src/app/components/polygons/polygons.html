@@ -1,7 +1,7 @@
 <div class="analisis-panel-card" *ngIf="analisis">
   <div class="panel-header">
     <div class="panel-title-wrapper">
-      <i [class]="analisis.tipo === 'ruta' ? 'fas fa-route' : (analisis.tipo === 'circulo' ? 'fas fa-circle' : 'fas fa-draw-polygon')"></i>
+      <i [class]="analisis.tipo === 'ruta' ? 'fas fa-route' : 'fas fa-draw-polygon'"></i>
       <h3>Análisis de {{ analisis.tipo === 'ruta' ? 'Ruta' : 'Área' }}</h3>
     </div>
     <button class="btn-close-analisis" (click)="cerrar()">

@@ -22,6 +22,23 @@ export class Users implements OnInit {
   rolesOptions: any[] = [{ value: 'todos', label: 'Todos los roles' }];
   currentUser: any = null;
 
+  mostrarConfirmarDesactivar: boolean = false;
+  usuarioADesactivarId: number | null = null;
+  modalConfig = {
+    show: false,
+    type: 'success' as 'success' | 'error' | 'warning',
+    title: '',
+    message: '',
+    buttonText: 'Entendido'
+  };
+
+  paginaActual = 1;
+  limiteActual = 10;
+  totalRegistros = 0;
+  totalPaginas = 1;
+  rangoInicio = 0;
+  rangoFin = 0;
+
   ngOnInit() {
     this.obtenerUsuarios();
     this.cargarRoles();
@@ -43,9 +60,17 @@ export class Users implements OnInit {
   cargarRoles() {
     this.userService.obtenerRoles().subscribe({
       next: (roles) => {
-        const rolesMapeados = roles.map(r => ({
-          value: r.nombre_rol.replace('rol_', ''), // quitamos el prefijo para el filtro
-          label: this.formatRolLabel(r.nombre_rol)
+        const uniqueRoles = new Map<string, string>();
+        roles.forEach(r => {
+          const cleanValue = r.nombre_rol.replace(/^rol_/, '');
+          const cleanKey = 'rol_' + cleanValue;
+          const label = this.formatRolLabel(cleanKey);
+          uniqueRoles.set(cleanValue, label);
+        });
+
+        const rolesMapeados = Array.from(uniqueRoles.entries()).map(([value, label]) => ({
+          value,
+          label
         }));
 
         setTimeout(() => {
@@ -57,13 +82,14 @@ export class Users implements OnInit {
   }
 
   formatRolLabel(rol: string): string {
+    const cleanRol = rol.startsWith('rol_') ? rol : 'rol_' + rol;
     const labels: any = {
       'rol_super_administrador': 'Súper Administrador',
       'rol_administrador': 'Administrador',
       'rol_analista': 'Analista',
       'rol_regular': 'Regular'
     };
-    return labels[rol] || rol;
+    return labels[cleanRol] || rol;
   }
 
   /* Retorna la lista filtrada basándose en el texto de búsqueda y el rol seleccionado */
@@ -79,6 +105,39 @@ export class Users implements OnInit {
 
       return matchTexto && matchRol;
     });
+  }
+
+  get usuariosPaginados() {
+    const list = this.usuariosFiltrados;
+    this.totalRegistros = list.length;
+    this.totalPaginas = Math.ceil(this.totalRegistros / this.limiteActual) || 1;
+    if (this.paginaActual > this.totalPaginas) {
+      this.paginaActual = 1;
+    }
+    this.rangoInicio = this.totalRegistros > 0 ? (this.paginaActual - 1) * this.limiteActual + 1 : 0;
+    this.rangoFin = Math.min(this.paginaActual * this.limiteActual, this.totalRegistros);
+    const start = (this.paginaActual - 1) * this.limiteActual;
+    const end = start + this.limiteActual;
+    return list.slice(start, end);
+  }
+
+  onNextPage() {
+    if (this.paginaActual < this.totalPaginas) {
+      this.paginaActual++;
+      this.cdr.markForCheck();
+    }
+  }
+
+  onPrevPage() {
+    if (this.paginaActual > 1) {
+      this.paginaActual--;
+      this.cdr.markForCheck();
+    }
+  }
+
+  onLimiteChange() {
+    this.paginaActual = 1;
+    this.cdr.markForCheck();
   }
 
   obtenerUsuarios() {
@@ -134,15 +193,45 @@ export class Users implements OnInit {
   }
 
   desactivar(id: number) {
-    if (confirm('¿Estás seguro de que deseas desactivar este usuario? Perderá acceso al sistema.')) {
+    this.usuarioADesactivarId = id;
+    this.mostrarConfirmarDesactivar = true;
+    this.cdr.markForCheck();
+  }
+
+  confirmarDesactivar() {
+    if (this.usuarioADesactivarId !== null) {
+      const id = this.usuarioADesactivarId;
+      this.mostrarConfirmarDesactivar = false;
+      this.usuarioADesactivarId = null;
+      this.cdr.markForCheck();
+
       this.userService.desactivarUsuario(id).subscribe({
         next: () => {
-          alert('Usuario desactivado con éxito');
+          this.mostrarModal('success', '¡Desactivado!', 'El usuario ha sido desactivado con éxito.');
           this.obtenerUsuarios();
         },
-        error: (err) => alert(err.error?.mensaje || 'Error al desactivar el usuario')
+        error: (err) => {
+          const msg = err.error?.mensaje || 'Error al desactivar el usuario.';
+          this.mostrarModal('error', 'Error', msg);
+        }
       });
     }
+  }
+
+  cancelarDesactivar() {
+    this.mostrarConfirmarDesactivar = false;
+    this.usuarioADesactivarId = null;
+    this.cdr.markForCheck();
+  }
+
+  mostrarModal(type: 'success' | 'error' | 'warning', title: string, message: string, buttonText: string = 'Entendido') {
+    this.modalConfig = { show: true, type, title, message, buttonText };
+    this.cdr.markForCheck();
+  }
+
+  cerrarModal() {
+    this.modalConfig.show = false;
+    this.cdr.markForCheck();
   }
 
   getPrincipalRole(roles: any): string {

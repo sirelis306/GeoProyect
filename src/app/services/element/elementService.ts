@@ -51,6 +51,9 @@ export class ElementService {
 
   // Carga geográfica
   cargarConfiguracionGeografica() {
+    if (!localStorage.getItem('token_geo')) {
+      return;
+    }
     this.http.get<any[]>(`${this.API_URL}/geo/estados`).subscribe({
       next: (data) => {
         const mapeados = data.map(e => {
@@ -79,6 +82,9 @@ export class ElementService {
   private reparandoEnBackground = false;
 
   cargarDatos() {
+    if (!localStorage.getItem('token_geo')) {
+      return;
+    }
     this.http.get<any[]>(`${this.API_URL}/elementos/listado`).subscribe({
       next: (data) => {
         let rawData = data || [];
@@ -108,6 +114,9 @@ export class ElementService {
   }
 
   cargarResumen() {
+    if (!localStorage.getItem('token_geo')) {
+      return;
+    }
     this.http.get<any[]>(`${this.API_URL}/elementos/resumen`).subscribe({
       next: (data) => this.resumenSignal.set(data || []),
       error: (err) => console.error('Error cargando resumen:', err)

@@ -15,11 +15,12 @@
       <div class="toolbar-left tw-flex-col sm:tw-flex-row tw-w-full md:tw-w-auto">
         <div class="search-box">
           <i class="fas fa-search"></i>
-          <input type="text" placeholder="Buscar usuario..." [(ngModel)]="searchTexto">
+          <input type="text" placeholder="Buscar usuario..." [(ngModel)]="searchTexto" (ngModelChange)="paginaActual = 1">
         </div>
         <div class="filter-dropdown tw-w-full md:tw-w-[250px]">
           <ng-select class="select-simple" 
             [(ngModel)]="filtroRol" 
+            (change)="paginaActual = 1"
             [items]="rolesOptions" 
             bindLabel="label" 
             bindValue="value"
@@ -44,7 +45,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let user of usuariosFiltrados">
+        <tr *ngFor="let user of usuariosPaginados">
           <td>
             <div class="user-info">
               <div class="user-details">
@@ -82,14 +83,66 @@
     </table>
     </div>
 
-    <div class="table-footer tw-flex-col sm:tw-flex-row tw-gap-4">
-      <div class="showing-text">
-        Mostrando {{ usuariosFiltrados.length }} de {{ listaUsuarios.length }} usuarios
+    <div class="table-footer">
+      <div class="emeria-paginator">
+        <span class="paginator-label">Registros por página:</span>
+        <div class="paginator-select-wrapper">
+          <select [(ngModel)]="limiteActual" (change)="onLimiteChange()" class="paginator-select">
+            <option [value]="5">5</option>
+            <option [value]="10">10</option>
+            <option [value]="20">20</option>
+            <option [value]="50">50</option>
+          </select>
+          <i class="fas fa-chevron-down select-arrow"></i>
+        </div>
+        <span class="paginator-range">
+          {{ rangoInicio }} – {{ rangoFin }} of {{ totalRegistros }}
+        </span>
+        <div class="paginator-nav-buttons">
+          <button class="btn-paginator-nav" [disabled]="paginaActual === 1" (click)="onPrevPage()" title="Página anterior">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <button class="btn-paginator-nav" [disabled]="paginaActual >= totalPaginas" (click)="onNextPage()" title="Página siguiente">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
       </div>
-      <div class="pagination">
-        <button class="page-btn active">1</button>
-        <button class="page-btn">2</button>
-        <button class="page-btn">3</button>
+    </div>
+  </div>
+
+  <!-- Modal de Notificación Premium -->
+  <div class="modal-overlay" *ngIf="modalConfig.show" (click)="cerrarModal()">
+    <div class="modal-content" [ngClass]="modalConfig.type" (click)="$event.stopPropagation()">
+      <div class="modal-icon">
+        <i class="fas" [ngClass]="{
+          'fa-check-circle': modalConfig.type === 'success',
+          'fa-exclamation-circle': modalConfig.type === 'error',
+          'fa-exclamation-triangle': modalConfig.type === 'warning'
+        }"></i>
+      </div>
+      <div class="modal-body">
+        <h3 class="modal-title">{{ modalConfig.title }}</h3>
+        <p class="modal-message">{{ modalConfig.message }}</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-modal" (click)="cerrarModal()">{{ modalConfig.buttonText }}</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmación de Desactivación -->
+  <div class="modal-overlay" *ngIf="mostrarConfirmarDesactivar" (click)="cancelarDesactivar()">
+    <div class="modal-content warning" (click)="$event.stopPropagation()">
+      <div class="modal-icon">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <div class="modal-body">
+        <h3 class="modal-title">¿Desactivar Usuario?</h3>
+        <p class="modal-message">¿Estás seguro de que deseas desactivar este usuario? Perderá acceso al sistema de forma inmediata.</p>
+      </div>
+      <div class="modal-footer modal-footer-confirm">
+        <button class="btn-modal btn-cancelar" (click)="cancelarDesactivar()">Cancelar</button>
+        <button class="btn-modal btn-confirmar" (click)="confirmarDesactivar()">Confirmar</button>
       </div>
     </div>
   </div>

@@ -20,6 +20,8 @@ export class SearchModal {
 
   @ViewChild('searchInput') searchInput!: ElementRef;
 
+  mostrarConfirmarEliminar = false;
+  itemAEliminar: any = null;
   busqueda = signal('');
   resultados = signal<any[]>([]);
 
@@ -30,6 +32,8 @@ export class SearchModal {
         setTimeout(() => this.searchInput?.nativeElement?.focus(), 100);
       } else {
         this.busqueda.set('');
+        this.mostrarConfirmarEliminar = false;
+        this.itemAEliminar = null;
       }
     }, { allowSignalWrites: true });
 
@@ -82,12 +86,30 @@ export class SearchModal {
 
   eliminar(item: any) {
     if (!this.esAdmin) return;
-    if (confirm(`¿Estás seguro de eliminar "${item.nombre}"?`)) {
-      this.gis.eliminarElemento(item.id).subscribe(() => {
-        this.gis.cargarDatos();
-        this.busqueda.set(this.busqueda()); // Forzar refresco
+    this.itemAEliminar = item;
+    this.mostrarConfirmarEliminar = true;
+  }
+
+  confirmarEliminar() {
+    if (this.itemAEliminar) {
+      const item = this.itemAEliminar;
+      this.mostrarConfirmarEliminar = false;
+      this.itemAEliminar = null;
+      this.gis.eliminarElemento(item.id).subscribe({
+        next: () => {
+          this.gis.cargarDatos();
+          this.busqueda.set(this.busqueda()); // Forzar refresco
+        },
+        error: (err) => {
+          console.error('Error al eliminar elemento:', err);
+        }
       });
     }
+  }
+
+  cancelarEliminar() {
+    this.mostrarConfirmarEliminar = false;
+    this.itemAEliminar = null;
   }
 
   getIcon(item: any): string {

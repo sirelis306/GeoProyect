@@ -78,6 +78,15 @@ export class GisService {
   eliminarElemento(id: number) { return this.element.eliminarElemento(id); }
   enviarAlServidor(datos: any) { this.element.enviarAlServidor(datos); }
 
+  // Cache en memoria para GeoJSONs
+  private venezuelaGeoJson: any = null;
+  private poblacionData: any = null;
+
+  getVenezuelaGeoJson() { return this.venezuelaGeoJson; }
+  setVenezuelaGeoJson(data: any) { this.venezuelaGeoJson = data; }
+  getPoblacionData() { return this.poblacionData; }
+  setPoblacionData(data: any) { this.poblacionData = data; }
+
   async obtenerCoordsDesdeDireccion(dir: string | null | undefined) {
     return this.element.obtenerCoordsDesdeDireccion(dir);
   }
