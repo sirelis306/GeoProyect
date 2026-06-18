@@ -3,12 +3,16 @@ import { HttpClient } from '@angular/common/http';
 import { TipoElemento, RadioBase, Abonado, Oficina, Agente, Estado } from '../../models/gis';
 import { CoordService } from '../coord/coordService';
 import { GeocodingService } from '../gis/geocodingService';
+import { GisMathService } from '../gis/gisMathService';
 import { environment } from '../../../environments/environment';
+import * as L from 'leaflet';
+
 @Injectable({ providedIn: 'root' })
 export class ElementService {
   private http = inject(HttpClient);
   private coord = inject(CoordService);
   private geocoding = inject(GeocodingService);
+  private mathService = inject(GisMathService);
   private API_URL = environment.apiUrl;
 
   // Signals de datos
@@ -19,8 +23,115 @@ export class ElementService {
   agentesSignal = signal<Agente[]>([]);
   resumenSignal = signal<any[]>([]); // Almacena el resumen agregado del servidor
 
+  parroquiasDataSignal = signal<any>(null);
+  get parroquiasData() { return this.parroquiasDataSignal(); }
+
   constructor() {
     this.cargarDesdeCache();
+    this.cargarParroquiasGeoJson();
+  }
+
+  private cargarParroquiasGeoJson() {
+    this.http.get('assets/geojson/parroquias.json').subscribe({
+      next: (data: any) => {
+        this.parroquiasDataSignal.set(data);
+        // Re-procesar datos si ya se habían cargado desde la caché
+        const cachedElements = localStorage.getItem('geoproyect_elements_cache');
+        if (cachedElements) {
+          try {
+            this.procesarDatos(JSON.parse(cachedElements));
+          } catch (e) { }
+        }
+      },
+      error: (err) => console.error('Error cargando parroquias.json en ElementService:', err)
+    });
+  }
+
+  private normalizeName(str: string): string {
+    if (!str) return '';
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  }
+
+  private findParroquiaForCoords(lat: number, lng: number, estado?: string): { name: string, municipio: string } | null {
+    const data = this.parroquiasDataSignal();
+    if (!data) return null;
+    
+    const targetEstadoNorm = estado ? this.normalizeName(estado) : '';
+
+    // Primer intento: Búsqueda espacial punto en polígono
+    for (const feature of data.features) {
+      if (targetEstadoNorm) {
+        const estNorm = this.normalizeName(feature.properties.adm1_name || '');
+        if (estNorm !== targetEstadoNorm) continue;
+      }
+      
+      const geom = feature.geometry;
+      if (!geom) continue;
+      
+      const pName = feature.properties.adm3_name;
+      const mName = feature.properties.adm2_name;
+
+      const pointInPoly = (ring: number[][]) => {
+        const vertices = ring.map(coord => L.latLng(coord[1], coord[0]));
+        return this.mathService.puntoEnPoligono(lat, lng, vertices);
+      };
+
+      try {
+        if (geom.type === 'Polygon') {
+          if (pointInPoly(geom.coordinates[0])) return { name: pName, municipio: mName };
+        } else if (geom.type === 'MultiPolygon') {
+          for (const poly of geom.coordinates) {
+            if (pointInPoly(poly[0])) return { name: pName, municipio: mName };
+          }
+        }
+      } catch (e) {
+        console.error('Error al evaluar punto en polígono:', e);
+      }
+    }
+
+    // Fallback por cercanía dentro del mismo estado (evita pérdidas por simplificación de bordes)
+    if (estado) {
+      let closestPar: { name: string, municipio: string } | null = null;
+      let minDistance = Infinity;
+      const p = L.latLng(lat, lng);
+
+      for (const feature of data.features) {
+        const estNorm = this.normalizeName(feature.properties.adm1_name || '');
+        if (estNorm !== targetEstadoNorm) continue;
+
+        const cLat = feature.properties.center_lat;
+        const cLon = feature.properties.center_lon;
+        if (cLat !== undefined && cLon !== undefined) {
+          const center = L.latLng(cLat, cLon);
+          const dist = p.distanceTo(center);
+          if (dist < minDistance) {
+            minDistance = dist;
+            closestPar = { name: feature.properties.adm3_name, municipio: feature.properties.adm2_name };
+          }
+        }
+      }
+      if (closestPar) return closestPar;
+    }
+
+    return null;
+  }
+
+  private procesarDatos(rawData: any[]) {
+    const mapped = rawData.map(item => {
+      if (item.latitud && item.longitud) {
+        const pInfo = this.findParroquiaForCoords(Number(item.latitud), Number(item.longitud), item.estado);
+        if (pInfo) {
+          item.parroquia = pInfo.name;
+          item.municipio = pInfo.municipio;
+        }
+      }
+      return item;
+    });
+
+    this.radioBasesSignal.set(mapped.filter(i => i.tipo === 'antenas'));
+    this.oficinasSignal.set(mapped.filter(i => i.tipo === 'oficinas'));
+    this.abonadosSignal.set(mapped.filter(i => i.tipo === 'abonados'));
+    this.agentesSignal.set(mapped.filter(i => i.tipo === 'agentes'));
   }
 
   private cargarDesdeCache() {
@@ -36,17 +147,21 @@ export class ElementService {
     
     if (cachedStates) {
       try {
-        this.estadosSignal.set(JSON.parse(cachedStates));
-        console.log('[Cache] Estados cargados desde almacenamiento local.');
+        const states = JSON.parse(cachedStates);
+        const corrected = states.map((s: any) => {
+          if (!s.latitud || !s.longitud) {
+            const coords = this.coord.getCoordEstado(s.nombre);
+            if (coords) {
+              s.latitud = coords.lat;
+              s.longitud = coords.lng;
+            }
+          }
+          return s;
+        });
+        this.estadosSignal.set(corrected);
+        console.log('[Cache] Estados cargados y corregidos desde almacenamiento local.');
       } catch (e) { }
     }
-  }
-
-  private procesarDatos(rawData: any[]) {
-    this.radioBasesSignal.set(rawData.filter(i => i.tipo === 'antenas'));
-    this.oficinasSignal.set(rawData.filter(i => i.tipo === 'oficinas'));
-    this.abonadosSignal.set(rawData.filter(i => i.tipo === 'abonados'));
-    this.agentesSignal.set(rawData.filter(i => i.tipo === 'agentes'));
   }
 
   // Carga geográfica
@@ -173,6 +288,19 @@ export class ElementService {
       .forEach(r => {
         m.set(r.region, (m.get(r.region) || 0) + Number(r.total));
       });
+    return m;
+  }
+
+  getTotalesPorParroquia(tipo: TipoElemento): Map<string, number> {
+    const m = new Map<string, number>();
+    const items = this.getDataPorTipo(tipo);
+    items.forEach(item => {
+      if (item.parroquia && item.estado) {
+        const key = `${item.parroquia}_${item.estado}`;
+        const qty = Number(item.cantidad) || 1;
+        m.set(key, (m.get(key) || 0) + qty);
+      }
+    });
     return m;
   }
 

@@ -424,3 +424,27 @@
   min-width: 220px !important;
   max-width: 260px !important;
 }
+
+/* --- ESTILOS DE NIVELES GEOGRÁFICOS --- */
+
+/* REGIONES: Bordes más gruesos y sombra pronunciada */
+.level-region .badge-item {
+  border-width: 3px !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* PARROQUIAS: Bordes discontinuos (dashed) y tamaño compacto (escalado a 85%) */
+.level-parroquia {
+  transform: scale(0.85);
+}
+
+.level-parroquia:hover {
+  transform: scale(1.0) !important;
+}
+
+.level-parroquia .badge-item {
+  border-style: dashed !important;
+  border-width: 1.5px !important;
+  opacity: 0.95;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}

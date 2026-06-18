@@ -28,7 +28,11 @@ export class Map implements AfterViewInit {
   private activeDrawnLayer: L.Layer | null = null;
 
   private capaGeoJsonRegiones: L.GeoJSON | null = null;
+  private capaGeoJsonParroquias: L.GeoJSON | null = null;
   private geoJsonData: any = null;
+  private parroquiasGeoJsonData: any = null;
+  private parroquiaCentros: Record<string, L.LatLng> = {};
+  private areaPorEstado: Record<string, number> = {};
   private capaEtiquetas = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
     zIndex: 1000,
     pane: 'markerPane'
@@ -108,30 +112,40 @@ export class Map implements AfterViewInit {
       if (this.layerAggregated) this.layerAggregated.clearLayers();
 
       // --- LÓGICA CAPA 1 (GEOMETRÍA) ---
-      if (this.capaGeoJsonRegiones) {
-        if (estado.regiones || estado.operaciones || estado.poblacion) {
-          this.capaGeoJsonRegiones.addTo(this.map);
-          if (estado.poblacion) {
-            this.aplicarEstiloPoblacion();
-          } else {
-            this.aplicarEstiloRegiones(estado.operaciones);
-          }
+      if (estado.regiones || estado.operaciones || estado.poblacion) {
+        if (estado.poblacion) {
+          this.aplicarEstiloPoblacion();
         } else {
-          this.map.removeLayer(this.capaGeoJsonRegiones);
+          if (this.capaGeoJsonRegiones) this.capaGeoJsonRegiones.addTo(this.map);
+          if (this.capaGeoJsonParroquias) this.map.removeLayer(this.capaGeoJsonParroquias);
+          this.aplicarEstiloRegiones(estado.operaciones);
         }
+      } else {
+        if (this.capaGeoJsonRegiones) this.map.removeLayer(this.capaGeoJsonRegiones);
+        if (this.capaGeoJsonParroquias) this.map.removeLayer(this.capaGeoJsonParroquias);
       }
 
-      if (!estado.poblacion && this.capaGeoJsonRegiones) {
-        this.capaGeoJsonRegiones.closePopup();
+      if (!estado.poblacion) {
+        if (this.capaGeoJsonRegiones) this.capaGeoJsonRegiones.closePopup();
+        if (this.capaGeoJsonParroquias) this.capaGeoJsonParroquias.closePopup();
       }
 
       // --- LÓGICA DE VISUALIZACIÓN SEGÚN ZOOM ---
-      const esVistaDetalle = this.gis.zoomLevel() >= 10;
+      const zoom = this.gis.zoomLevel();
       if (estado.operaciones) {
-        if (esVistaDetalle) this.renderIndividualMarkers(estado.detalleOperaciones);
-        else this.renderStateTotals(estado.detalleOperaciones);
+        if (zoom >= 11.5) {
+          this.renderIndividualMarkers(estado.detalleOperaciones);
+        } else if (zoom >= 8.5) {
+          this.renderParroquiaTotals(estado.detalleOperaciones);
+        } else {
+          this.renderStateTotals(estado.detalleOperaciones);
+        }
       } else if (estado.regiones) {
-        this.renderRegionTotals(estado.detalleRegiones);
+        if (zoom >= 8.5) {
+          this.renderParroquiaTotals(estado.detalleRegiones);
+        } else {
+          this.renderRegionTotals(estado.detalleRegiones);
+        }
       }
     });
 
@@ -285,6 +299,70 @@ export class Map implements AfterViewInit {
       });
     }
 
+    const procesarParroquias = (data: any) => {
+      this.parroquiasGeoJsonData = data;
+      this.parroquiaCentros = {};
+      this.areaPorEstado = {};
+      
+      // Calcular áreas totales por estado
+      data.features.forEach((f: any) => {
+        const estado = f.properties.adm1_name;
+        const area = f.properties.area_sqkm || 0;
+        if (estado) {
+          this.areaPorEstado[estado] = (this.areaPorEstado[estado] || 0) + area;
+        }
+      });
+
+      data.features.forEach((f: any) => {
+        const pName = f.properties.adm3_name;
+        const estado = f.properties.adm1_name;
+        const uniqueKey = `${pName}_${estado}`;
+        
+        const cLat = f.properties.center_lat;
+        const cLon = f.properties.center_lon;
+        if (cLat !== undefined && cLon !== undefined) {
+          this.parroquiaCentros[uniqueKey] = L.latLng(cLat, cLon);
+        }
+      });
+
+      this.capaGeoJsonParroquias = L.geoJSON(data, {
+        onEachFeature: (feature, layer) => {
+          layer.on('click', (e) => {
+            if (this.gis.capasVisibles().poblacion) {
+              const name = feature.properties.adm3_name;
+              const municipio = feature.properties.adm2_name;
+              const estado = feature.properties.adm1_name;
+              const area = feature.properties.area_sqkm || 0;
+              const totalArea = this.areaPorEstado[estado] || 1;
+              const pobEstado = this.poblacionData[estado] || 0;
+              const pob = (area / totalArea) * pobEstado;
+              const popupHtml = this.renderer.crearPopupPoblacion(name, Math.round(pob), municipio, estado);
+              layer.bindPopup(popupHtml, { maxWidth: 300 }).openPopup();
+            } else {
+              layer.unbindPopup();
+            }
+          });
+        }
+      });
+
+      const estado = this.gis.capasVisibles();
+      if (estado.poblacion) {
+        this.aplicarEstiloPoblacion();
+      }
+    };
+
+    const cachedParroquias = this.gis.parroquiasData;
+    if (cachedParroquias) {
+      procesarParroquias(cachedParroquias);
+    } else {
+      this.http.get('assets/geojson/parroquias.json').subscribe({
+        next: (data: any) => {
+          procesarParroquias(data);
+        },
+        error: (err) => console.error('Error cargando parroquias.json en initMap:', err)
+      });
+    }
+
     L.control.zoom({ position: 'topright' }).addTo(this.map);
 
     // Configurar idioma español para Leaflet Geoman
@@ -360,15 +438,96 @@ export class Map implements AfterViewInit {
   }
 
   private aplicarEstiloPoblacion() {
-    if (!this.capaGeoJsonRegiones) return;
-
+    const zoom = this.gis.zoomLevel();
+    const mostrarPars = zoom >= 8.5;
     const capas = this.gis.capasVisibles();
     const hayCapasEspeciales = capas.cotas || capas.electricidad || capas.vias;
 
-    this.capaGeoJsonRegiones.setStyle((f: any) => {
-      const nombre = f.properties.estado || f.properties.name;
-      const pob = this.poblacionData[nombre] || 0;
-      return this.renderer.getEstiloPoblacion(pob, hayCapasEspeciales);
+    if (mostrarPars && this.capaGeoJsonParroquias) {
+      if (this.capaGeoJsonRegiones) this.map.removeLayer(this.capaGeoJsonRegiones);
+      this.capaGeoJsonParroquias.addTo(this.map);
+
+      this.capaGeoJsonParroquias.setStyle((f: any) => {
+        const estado = f.properties.adm1_name;
+        const area = f.properties.area_sqkm || 0;
+        const totalArea = this.areaPorEstado[estado] || 1;
+        const pobEstado = this.poblacionData[estado] || 0;
+        const pob = (area / totalArea) * pobEstado;
+        return this.renderer.getEstiloPoblacion(pob, hayCapasEspeciales, true);
+      });
+    } else {
+      if (this.capaGeoJsonParroquias) this.map.removeLayer(this.capaGeoJsonParroquias);
+      if (this.capaGeoJsonRegiones) this.capaGeoJsonRegiones.addTo(this.map);
+
+      if (this.capaGeoJsonRegiones) {
+        this.capaGeoJsonRegiones.setStyle((f: any) => {
+          const nombre = f.properties.estado || f.properties.name;
+          const pob = this.poblacionData[nombre] || 0;
+          return this.renderer.getEstiloPoblacion(pob, hayCapasEspeciales, false);
+        });
+      }
+    }
+  }
+
+  private renderParroquiaTotals(tipos: TipoElemento[]) {
+    const renderedPoints: L.Point[] = [];
+    const minDistance = 35; // Distancia mínima para evitar solapamientos entre parroquias cercanas
+    const renderedKeys = new Set<string>();
+
+    if (!this.parroquiasGeoJsonData) return;
+
+    this.parroquiasGeoJsonData.features.forEach((f: any) => {
+      const pName = f.properties.adm3_name;
+      const estado = f.properties.adm1_name;
+      const uniqueKey = `${pName}_${estado}`;
+      
+      if (renderedKeys.has(uniqueKey)) return;
+      renderedKeys.add(uniqueKey);
+
+      const centro = this.parroquiaCentros[uniqueKey];
+      if (!centro) return;
+
+      const items = tipos.map(t => ({
+        tipo: t,
+        total: this.gis.getTotalesPorParroquia(t).get(uniqueKey) || 0
+      })).filter(i => i.total > 0);
+
+      if (items.length > 0) {
+        const segBreakdown = tipos.includes('abonados') ? this.gis.abonadosSignal()
+          .filter(ab => ab.parroquia === pName && ab.estado === estado)
+          .reduce((acc: any, ab) => { acc[ab.segmentacion] = (acc[ab.segmentacion] || 0) + (Number(ab.cantidad) || 0); return acc; }, {}) : null;
+
+        const originalPoint = this.map.latLngToLayerPoint(centro);
+        let adjustedPoint = originalPoint;
+        let attempts = 0;
+        let angle = 0;
+        let radius = 0;
+        let collision = true;
+
+        while (collision && attempts < 10) {
+          collision = renderedPoints.some(p => p.distanceTo(adjustedPoint) < minDistance);
+          if (collision) {
+            attempts++;
+            angle += 1.1;
+            radius = 10 + (attempts * 3);
+            adjustedPoint = L.point(
+              originalPoint.x + radius * Math.cos(angle),
+              originalPoint.y + radius * Math.sin(angle)
+            );
+          }
+        }
+
+        renderedPoints.push(adjustedPoint);
+        const finalLatLng = this.map.layerPointToLatLng(adjustedPoint);
+
+        L.marker(finalLatLng, {
+          icon: this.renderer.crearBadgeGroupIcon(items, 'parroquia'),
+          zIndexOffset: 1500 + attempts,
+          pane: 'elementsPane'
+        })
+          .bindPopup(this.renderer.crearPopupAgregado(`${pName} (${estado})`, 'estado', items, segBreakdown))
+          .addTo(this.layerAggregated);
+      }
     });
   }
 
@@ -472,6 +631,9 @@ export class Map implements AfterViewInit {
         const segBreakdown = tipos.includes('abonados') ? this.gis.abonadosSignal().filter(ab => ab.estado === est.nombre)
           .reduce((acc: any, ab) => { acc[ab.segmentacion] = (acc[ab.segmentacion] || 0) + (Number(ab.cantidad) || 0); return acc; }, {}) : null;
 
+        const agenteBreakdown = tipos.includes('agentes') ? this.gis.agentesSignal().filter(ag => ag.estado === est.nombre)
+          .reduce((acc: any, ag) => { acc[ag.clasificacion || 'AA'] = (acc[ag.clasificacion || 'AA'] || 0) + (Number(ag.cantidad) || 1); return acc; }, {}) : null;
+
         // --- LÓGICA DE EVITACIÓN DE COLISIONES ---
         const originalPoint = this.map.latLngToLayerPoint([est.latitud, est.longitud]);
         let adjustedPoint = originalPoint;
@@ -497,11 +659,11 @@ export class Map implements AfterViewInit {
         const finalLatLng = this.map.layerPointToLatLng(adjustedPoint);
 
         L.marker(finalLatLng, {
-          icon: this.renderer.crearBadgeGroupIcon(items),
+          icon: this.renderer.crearBadgeGroupIcon(items, 'estado'),
           zIndexOffset: 1000 + attempts,
           pane: 'elementsPane'
         })
-          .bindPopup(this.renderer.crearPopupAgregado(est.nombre, 'estado', items, segBreakdown)).addTo(this.layerAggregated);
+          .bindPopup(this.renderer.crearPopupAgregado(est.nombre, 'estado', items, segBreakdown, agenteBreakdown)).addTo(this.layerAggregated);
       }
     });
   }
@@ -516,6 +678,9 @@ export class Map implements AfterViewInit {
       if (items.length > 0 && centro) {
         const segBreakdown = tipos.includes('abonados') ? this.gis.abonadosSignal().filter(ab => ab.region === reg.nombre)
           .reduce((acc: any, ab) => { acc[ab.segmentacion] = (acc[ab.segmentacion] || 0) + (Number(ab.cantidad) || 0); return acc; }, {}) : null;
+
+        const agenteBreakdown = tipos.includes('agentes') ? this.gis.agentesSignal().filter(ag => ag.region === reg.nombre)
+          .reduce((acc: any, ag) => { acc[ag.clasificacion || 'AA'] = (acc[ag.clasificacion || 'AA'] || 0) + (Number(ag.cantidad) || 1); return acc; }, {}) : null;
 
         // --- LÓGICA DE EVITACIÓN DE COLISIONES ---
         const originalPoint = this.map.latLngToLayerPoint([centro.lat, centro.lng]);
@@ -542,11 +707,11 @@ export class Map implements AfterViewInit {
         const finalLatLng = this.map.layerPointToLatLng(adjustedPoint);
 
         L.marker(finalLatLng, {
-          icon: this.renderer.crearBadgeGroupIcon(items, true),
+          icon: this.renderer.crearBadgeGroupIcon(items, 'region'),
           zIndexOffset: 2000 + attempts,
           pane: 'elementsPane'
         })
-          .bindPopup(this.renderer.crearPopupAgregado(reg.nombre, 'region', items, segBreakdown)).addTo(this.layerAggregated);
+          .bindPopup(this.renderer.crearPopupAgregado(reg.nombre, 'region', items, segBreakdown, agenteBreakdown)).addTo(this.layerAggregated);
       }
     });
   }
@@ -637,43 +802,57 @@ export class Map implements AfterViewInit {
     }
   }
 
-  private obtenerEstadoPorCoordenada(lat: number, lng: number): string | null {
-    if (!this.geoJsonData) return null;
-    for (const feature of this.geoJsonData.features) {
-      const type = feature.geometry.type;
-      const coords = feature.geometry.coordinates;
-      const nombre = feature.properties.estado || feature.properties.name;
+  private obtenerParroquiaPorCoordenada(lat: number, lng: number): { name: string, municipio: string, estado: string } | null {
+    if (!this.parroquiasGeoJsonData) return null;
+    for (const feature of this.parroquiasGeoJsonData.features) {
+      const geom = feature.geometry;
+      if (!geom) continue;
+      
+      const type = geom.type;
+      const coords = geom.coordinates;
+      const name = feature.properties.adm3_name;
+      const municipio = feature.properties.adm2_name;
+      const estado = feature.properties.adm1_name;
 
       const puntoEnGeoJsonPoligono = (ring: number[][]) => {
         const polyVertices = ring.map(p => L.latLng(p[1], p[0]));
         return this.mathService.puntoEnPoligono(lat, lng, polyVertices);
       };
 
-      if (type === 'Polygon') {
-        if (puntoEnGeoJsonPoligono(coords[0])) return nombre;
-      } else if (type === 'MultiPolygon') {
-        for (const poly of coords) {
-          if (puntoEnGeoJsonPoligono(poly[0])) return nombre;
+      try {
+        if (type === 'Polygon') {
+          if (puntoEnGeoJsonPoligono(coords[0])) return { name, municipio, estado };
+        } else if (type === 'MultiPolygon') {
+          for (const poly of coords) {
+            if (puntoEnGeoJsonPoligono(poly[0])) return { name, municipio, estado };
+          }
         }
-      }
+      } catch (e) {}
     }
     return null;
   }
 
-  private obtenerEstadosIntersectados(layer: any, tipo: string, centro: L.LatLng | null, radio: number): string[] {
-    const estados = new Set<string>();
+  private obtenerParroquiasIntersectadas(layer: any, tipo: string, centro: L.LatLng | null, radio: number): { name: string, municipio: string, estado: string }[] {
+    const keySet = new Set<string>();
+    const parroquias: { name: string, municipio: string, estado: string }[] = [];
     
-    // Always add the centroid state just in case
+    const addPar = (par: { name: string, municipio: string, estado: string } | null) => {
+      if (!par) return;
+      const key = `${par.name}_${par.estado}`;
+      if (!keySet.has(key)) {
+        keySet.add(key);
+        parroquias.push(par);
+      }
+    };
+
     if (centro) {
-      const estCentro = this.obtenerEstadoPorCoordenada(centro.lat, centro.lng);
-      if (estCentro) estados.add(estCentro);
+      addPar(this.obtenerParroquiaPorCoordenada(centro.lat, centro.lng));
     }
 
-    if (typeof layer.getBounds !== 'function') return Array.from(estados);
+    if (typeof layer.getBounds !== 'function') return parroquias;
     const bounds = layer.getBounds();
-    if (!bounds || !bounds.isValid()) return Array.from(estados);
+    if (!bounds || !bounds.isValid()) return parroquias;
 
-    // Muestreo de 5x5 puntos dentro del bounding box
     const latStep = (bounds.getNorth() - bounds.getSouth()) / 4;
     const lngStep = (bounds.getEast() - bounds.getWest()) / 4;
 
@@ -695,13 +874,12 @@ export class Map implements AfterViewInit {
         }
 
         if (pointInside) {
-          const est = this.obtenerEstadoPorCoordenada(lat, lng);
-          if (est) estados.add(est);
+          addPar(this.obtenerParroquiaPorCoordenada(lat, lng));
         }
       }
     }
 
-    return Array.from(estados);
+    return parroquias;
   }
 
   /**
@@ -750,30 +928,30 @@ export class Map implements AfterViewInit {
     if (tipo === 'circulo' && centroCirculo) {
       centroide = centroCirculo;
     } else if (vertices.length > 0) {
-      // Calcular centroide aproximado (promedio de vértices)
       const latSum = vertices.reduce((sum, v) => sum + v.lat, 0);
       const lngSum = vertices.reduce((sum, v) => sum + v.lng, 0);
       centroide = L.latLng(latSum / vertices.length, lngSum / vertices.length);
     }
 
-    const estadosFigura = this.obtenerEstadosIntersectados(layer, tipo, centroide, radioCirculo);
+    const parroquiasFigura = this.obtenerParroquiasIntersectadas(layer, tipo, centroide, radioCirculo);
+    const parKeys = parroquiasFigura.map(p => `${p.name}_${p.estado}`);
 
     if (tipo === 'circulo' && centroCirculo) {
       radioBases = this.gis.radioBasesSignal().filter(rb => this.mathService.puntoEnCirculo(rb.latitud, rb.longitud, centroCirculo!, radioCirculo));
       agentes = this.gis.agentesSignal().filter(ag => this.mathService.puntoEnCirculo(ag.latitud, ag.longitud, centroCirculo!, radioCirculo));
       oficinas = this.gis.oficinasSignal().filter(of => this.mathService.puntoEnCirculo(of.latitud, of.longitud, centroCirculo!, radioCirculo));
-      abonados = estadosFigura.length > 0 ? this.gis.abonadosSignal().filter(ab => estadosFigura.includes(ab.estado)) : [];
+      abonados = parKeys.length > 0 ? this.gis.abonadosSignal().filter(ab => parKeys.includes(`${ab.parroquia}_${ab.estado}`)) : [];
     } else if (tipo === 'poligono') {
       radioBases = this.gis.radioBasesSignal().filter(rb => this.mathService.puntoEnPoligono(rb.latitud, rb.longitud, vertices));
       agentes = this.gis.agentesSignal().filter(ag => this.mathService.puntoEnPoligono(ag.latitud, ag.longitud, vertices));
       oficinas = this.gis.oficinasSignal().filter(of => this.mathService.puntoEnPoligono(of.latitud, of.longitud, vertices));
-      abonados = estadosFigura.length > 0 ? this.gis.abonadosSignal().filter(ab => estadosFigura.includes(ab.estado)) : [];
+      abonados = parKeys.length > 0 ? this.gis.abonadosSignal().filter(ab => parKeys.includes(`${ab.parroquia}_${ab.estado}`)) : [];
     } else {
-      const bufferMetros = 500; // Radio de búsqueda alrededor de la ruta
+      const bufferMetros = 500;
       radioBases = this.gis.radioBasesSignal().filter(rb => this.mathService.puntoCercaDeRuta(rb.latitud, rb.longitud, vertices, bufferMetros));
       agentes = this.gis.agentesSignal().filter(ag => this.mathService.puntoCercaDeRuta(ag.latitud, ag.longitud, vertices, bufferMetros));
       oficinas = this.gis.oficinasSignal().filter(of => this.mathService.puntoCercaDeRuta(of.latitud, of.longitud, vertices, bufferMetros));
-      abonados = estadosFigura.length > 0 ? this.gis.abonadosSignal().filter(ab => estadosFigura.includes(ab.estado)) : [];
+      abonados = parKeys.length > 0 ? this.gis.abonadosSignal().filter(ab => parKeys.includes(`${ab.parroquia}_${ab.estado}`)) : [];
     }
 
     const totalAbonados = abonados.reduce((acc, curr) => acc + (curr.cantidad || 0), 0);
@@ -783,7 +961,7 @@ export class Map implements AfterViewInit {
       oficinas.length, 
       totalAbonados,
       tipo,
-      estadosFigura
+      parroquiasFigura
     );
 
     this.analisisFigura.set({
@@ -808,27 +986,39 @@ export class Map implements AfterViewInit {
   /**
    * Genera recomendaciones de expansión basadas en los elementos encontrados.
    */
-  private calcularRecomendacionesAnalisis(radiobasesLocales: number, agentes: number, oficinas: number, abonados: number, tipo: 'poligono' | 'ruta' | 'circulo', estadosFigura: string[]): any {
+  private calcularRecomendacionesAnalisis(
+    radiobasesLocales: number, 
+    agentes: number, 
+    oficinas: number, 
+    abonados: number, 
+    tipo: 'poligono' | 'ruta' | 'circulo', 
+    parroquiasFigura: { name: string, municipio: string, estado: string }[]
+  ): any {
     const estadalSugerencias: string[] = [];
     const localSugerencias: string[] = [];
     const sufijo = (tipo === 'poligono' || tipo === 'circulo') ? 'dentro del área' : 'en la proximidad de la ruta';
     
-    // --- Métrica Estadal (Abonados vs Antenas) ---
-    if (estadosFigura && estadosFigura.length > 0) {
-      const nombresEstados = estadosFigura.join(', ');
+    const estadosFigura = Array.from(new Set(parroquiasFigura.map(p => p.estado)));
+    const parroquiasNombres = Array.from(new Set(parroquiasFigura.map(p => p.name)));
+
+    // --- Métrica Estadal/Parroquial (Abonados vs Antenas) ---
+    if (parroquiasFigura && parroquiasFigura.length > 0) {
+      const nombresParrs = parroquiasNombres.slice(0, 5).join(', ') + (parroquiasNombres.length > 5 ? '...' : '');
+      
       if (abonados === 0) {
-        estadalSugerencias.push(`El área abarca ${nombresEstados}, pero no posee abonados registrados en este momento. Considere campañas comerciales.`);
+        estadalSugerencias.push(`El área abarca las parroquias (${nombresParrs}), pero no posee abonados registrados en este momento. Considere campañas comerciales.`);
       } else {
-        const radiobasesEvaluadas = this.gis.radioBasesSignal().filter(rb => estadosFigura.includes(rb.estado)).length;
+        const parKeys = parroquiasFigura.map(p => `${p.name}_${p.estado}`);
+        const radiobasesEvaluadas = this.gis.radioBasesSignal().filter(rb => parKeys.includes(`${rb.parroquia}_${rb.estado}`)).length;
         if (radiobasesEvaluadas === 0) {
-          estadalSugerencias.push(`📡 Alerta crítica: El área abarca ${nombresEstados} y cuenta con ${abonados.toLocaleString()} abonados totales sin cobertura de radiobases. Sugerencia: Instalar al menos 1 Radiobase prioritaria.`);
+          estadalSugerencias.push(`📡 Alerta crítica: El área abarca las parroquias (${nombresParrs}) y cuenta con ${abonados.toLocaleString()} abonados totales sin cobertura de radiobases. Sugerencia: Instalar al menos 1 Radiobase prioritaria.`);
         } else {
           const ratioRB = abonados / radiobasesEvaluadas;
           if (ratioRB > 350) {
             const necesarias = Math.ceil(abonados / 300) - radiobasesEvaluadas;
-            estadalSugerencias.push(`📡 Saturación: La zona abarca ${nombresEstados} con ${abonados.toLocaleString()} abonados totales. Promedio de ${Math.round(ratioRB).toLocaleString()} clientes por antena. Sugerencia: Desplegar ${necesarias} nuevas radiobases en total para aliviar la carga general de los estados involucrados.`);
+            estadalSugerencias.push(`📡 Saturación: La zona abarca las parroquias (${nombresParrs}) con ${abonados.toLocaleString()} abonados totales. Promedio de ${Math.round(ratioRB).toLocaleString()} clientes por antena. Sugerencia: Desplegar ${necesarias} nuevas radiobases en total para aliviar la carga general de las parroquias involucradas.`);
           } else {
-            estadalSugerencias.push(`📡 Cobertura Óptima: La zona abarca ${nombresEstados} con ${abonados.toLocaleString()} abonados y ${radiobasesEvaluadas} antenas. Promedio de ${Math.round(ratioRB).toLocaleString()} clientes por antena.`);
+            estadalSugerencias.push(`📡 Cobertura Óptima: La zona abarca las parroquias (${nombresParrs}) con ${abonados.toLocaleString()} abonados y ${radiobasesEvaluadas} antenas. Promedio de ${Math.round(ratioRB).toLocaleString()} clientes por antena.`);
           }
         }
       }
@@ -850,8 +1040,8 @@ export class Map implements AfterViewInit {
     }
 
     return {
-      estadal: (estadosFigura && estadosFigura.length > 0) ? {
-        titulo: `Métrica Estadal (Datos Macroscópicos de ${estadosFigura.join(', ')})`,
+      estadal: (parroquiasFigura && parroquiasFigura.length > 0) ? {
+        titulo: `Métrica Parroquial (Datos Macroscópicos de ${parroquiasNombres.slice(0, 4).join(', ') + (parroquiasNombres.length > 4 ? '...' : '')})`,
         sugerencias: estadalSugerencias
       } : null,
       local: {

@@ -16,6 +16,8 @@ export interface RadioBase {
   nombre: string;
   estado: string;
   region: string;
+  municipio?: string;
+  parroquia?: string;
   latitud: number;
   longitud: number;
   tecnologia: string;
@@ -28,6 +30,8 @@ export interface Abonado {
   nombre: string;
   estado: string;
   region: string;
+  municipio?: string;
+  parroquia?: string;
   latitud: number;
   longitud: number;
   cantidad?: number;
@@ -40,6 +44,8 @@ export interface Oficina {
   nombre: string;
   estado: string;
   region: string;
+  municipio?: string;
+  parroquia?: string;
   latitud: number;
   longitud: number;
   cantidad?: number;
@@ -51,6 +57,8 @@ export interface Agente {
   nombre: string;
   estado: string;
   region: string;
+  municipio?: string;
+  parroquia?: string;
   latitud: number;
   longitud: number;
   cantidad?: number;

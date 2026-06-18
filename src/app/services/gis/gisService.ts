@@ -56,6 +56,8 @@ export class GisService {
   // Totales
   getTotalesPorEstado(tipo: TipoElemento) { return this.element.getTotalesPorEstado(tipo); }
   getTotalesPorRegion(tipo: TipoElemento) { return this.element.getTotalesPorRegion(tipo); }
+  getTotalesPorParroquia(tipo: TipoElemento) { return this.element.getTotalesPorParroquia(tipo); }
+  get parroquiasData() { return this.element.parroquiasData; }
 
   // Control de capas
   toggleCapa(nombre: keyof CapasEstado) { this.map.toggleCapa(nombre); }

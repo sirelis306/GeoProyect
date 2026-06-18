@@ -64,8 +64,8 @@ export class ElementRendererService {
   }
 
   /* Crea un icono de grupo (badge) para totales por estado o región */
-  crearBadgeGroupIcon(items: { tipo: TipoElemento, total: number }[], esRegion = false) {
-    let html = `<div class="badge-group ${esRegion ? 'region-badge' : ''}">`;
+  crearBadgeGroupIcon(items: { tipo: TipoElemento, total: number }[], level: 'region' | 'estado' | 'parroquia' = 'estado') {
+    let html = `<div class="badge-group level-${level}">`;
     items.forEach(item => {
       const config = this.configIconos[item.tipo];
       html += `
@@ -89,7 +89,8 @@ export class ElementRendererService {
     titulo: string,
     tipo: 'estado' | 'region',
     items: { tipo: TipoElemento, total: number }[],
-    segBreakdown: Record<string, number> | null = null
+    segBreakdown: Record<string, number> | null = null,
+    agenteBreakdown: Record<string, number> | null = null
   ) {
     const mainColor = items.length > 0 ? this.configIconos[items[0].tipo].color : '#3240A5';
     const icono = tipo === 'estado' ? 'fa-map-marker-alt' : 'fa-globe-americas';
@@ -108,6 +109,14 @@ export class ElementRendererService {
         rows += `<div class="popup-seg-breakdown">`;
         Object.entries(segBreakdown).sort().forEach(([seg, cnt]) => {
           rows += `<div class="popup-seg-row"><span class="popup-seg-label">${seg}</span><span class="popup-seg-val">${(cnt as number).toLocaleString()}</span></div>`;
+        });
+        rows += `</div>`;
+      }
+
+      if (item.tipo === 'agentes' && agenteBreakdown && Object.keys(agenteBreakdown).length > 0) {
+        rows += `<div class="popup-seg-breakdown">`;
+        Object.entries(agenteBreakdown).sort().forEach(([clas, cnt]) => {
+          rows += `<div class="popup-seg-row"><span class="popup-seg-label">${clas}</span><span class="popup-seg-val">${(cnt as number).toLocaleString()}</span></div>`;
         });
         rows += `</div>`;
       }
@@ -231,7 +240,17 @@ export class ElementRendererService {
   }
 
   /* Retorna el color según el rango de población (escala secuencial azul/indigo basada en #3240A5) */
-  getColorPoblacion(pob: number): string {
+  getColorPoblacion(pob: number, esParroquia = false): string {
+    if (esParroquia) {
+      // Rangos de población de parroquias (menores a municipios)
+      return pob > 100000 ? '#1a2675' :
+             pob > 50000  ? '#3240a5' :
+             pob > 25000  ? '#3f5fc4' :
+             pob > 10000  ? '#5a7cd9' :
+             pob > 5000   ? '#7e9beb' :
+             pob > 2000   ? '#adbeed' :
+                            '#e2e8f7';
+    }
     return pob > 4000000 ? '#1a2675' :
            pob > 3000000 ? '#3240a5' :
            pob > 2000000 ? '#3f5fc4' :
@@ -242,11 +261,11 @@ export class ElementRendererService {
   }
 
   /* Retorna el estilo para el polígono de población */
-  getEstiloPoblacion(pob: number, hayCapasEspeciales: boolean) {
-    const color = this.getColorPoblacion(pob);
+  getEstiloPoblacion(pob: number, hayCapasEspeciales: boolean, esParroquia = false) {
+    const color = this.getColorPoblacion(pob, esParroquia);
     return {
       fillColor: color,
-      weight: 1.5,
+      weight: esParroquia ? 1.0 : 1.5,
       opacity: 0.8,
       color: '#FFFFFF',
       fillOpacity: hayCapasEspeciales ? 0.35 : 0.7
@@ -254,11 +273,37 @@ export class ElementRendererService {
   }
 
   /* Genera el HTML para el popup de la capa poblacional */
-  crearPopupPoblacion(nombre: string, poblacion: number) {
-    const color = this.getColorPoblacion(poblacion);
-    const textColor = poblacion > 500000 ? '#ffffff' : '#1e293b';
-    const textShadow = poblacion > 500000 ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.2);' : '';
-    const iconBg = poblacion > 500000 ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.06)';
+  crearPopupPoblacion(nombre: string, poblacion: number, municipio?: string, estado?: string) {
+    const esParroquia = !!municipio;
+    const color = this.getColorPoblacion(poblacion, esParroquia);
+    const textColor = (poblacion > 50000 || (!esParroquia && poblacion > 500000)) ? '#ffffff' : '#1e293b';
+    const textShadow = (poblacion > 50000 || (!esParroquia && poblacion > 500000)) ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.2);' : '';
+    const iconBg = (poblacion > 50000 || (!esParroquia && poblacion > 500000)) ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.06)';
+
+    let filasHtml = '';
+    if (esParroquia) {
+      filasHtml = `
+        <tr>
+          <td class="popup-lbl">Parroquia</td>
+          <td><span class="popup-val" style="font-weight: 700; color: #1e293b;">${nombre}</span></td>
+        </tr>
+        <tr>
+          <td class="popup-lbl">Municipio</td>
+          <td><span class="popup-val" style="color: #475569;">${municipio}</span></td>
+        </tr>
+        <tr>
+          <td class="popup-lbl">Estado</td>
+          <td><span class="popup-val" style="color: #64748b;">${estado}</span></td>
+        </tr>
+      `;
+    } else {
+      filasHtml = `
+        <tr>
+          <td class="popup-lbl">Estado</td>
+          <td><span class="popup-val" style="font-weight: 700; color: #1e293b;">${nombre}</span></td>
+        </tr>
+      `;
+    }
 
     return `
       <div class="popup-detalle poblacion-popup">
@@ -267,14 +312,11 @@ export class ElementRendererService {
           <span style="font-weight: 700;">Demografía</span>
         </div>
         <table class="popup-table">
-          <tr>
-            <td class="popup-lbl">Estado</td>
-            <td><span class="popup-val" style="font-weight: 700; color: #1e293b;">${nombre}</span></td>
-          </tr>
+          ${filasHtml}
           <tr>
             <td class="popup-lbl">Población</td>
             <td>
-              <span class="popup-badge" style="--bdg-color: ${color}; color: #000000; font-weight: 700;">
+              <span class="popup-badge" style="--bdg-color: ${color}; color: ${textColor}; font-weight: 700;">
                 ${poblacion.toLocaleString('es-VE')} hab.
               </span>
             </td>

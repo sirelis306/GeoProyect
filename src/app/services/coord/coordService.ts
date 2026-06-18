@@ -14,6 +14,7 @@ export class CoordService {
     'Carabobo': { lat: 10.1620, lng: -68.0070 },
     'Cojedes': { lat: 9.1667, lng: -68.3333 },
     'Delta Amacuro': { lat: 8.5000, lng: -61.5000 },
+    'Dependencias Federales': { lat: 11.96, lng: -66.68 },
     'Distrito Capital': { lat: 10.5000, lng: -66.9167 },
     'Falcón': { lat: 11.0000, lng: -70.0000 },
     'Guárico': { lat: 8.5000, lng: -66.5000 },

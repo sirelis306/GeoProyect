@@ -153,7 +153,7 @@ export class AddElementComponent {
       request.subscribe({
         next: () => {
           this.enviando = false;
-          this.resetearFormulario();
+          this.resetearFormulario(form);
           this.onSaved.emit();
           this.mostrarModal('success', '¡Éxito!', `Elemento ${this.modoEdicion ? 'actualizado' : 'guardado'} correctamente.`);
           setTimeout(() => {
@@ -172,12 +172,15 @@ export class AddElementComponent {
     }
   }
 
-  resetearFormulario() {
+  resetearFormulario(form?: NgForm) {
     this.nuevoItem = {
       nombre: '', estado: null, latitud: null, longitud: null, direccion: '',
       cantidad: null, actividad: 'Operativa', tecnologia: [],
       segmentacion_elegida: '4G', codigoDealer: '', clasificacion: null
     };
+    if (form) {
+      form.resetForm(this.nuevoItem);
+    }
   }
 
   cerrar() {
