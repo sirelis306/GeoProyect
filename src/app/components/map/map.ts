@@ -918,11 +918,10 @@ export class Map implements AfterViewInit {
       }
     }
 
-    // Filtrar elementos (Radiobases, Agentes, Oficinas, Abonados)
+    // Filtrar elementos (Radiobases, Agentes, Oficinas)
     let radioBases = [];
     let agentes = [];
     let oficinas = [];
-    let abonados = [];
 
     let centroide: L.LatLng | null = null;
     if (tipo === 'circulo' && centroCirculo) {
@@ -934,27 +933,28 @@ export class Map implements AfterViewInit {
     }
 
     const parroquiasFigura = this.obtenerParroquiasIntersectadas(layer, tipo, centroide, radioCirculo);
-    const parKeys = parroquiasFigura.map(p => `${p.name}_${p.estado}`);
+    const estadosFigura = Array.from(new Set(parroquiasFigura.map(p => p.estado)));
 
     if (tipo === 'circulo' && centroCirculo) {
       radioBases = this.gis.radioBasesSignal().filter(rb => this.mathService.puntoEnCirculo(rb.latitud, rb.longitud, centroCirculo!, radioCirculo));
       agentes = this.gis.agentesSignal().filter(ag => this.mathService.puntoEnCirculo(ag.latitud, ag.longitud, centroCirculo!, radioCirculo));
       oficinas = this.gis.oficinasSignal().filter(of => this.mathService.puntoEnCirculo(of.latitud, of.longitud, centroCirculo!, radioCirculo));
-      abonados = parKeys.length > 0 ? this.gis.abonadosSignal().filter(ab => parKeys.includes(`${ab.parroquia}_${ab.estado}`)) : [];
     } else if (tipo === 'poligono') {
       radioBases = this.gis.radioBasesSignal().filter(rb => this.mathService.puntoEnPoligono(rb.latitud, rb.longitud, vertices));
       agentes = this.gis.agentesSignal().filter(ag => this.mathService.puntoEnPoligono(ag.latitud, ag.longitud, vertices));
       oficinas = this.gis.oficinasSignal().filter(of => this.mathService.puntoEnPoligono(of.latitud, of.longitud, vertices));
-      abonados = parKeys.length > 0 ? this.gis.abonadosSignal().filter(ab => parKeys.includes(`${ab.parroquia}_${ab.estado}`)) : [];
     } else {
       const bufferMetros = 500;
       radioBases = this.gis.radioBasesSignal().filter(rb => this.mathService.puntoCercaDeRuta(rb.latitud, rb.longitud, vertices, bufferMetros));
       agentes = this.gis.agentesSignal().filter(ag => this.mathService.puntoCercaDeRuta(ag.latitud, ag.longitud, vertices, bufferMetros));
       oficinas = this.gis.oficinasSignal().filter(of => this.mathService.puntoCercaDeRuta(of.latitud, of.longitud, vertices, bufferMetros));
-      abonados = parKeys.length > 0 ? this.gis.abonadosSignal().filter(ab => parKeys.includes(`${ab.parroquia}_${ab.estado}`)) : [];
     }
 
-    const totalAbonados = abonados.reduce((acc, curr) => acc + (curr.cantidad || 0), 0);
+    // Calcular el total de abonados a nivel de estado(s) intersectado(s)
+    const totalAbonados = this.gis.abonadosSignal()
+      .filter(ab => estadosFigura.includes(ab.estado))
+      .reduce((acc, curr) => acc + (Number(curr.cantidad) || 0), 0);
+
     const recomendaciones = this.calcularRecomendacionesAnalisis(
       radioBases.length, 
       agentes.length, 
@@ -994,56 +994,48 @@ export class Map implements AfterViewInit {
     tipo: 'poligono' | 'ruta' | 'circulo', 
     parroquiasFigura: { name: string, municipio: string, estado: string }[]
   ): any {
-    const estadalSugerencias: string[] = [];
     const localSugerencias: string[] = [];
     const sufijo = (tipo === 'poligono' || tipo === 'circulo') ? 'dentro del área' : 'en la proximidad de la ruta';
-    
-    const estadosFigura = Array.from(new Set(parroquiasFigura.map(p => p.estado)));
-    const parroquiasNombres = Array.from(new Set(parroquiasFigura.map(p => p.name)));
 
-    // --- Métrica Estadal/Parroquial (Abonados vs Antenas) ---
-    if (parroquiasFigura && parroquiasFigura.length > 0) {
-      const nombresParrs = parroquiasNombres.slice(0, 5).join(', ') + (parroquiasNombres.length > 5 ? '...' : '');
-      
-      if (abonados === 0) {
-        estadalSugerencias.push(`El área abarca las parroquias (${nombresParrs}), pero no posee abonados registrados en este momento. Considere campañas comerciales.`);
+    // --- Métrica Inteligente de Carga Comercial (Radiobases vs Oficinas/Agentes) ---
+    const radiobasesRequeridas = oficinas + Math.ceil(agentes / 3);
+
+    if (radiobasesRequeridas === 0) {
+      if (radiobasesLocales === 0) {
+        localSugerencias.push(`📡 Cobertura de Radiobases: Se detectaron 0 radiobases ${sufijo}. Sugerencia: Evaluar el despliegue de una nueva antena si la zona presenta baja cobertura.`);
+      } else if (radiobasesLocales === 1) {
+        localSugerencias.push(`📡 Cobertura de Radiobases: Se detectó 1 radiobase ${sufijo}, brindando cobertura directa a este sector.`);
       } else {
-        const parKeys = parroquiasFigura.map(p => `${p.name}_${p.estado}`);
-        const radiobasesEvaluadas = this.gis.radioBasesSignal().filter(rb => parKeys.includes(`${rb.parroquia}_${rb.estado}`)).length;
-        if (radiobasesEvaluadas === 0) {
-          estadalSugerencias.push(`📡 Alerta crítica: El área abarca las parroquias (${nombresParrs}) y cuenta con ${abonados.toLocaleString()} abonados totales sin cobertura de radiobases. Sugerencia: Instalar al menos 1 Radiobase prioritaria.`);
-        } else {
-          const ratioRB = abonados / radiobasesEvaluadas;
-          if (ratioRB > 350) {
-            const necesarias = Math.ceil(abonados / 300) - radiobasesEvaluadas;
-            estadalSugerencias.push(`📡 Saturación: La zona abarca las parroquias (${nombresParrs}) con ${abonados.toLocaleString()} abonados totales. Promedio de ${Math.round(ratioRB).toLocaleString()} clientes por antena. Sugerencia: Desplegar ${necesarias} nuevas radiobases en total para aliviar la carga general de las parroquias involucradas.`);
-          } else {
-            estadalSugerencias.push(`📡 Cobertura Óptima: La zona abarca las parroquias (${nombresParrs}) con ${abonados.toLocaleString()} abonados y ${radiobasesEvaluadas} antenas. Promedio de ${Math.round(ratioRB).toLocaleString()} clientes por antena.`);
-          }
-        }
+        localSugerencias.push(`📡 Cobertura de Radiobases: Se detectaron ${radiobasesLocales} radiobases ${sufijo}, asegurando cobertura local.`);
+      }
+    } else {
+      if (radiobasesLocales === 0) {
+        localSugerencias.push(`🚨 Alerta de Capacidad: Se detectó alta actividad comercial (${oficinas} oficina(s) / ${agentes} agente(s)) pero 0 radiobases locales. Sugerencia: Instalar de forma prioritaria al menos ${radiobasesRequeridas} radiobase(s) para dar soporte al canal de ventas y atención.`);
+      } else if (radiobasesLocales < radiobasesRequeridas) {
+        localSugerencias.push(`⚠️ Insuficiencia de Red: Se cuenta con ${radiobasesLocales} radiobase(s) para una demanda comercial estimada de ${radiobasesRequeridas} antenas. Sugerencia: Desplegar ${radiobasesRequeridas - radiobasesLocales} nueva(s) radiobase(s) para evitar congestión en los puntos de venta y oficinas.`);
+      } else {
+        localSugerencias.push(`📡 Cobertura de Radiobases: Se detectaron ${radiobasesLocales} radiobases locales, lo cual es óptimo para soportar la carga de la infraestructura comercial del área (${radiobasesRequeridas} recomendada(s)).`);
       }
     }
 
-    // --- Métrica Local (Oficinas y Agentes dentro del polígono) ---
+    // --- Métrica Local (Oficinas dentro del polígono) ---
     if (oficinas === 0) {
       localSugerencias.push(`🏢 Atención Comercial: Se detectaron 0 oficinas ${sufijo}. Sugerencia: Instalar 1 Oficina de Atención en esta zona.`);
     } else {
       localSugerencias.push(`🏢 Atención Comercial: Se detectaron ${oficinas} oficinas ${sufijo}, cubriendo la atención al cliente de la zona.`);
     }
 
+    // --- Métrica Local (Agentes dentro de la figura) ---
     if (agentes === 0) {
       localSugerencias.push(`🛍️ Red de Ventas: Se detectaron 0 agentes autorizados en los límites del dibujo. Sugerencia: Certificar 2 nuevos agentes comerciales en este sector.`);
     } else if (agentes < 3) {
-      localSugerencias.push(`🛍️ Red de Ventas: Se detectaron ${agentes} agentes autorizados. Sugerencia: Certificar al menos ${3 - agentes} nuevos agentes comerciales para fortalecer el sector.`);
+      localSugerencias.push(`🛍️ Red de Ventas: Se detectaron ${agentes} agentes autorizados. Sugerencia: Certificar al menos ${3 - agentes} nuevos agentes comerciales para fortalecer la presencia.`);
     } else {
       localSugerencias.push(`🛍️ Red de Ventas: Presencia comercial sólida con ${agentes} agentes autorizados en los límites del dibujo.`);
     }
 
     return {
-      estadal: (parroquiasFigura && parroquiasFigura.length > 0) ? {
-        titulo: `Métrica Parroquial (Datos Macroscópicos de ${parroquiasNombres.slice(0, 4).join(', ') + (parroquiasNombres.length > 4 ? '...' : '')})`,
-        sugerencias: estadalSugerencias
-      } : null,
+      estadal: null, // Desactivado para no mezclar datos macro con recomendaciones locales directas
       local: {
         titulo: 'Métrica Local (Dentro del Polígono Dibujado)',
         sugerencias: localSugerencias
