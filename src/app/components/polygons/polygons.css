@@ -3,7 +3,8 @@
   position: absolute;
   bottom: 30px;
   top: auto;
-  left: 20px;
+  left: 80px;
+  right: auto;
   width: 310px;
   max-height: calc(100vh - 120px);
   z-index: 1050;
@@ -267,7 +268,8 @@
 /* RESPONSIVE SCALING */
 @media (max-width: 768px) {
   .analisis-panel-card {
-    left: 10px;
+    left: 80px;
+    right: auto;
     width: 320px;
   }
 }

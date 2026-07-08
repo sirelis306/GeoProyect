@@ -89,6 +89,44 @@ export class ElementService {
       }
     }
 
+    // Si no se encontró en el estado objetivo, verificamos si las coordenadas caen en CUALQUIER OTRO estado.
+    // Esto ayuda a detectar mismatches de estado en la base de datos (ej. coordenadas en Miranda pero estado Bolívar).
+    let detectadoEnOtroEstado = false;
+    for (const feature of data.features) {
+      const estNorm = this.normalizeName(feature.properties.adm1_name || '');
+      if (targetEstadoNorm && estNorm === targetEstadoNorm) continue;
+
+      const geom = feature.geometry;
+      if (!geom) continue;
+
+      const pointInPoly = (ring: number[][]) => {
+        const vertices = ring.map(coord => L.latLng(coord[1], coord[0]));
+        return this.mathService.puntoEnPoligono(lat, lng, vertices);
+      };
+
+      try {
+        let inside = false;
+        if (geom.type === 'Polygon') {
+          inside = pointInPoly(geom.coordinates[0]);
+        } else if (geom.type === 'MultiPolygon') {
+          for (const poly of geom.coordinates) {
+            if (pointInPoly(poly[0])) {
+              inside = true;
+              break;
+            }
+          }
+        }
+        if (inside) {
+          detectadoEnOtroEstado = true;
+          break;
+        }
+      } catch (e) {}
+    }
+
+    if (detectadoEnOtroEstado) {
+      return null;
+    }
+
     // Fallback por cercanía dentro del mismo estado (evita pérdidas por simplificación de bordes)
     if (estado) {
       let closestPar: { name: string, municipio: string } | null = null;
@@ -110,7 +148,8 @@ export class ElementService {
           }
         }
       }
-      if (closestPar) return closestPar;
+      // Limitar a una distancia razonable (150 km) para evitar emparejamientos erráticos a larga distancia
+      if (closestPar && minDistance < 150000) return closestPar;
     }
 
     return null;

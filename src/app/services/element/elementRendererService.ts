@@ -276,9 +276,10 @@ export class ElementRendererService {
   crearPopupPoblacion(nombre: string, poblacion: number, municipio?: string, estado?: string) {
     const esParroquia = !!municipio;
     const color = this.getColorPoblacion(poblacion, esParroquia);
-    const textColor = (poblacion > 50000 || (!esParroquia && poblacion > 500000)) ? '#ffffff' : '#1e293b';
-    const textShadow = (poblacion > 50000 || (!esParroquia && poblacion > 500000)) ? 'text-shadow: 0 1px 2px rgba(0,0,0,0.2);' : '';
-    const iconBg = (poblacion > 50000 || (!esParroquia && poblacion > 500000)) ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.06)';
+    const headerColor = '#3240A5'; // Color corporativo fijo para uniformidad
+    const textColor = '#ffffff'; // Texto siempre blanco para contraste perfecto con el fondo corporativo
+    const textShadow = 'text-shadow: 0 1px 2px rgba(0,0,0,0.2);';
+    const iconBg = 'rgba(255,255,255,0.22)';
 
     let filasHtml = '';
     if (esParroquia) {
@@ -307,7 +308,7 @@ export class ElementRendererService {
 
     return `
       <div class="popup-detalle poblacion-popup">
-        <div class="popup-header" style="background: ${color}; color: ${textColor}; ${textShadow}">
+        <div class="popup-header" style="background: ${headerColor}; color: ${textColor}; ${textShadow}">
           <div class="popup-header-icon" style="background: ${iconBg}; color: ${textColor}"><i class="fas fa-users"></i></div>
           <span style="font-weight: 700;">Demografía</span>
         </div>
@@ -316,7 +317,7 @@ export class ElementRendererService {
           <tr>
             <td class="popup-lbl">Población</td>
             <td>
-              <span class="popup-badge" style="--bdg-color: ${color}; color: ${textColor}; font-weight: 700;">
+              <span class="popup-badge" style="--bdg-color: ${color}; color: #0f172a; font-weight: 700;">
                 ${poblacion.toLocaleString('es-VE')} hab.
               </span>
             </td>

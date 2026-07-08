@@ -236,8 +236,18 @@ export class Map implements AfterViewInit {
       elementsPane.style.zIndex = '610'; // Por encima de markerPane (600) y etiquetas
     }
 
+    // Crear un panel para figuras dibujadas por el usuario (Geoman) para que estén por encima de la capa base de regiones/parroquias
+    const drawnPane = this.map.createPane('drawnPane');
+    if (drawnPane) {
+      drawnPane.style.zIndex = '450';
+      drawnPane.style.pointerEvents = 'auto'; // Permitir clics y edición
+    }
+
     this.map.on('zoomend', () => this.gis.zoomLevel.set(this.map.getZoom()));
     this.layerAggregated.addTo(this.map);
+
+    // Configurar el panel de dibujado para usar la capa superior
+    this.map.pm.setPathOptions({ pane: 'drawnPane' });
 
     const cachedVenezuela = this.gis.getVenezuelaGeoJson();
     const procesarVenezuela = (data: any) => {
@@ -376,10 +386,24 @@ export class Map implements AfterViewInit {
       if (this.activeDrawnLayer) {
         this.map.removeLayer(this.activeDrawnLayer);
       }
+
+      // Forzar que la figura esté en el pane superior 'drawnPane'
+      if (layer && layer.options) {
+        this.map.removeLayer(layer);
+        layer.options.pane = 'drawnPane';
+        layer.addTo(this.map);
+      }
+      
       this.activeDrawnLayer = layer;
 
-      // Realizar análisis inicial
+      // Realizar análisis inicial (se activa el panel flotante derecho)
       this.procesarFigura(layer);
+
+      // Escuchar clic en la figura para volver a abrir el panel si se cerró
+      layer.on('click', (ev: any) => {
+        L.DomEvent.stopPropagation(ev); // Evitar que el clic se propague al mapa
+        this.procesarFigura(layer);
+      });
 
       // Escuchar modificaciones de la figura
       layer.on('pm:edit', () => {
@@ -497,6 +521,10 @@ export class Map implements AfterViewInit {
           .filter(ab => ab.parroquia === pName && ab.estado === estado)
           .reduce((acc: any, ab) => { acc[ab.segmentacion] = (acc[ab.segmentacion] || 0) + (Number(ab.cantidad) || 0); return acc; }, {}) : null;
 
+        const agenteBreakdown = tipos.includes('agentes') ? this.gis.agentesSignal()
+          .filter(ag => ag.parroquia === pName && ag.estado === estado)
+          .reduce((acc: any, ag) => { acc[ag.clasificacion || 'AA'] = (acc[ag.clasificacion || 'AA'] || 0) + (Number(ag.cantidad) || 1); return acc; }, {}) : null;
+
         const originalPoint = this.map.latLngToLayerPoint(centro);
         let adjustedPoint = originalPoint;
         let attempts = 0;
@@ -525,7 +553,7 @@ export class Map implements AfterViewInit {
           zIndexOffset: 1500 + attempts,
           pane: 'elementsPane'
         })
-          .bindPopup(this.renderer.crearPopupAgregado(`${pName} (${estado})`, 'estado', items, segBreakdown))
+          .bindPopup(this.renderer.crearPopupAgregado(`${pName} (${estado})`, 'estado', items, segBreakdown, agenteBreakdown))
           .addTo(this.layerAggregated);
       }
     });
