@@ -80,10 +80,6 @@ export class MapService {
 
     if (tipos.length > 0) {
       tipos.forEach((t: TipoElemento) => extraer(this.element.getDataPorTipo(t)));
-    } else {
-      ['antenas', 'oficinas', 'abonados', 'agentes'].forEach(t =>
-        extraer(this.element.getDataPorTipo(t as TipoElemento))
-      );
     }
     return Array.from(regiones);
   }
@@ -117,6 +113,7 @@ export class MapService {
       if (nombre === 'regiones' && activar) { nuevo.operaciones = false; nuevo.poblacion = false; nuevo.detalleOperaciones = []; }
       if (nombre === 'poblacion' && activar) { nuevo.regiones = false; nuevo.operaciones = false; nuevo.detalleRegiones = []; nuevo.detalleOperaciones = []; }
       if (nombre === 'operaciones' && !activar) nuevo.detalleOperaciones = [];
+      if (nombre === 'regiones' && !activar) nuevo.detalleRegiones = [];
       return nuevo;
     });
   }
@@ -135,7 +132,7 @@ export class MapService {
       const actual = [...e.detalleRegiones];
       const idx = actual.indexOf(tipo);
       const nuevo = idx >= 0 ? actual.filter(t => t !== tipo) : [...actual, tipo];
-      return { ...e, detalleRegiones: nuevo.length > 0 ? nuevo : actual };
+      return { ...e, detalleRegiones: nuevo };
     });
   }
 }

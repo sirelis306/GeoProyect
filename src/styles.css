@@ -45,7 +45,7 @@ html, body {
   z-index: 1 !important;
 }
 
-/* Opcional: Personalización para que coincida con tu modal 'puffy' */
+/* Personalización para que coincida con tu modal 'puffy' */
 .ng-select .ng-select-container {
     border-radius: 10px !important;
     background-color: #f8f9fa !important;
@@ -54,7 +54,7 @@ html, body {
     font-family: 'Poppins', sans-serif;
 }
 
-/* ESTILO SUAVE PREMIUM PARA LA BARRA DE HERRAMIENTAS GEOMAN EN EL MAPA (ESTILO SIDEBAR) */
+/* ESTILO PARA LA BARRA DE HERRAMIENTAS EN EL MAPA */
 .leaflet-pm-toolbar {
   border: none !important;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06) !important;
@@ -75,9 +75,9 @@ html, body {
 .leaflet-pm-toolbar .leaflet-buttons-control-button,
 .leaflet-pm-toolbar .pm-button {
   background-color: #ffffff !important;
-  color: #64748b !important; /* Gris de los iconos desactivados del sidebar */
+  color: #64748b !important;
   border: 1px solid transparent !important;
-  border-radius: 6px !important; /* Esquinas redondeadas suaves como el sidebar */
+  border-radius: 6px !important;
   width: 32px !important;
   height: 32px !important;
   line-height: 32px !important;
@@ -90,21 +90,21 @@ html, body {
 
 .leaflet-pm-toolbar .leaflet-buttons-control-button:hover,
 .leaflet-pm-toolbar .pm-button:hover {
-  background-color: #f1f5f9 !important; /* Fondo del hover del sidebar */
-  color: #0f172a !important; /* Color oscuro del hover */
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
   border-color: transparent !important;
 }
 
 .leaflet-pm-toolbar .leaflet-buttons-control-button.active,
 .leaflet-pm-toolbar .pm-button.active,
 .leaflet-pm-toolbar .leaflet-buttons-control-button.active:hover {
-  background-color: #f0f1fa !important; /* Fondo activo lila del sidebar */
-  color: #3240A5 !important; /* Azul corporativo */
+  background-color: #f0f1fa !important;
+  color: #3240A5 !important;
   border-color: transparent !important;
   font-weight: 500 !important;
 }
 
-/* Color azul corporativo para los iconos de la barra de dibujo */
+/* Iconos de la barra de dibujo */
 .leaflet-pm-toolbar .control-icon {
   filter: brightness(0) saturate(100%) invert(58.02%) sepia(99.99%) saturate(185.53%) hue-rotate(195.27deg) brightness(55.32%) contrast(209.30%) !important;
   transition: all 0.2s ease !important;
@@ -129,7 +129,7 @@ html, body {
   border-bottom: none !important;
 }
 
-/* ESTILO SUAVE PREMIUM PARA LOS BOTONES DE ACCIÓN DE GEOMAN (FINALIZAR, ELIMINAR VÉRTICE, CANCELAR) */
+/* ESTILO PARA LOS BOTONES DE ACCIÓN DE GEOMAN */
 .button-container .leaflet-pm-actions-container,
 .leaflet-pm-actions-container {
   background: transparent !important;
@@ -138,7 +138,7 @@ html, body {
   gap: 8px !important;
   padding: 0 !important;
   margin: 0 !important;
-  left: calc(100% + 15px) !important; /* 5px de padding de barra vertical + 10px de separación */
+  left: calc(100% + 15px) !important;
   box-shadow: none !important;
   top: 0 !important;
   height: 32px !important;
@@ -199,7 +199,7 @@ a.leaflet-pm-action:hover,
   transform: translateY(-1px);
 }
 
-/* Botón "Finalizar" (Verde esmeralda suave) */
+/* Botón "Finalizar" */
 .leaflet-pm-toolbar .control-actions li:nth-child(1) a,
 .leaflet-pm-toolbar .control-actions li a[action="finish"],
 .leaflet-pm-actions li:nth-child(1) a,
@@ -224,7 +224,7 @@ a.leaflet-pm-action[action="finish"]:hover,
   border-color: transparent !important;
 }
 
-/* Botón "Cancelar" (Rojo carmín suave) */
+/* Botón "Cancelar" */
 .leaflet-pm-toolbar .control-actions li:last-child a,
 .leaflet-pm-toolbar .control-actions li a[action="cancel"],
 .leaflet-pm-actions li:last-child a,
@@ -247,4 +247,29 @@ a.leaflet-pm-action[action="cancel"]:hover,
   background-color: #fef2f2 !important;
   color: #dc2626 !important;
   border-color: transparent !important;
+}
+
+/* Barras de desplazamiento */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.25);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.45);
+}
+
+/* Soporte de scrollbar delgado para Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 116, 139, 0.25) transparent;
 }

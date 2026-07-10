@@ -63,6 +63,19 @@ export class Sidebar {
     if (capa === 'operaciones' && !this.gis.capasVisibles().operaciones) {
       this.gis.setDetalleOperaciones('ninguno');
     }
+
+    // Auto-scroll para mostrar las subcapas o botones ocultos
+    if (this.gis.capasVisibles()[capa]) {
+      setTimeout(() => {
+        const sidebarEl = document.querySelector('.sidebar');
+        if (sidebarEl) {
+          sidebarEl.scrollTo({
+            top: sidebarEl.scrollHeight,
+            behavior: 'smooth'
+          });
+        }
+      }, 150);
+    }
   }
 
   isActive(tipo: TipoElemento): boolean {

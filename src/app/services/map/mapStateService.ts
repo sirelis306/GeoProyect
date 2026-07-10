@@ -12,7 +12,7 @@ export class MapStateService {
     vias: false,
     poblacion: false,
     detalleOperaciones: [],
-    detalleRegiones: ['antenas']
+    detalleRegiones: []
   });
 
   /* Otros estados de UI relacionados con el mapa. */
