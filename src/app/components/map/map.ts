@@ -2,18 +2,20 @@ import { Component, AfterViewInit, inject, ElementRef, ViewChild, effect, signal
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { GisService as Gis } from '../../services/gis/gisService';
-import { TipoElemento } from '../../models/gis';
+import { TipoElemento, ProyectoFigura } from '../../models/gis';
 import * as L from 'leaflet';
+import { ProyectoService } from '../../services/proyecto/proyectoService';
 import { Totales } from "../totales/totales";
 import { ElementRendererService } from '../../services/element/elementRendererService';
 import { GisMathService } from '../../services/gis/gisMathService';
 import { Polygons } from '../polygons/polygons';
+import { ProjectManager } from '../project-manager/project-manager';
 import '@geoman-io/leaflet-geoman-free';
 
 @Component({
   selector: 'app-map',
   standalone: true,
-  imports: [CommonModule, Totales, Polygons],
+  imports: [CommonModule, Totales, Polygons, ProjectManager],
   templateUrl: './map.html',
   styleUrl: './map.css',
 })
@@ -22,10 +24,27 @@ export class Map implements AfterViewInit {
   private http = inject(HttpClient);
   private renderer = inject(ElementRendererService);
   private mathService = inject(GisMathService);
+  public proyectoService = inject(ProyectoService);
   
   public leyendaAbierta = signal(true);
   public analisisFigura = signal<any | null>(null);
   private activeDrawnLayer: L.Layer | null = null;
+  private projectShapesLayer = L.layerGroup();
+
+  public hoverInfo = signal<{nombre: string, sub: string, x: number, y: number} | null>(null);
+
+  mostrarHoverInfo(nombre: string, sub: string, containerPoint: L.Point) {
+    this.hoverInfo.set({
+      nombre,
+      sub,
+      x: containerPoint.x + 15,
+      y: containerPoint.y + 15
+    });
+  }
+
+  ocultarHoverInfo() {
+    this.hoverInfo.set(null);
+  }
 
   private capaGeoJsonRegiones: L.GeoJSON | null = null;
   private capaGeoJsonParroquias: L.GeoJSON | null = null;
@@ -67,6 +86,26 @@ export class Map implements AfterViewInit {
   private tileBase = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { zIndex: 1 });
 
   constructor() {
+    // Escuchar figuras del proyecto activo para renderizarlas (sólo si el módulo está activo)
+    effect(() => {
+      const figuras = this.proyectoService.figurasProyectoActivo();
+      const activo = this.gis.moduloPoligonosActivo();
+      if (activo) {
+        this.actualizarFigurasProyectoEnMapa(figuras);
+      } else {
+        this.projectShapesLayer.clearLayers();
+      }
+    });
+
+    // Escuchar figura enfocada para centrar la cámara del mapa
+    effect(() => {
+      const figura = this.gis.figuraEnfocada();
+      if (figura) {
+        this.centrarCamaraEnFigura(figura);
+        setTimeout(() => this.gis.figuraEnfocada.set(null), 100);
+      }
+    });
+
     effect(() => {
       const estado = this.gis.capasVisibles();
       if (!this.map) return;
@@ -254,6 +293,41 @@ export class Map implements AfterViewInit {
       this.geoJsonData = data;
       this.capaGeoJsonRegiones = L.geoJSON(data, {
         onEachFeature: (feature, layer) => {
+          layer.on('mouseover', (e: any) => {
+            const capas = this.gis.capasVisibles();
+            if (capas.regiones || capas.operaciones || capas.poblacion) {
+              (layer as L.Path).setStyle({
+                weight: 3,
+                color: '#ffffff',
+                fillOpacity: 0.8
+              });
+              if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+                (layer as any).bringToFront();
+              }
+              const nombre = feature.properties.estado || feature.properties.name || '';
+              const regionText = feature.properties.region ? `Región: ${feature.properties.region}` : '';
+              this.mostrarHoverInfo(nombre, regionText, e.containerPoint);
+            }
+          });
+
+          layer.on('mousemove', (e: any) => {
+            if (this.hoverInfo()) {
+              this.hoverInfo.update(h => h ? { ...h, x: e.containerPoint.x + 15, y: e.containerPoint.y + 15 } : null);
+            }
+          });
+
+          layer.on('mouseout', () => {
+            if (this.capaGeoJsonRegiones) {
+              const estado = this.gis.capasVisibles();
+              if (estado.poblacion) {
+                this.aplicarEstiloPoblacion();
+              } else {
+                this.aplicarEstiloRegiones(estado.operaciones);
+              }
+            }
+            this.ocultarHoverInfo();
+          });
+
           layer.on('click', (e) => {
             if (this.gis.capasVisibles().poblacion) {
               const nombre = feature.properties.estado || feature.properties.name;
@@ -337,6 +411,36 @@ export class Map implements AfterViewInit {
 
       this.capaGeoJsonParroquias = L.geoJSON(data, {
         onEachFeature: (feature, layer) => {
+          layer.on('mouseover', (e: any) => {
+            if (this.gis.capasVisibles().poblacion && this.gis.zoomLevel() >= 8.5) {
+              (layer as L.Path).setStyle({
+                weight: 3,
+                color: '#ffffff',
+                fillOpacity: 0.8
+              });
+              if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+                (layer as any).bringToFront();
+              }
+              const name = feature.properties.adm3_name || '';
+              const municipio = feature.properties.adm2_name || '';
+              const estado = feature.properties.adm1_name || '';
+              this.mostrarHoverInfo(name, `Municipio: ${municipio} - ${estado}`, e.containerPoint);
+            }
+          });
+
+          layer.on('mousemove', (e: any) => {
+            if (this.hoverInfo()) {
+              this.hoverInfo.update(h => h ? { ...h, x: e.containerPoint.x + 15, y: e.containerPoint.y + 15 } : null);
+            }
+          });
+
+          layer.on('mouseout', () => {
+            if (this.capaGeoJsonParroquias) {
+              this.aplicarEstiloPoblacion();
+            }
+            this.ocultarHoverInfo();
+          });
+
           layer.on('click', (e) => {
             if (this.gis.capasVisibles().poblacion) {
               const name = feature.properties.adm3_name;
@@ -435,6 +539,75 @@ export class Map implements AfterViewInit {
     });
 
     this.gis.cargarDatos();
+  }
+
+  private actualizarFigurasProyectoEnMapa(figuras: ProyectoFigura[]) {
+    if (!this.map) return;
+    this.projectShapesLayer.clearLayers();
+
+    figuras.forEach(f => {
+      if (f.visible === false) return;
+
+      let layer: L.Layer | null = null;
+      const color = f.color || '#4f46e5';
+      const options = {
+        color: color,
+        fillColor: color,
+        fillOpacity: 0.25,
+        weight: 3,
+        pane: 'drawnPane'
+      };
+
+      if (f.tipo === 'poligono') {
+        layer = L.polygon(f.coordenadas, options);
+      } else if (f.tipo === 'ruta') {
+        layer = L.polyline(f.coordenadas, options);
+      } else if (f.tipo === 'circulo' && f.radio) {
+        const centro = f.coordenadas;
+        layer = L.circle([centro.lat, centro.lng], { ...options, radius: f.radio });
+      }
+
+      if (layer) {
+        (layer as any).dbFigura = f;
+        layer.on('click', (ev: any) => {
+          L.DomEvent.stopPropagation(ev);
+          this.procesarFigura(ev.target, false);
+        });
+        
+        layer.bindTooltip(f.nombre, { permanent: false, direction: 'center' });
+        this.projectShapesLayer.addLayer(layer);
+      }
+    });
+
+    this.projectShapesLayer.addTo(this.map);
+  }
+
+  private centrarCamaraEnFigura(f: ProyectoFigura) {
+    if (!this.map) return;
+
+    if (f.tipo === 'poligono' || f.tipo === 'ruta') {
+      const poly = f.tipo === 'poligono' ? L.polygon(f.coordenadas) : L.polyline(f.coordenadas);
+      const bounds = poly.getBounds();
+      if (bounds.isValid()) {
+        // Reducimos maxZoom a 11 e incrementamos padding para ver el contexto a altura moderada
+        this.map.fitBounds(bounds, { padding: [120, 120], maxZoom: 11 });
+      }
+    } else if (f.tipo === 'circulo' && f.radio) {
+      const centro = f.coordenadas;
+      // Cálculo manual del Bounding Box (límites) del círculo usando trigonometría simple
+      const earthRadius = 6378137; // en metros
+      const dLat = (f.radio / earthRadius) * (180 / Math.PI);
+      const dLng = (f.radio / (earthRadius * Math.cos(centro.lat * Math.PI / 180))) * (180 / Math.PI);
+
+      const bounds = L.latLngBounds(
+        [centro.lat - dLat, centro.lng - dLng],
+        [centro.lat + dLat, centro.lng + dLng]
+      );
+
+      if (bounds.isValid()) {
+        this.map.fitBounds(bounds, { padding: [120, 120], maxZoom: 11 });
+      }
+    }
   }
 
   private aplicarEstiloRegiones(usarColorEstado: boolean) {
@@ -913,7 +1086,7 @@ export class Map implements AfterViewInit {
   /**
    * Procesa la figura dibujada para calcular métricas físicas y evaluar elementos internos/cercanos.
    */
-  private procesarFigura(layer: L.Layer) {
+  private procesarFigura(layer: L.Layer, esNueva: boolean = true) {
     let tipo: 'poligono' | 'ruta' | 'circulo' = 'poligono';
     let vertices: L.LatLng[] = [];
     let area = 0;
@@ -994,6 +1167,10 @@ export class Map implements AfterViewInit {
 
     this.analisisFigura.set({
       tipo,
+      coordenadas: tipo === 'circulo' ? centroCirculo : vertices,
+      radio: tipo === 'circulo' ? radioCirculo : null,
+      esNueva,
+      nombreExistente: (layer as any).dbFigura?.nombre || '',
       mediciones: {
         area,
         perimetro,

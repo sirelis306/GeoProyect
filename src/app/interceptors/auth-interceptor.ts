@@ -58,10 +58,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       }
 
       if (error.status === 401) {
-        // Token inválido o expirado, limpiar y mandar a login
+        // Token inválido o expirado, limpiar y mandar a login con parámetro explicativo
         localStorage.removeItem('token_geo');
         localStorage.removeItem('user_geo');
-        router.navigate(['/login']);
+        router.navigate(['/login'], { queryParams: { expired: 'true' } });
       }
       return throwError(() => error);
     })

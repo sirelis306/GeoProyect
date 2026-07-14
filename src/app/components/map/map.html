@@ -7,7 +7,10 @@
     *ngIf="gis.capasVisibles().operaciones && gis.getEstadosConDatos().length > 0">
     <div class="legend-header" (click)="leyendaAbierta.set(!leyendaAbierta())"
       style="cursor: pointer; user-select: none;">
-      <span>ESTADOS ACTIVOS</span>
+      <div class="legend-title-wrapper">
+        <i class="fas fa-map-pin"></i>
+        <span>Estados Activos</span>
+      </div>
       <button class="legend-toggle">
         <i class="fas fa-chevron-down"></i>
       </button>
@@ -25,7 +28,10 @@
     *ngIf="gis.capasVisibles().regiones && !gis.capasVisibles().operaciones">
     <div class="legend-header" (click)="leyendaAbierta.set(!leyendaAbierta())"
       style="cursor: pointer; user-select: none;">
-      <span>REGIONES ACTIVAS</span>
+      <div class="legend-title-wrapper">
+        <i class="fas fa-layer-group"></i>
+        <span>Regiones Activas</span>
+      </div>
       <button class="legend-toggle">
         <i class="fas fa-chevron-down"></i>
       </button>
@@ -42,7 +48,10 @@
   <div class="map-legend-overlay" [class.collapsed]="!leyendaAbierta()" *ngIf="gis.capasVisibles().poblacion">
     <div class="legend-header" (click)="leyendaAbierta.set(!leyendaAbierta())"
       style="cursor: pointer; user-select: none;">
-      <span>POBLACIÓN (HAB.)</span>
+      <div class="legend-title-wrapper">
+        <i class="fas fa-users"></i>
+        <span>Población (Hab.)</span>
+      </div>
       <button class="legend-toggle">
         <i class="fas fa-chevron-down"></i>
       </button>
@@ -113,7 +122,16 @@
     </div>
   </div>
 
+  <!-- Gestor de Proyectos Flotante (en el lado derecho) -->
+  <app-project-manager *ngIf="gis.moduloPoligonosActivo()"></app-project-manager>
+
   <!-- Componente de Análisis Espacial Flotante (en el lado derecho) -->
   <app-polygons [analisis]="analisisFigura()" (onClose)="analisisFigura.set(null)">
   </app-polygons>
+
+  <!-- Tooltip Flotante de Información al pasar el cursor (Hover) -->
+  <div class="hover-info-tooltip" *ngIf="hoverInfo()" [style.left.px]="hoverInfo()!.x" [style.top.px]="hoverInfo()!.y">
+    <div class="tooltip-title">{{ hoverInfo()!.nombre }}</div>
+    <div class="tooltip-sub" *ngIf="hoverInfo()!.sub">{{ hoverInfo()!.sub }}</div>
+  </div>
 </div>

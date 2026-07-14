@@ -2,11 +2,40 @@
   <div class="panel-header">
     <div class="panel-title-wrapper">
       <i [class]="analisis.tipo === 'ruta' ? 'fas fa-route' : 'fas fa-draw-polygon'"></i>
-      <h3>Análisis de {{ analisis.tipo === 'ruta' ? 'Ruta' : 'Área' }}</h3>
+      <h3 *ngIf="analisis.esNueva !== false">Análisis de {{ analisis.tipo === 'ruta' ? 'Ruta' : 'Área' }}</h3>
+      <h3 *ngIf="analisis.esNueva === false">Elemento: {{ analisis.nombreExistente }}</h3>
     </div>
-    <button class="btn-close-analisis" (click)="cerrar()">
-      <i class="fas fa-times"></i>
-    </button>
+    <div class="header-buttons">
+      <!-- Botón de Guardar en Proyecto (sólo si es nueva y hay proyecto activo) -->
+      <button class="btn-save-header" *ngIf="analisis.esNueva !== false" 
+        [class.active]="mostrarFormGuardar()" (click)="toggleFormGuardar()" 
+        [title]="proyectoService.proyectoActivo() ? 'Guardar en Proyecto' : 'No hay proyecto activo'">
+        <i class="fas fa-save" [style.opacity]="proyectoService.proyectoActivo() ? '1' : '0.4'"></i>
+      </button>
+      <button class="btn-close-analisis" (click)="cerrar()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Formulario de Guardado Desplegable (Popover) -->
+  <div class="save-popover-card" *ngIf="mostrarFormGuardar()">
+    <div *ngIf="proyectoService.proyectoActivo()">
+      <div class="popover-title">Guardar en Proyecto</div>
+      <input type="text" [(ngModel)]="nombreFigura" placeholder="Nombre de la figura (ej. Sector A)" class="popover-input">
+      <div class="popover-color-row">
+        <label class="popover-lbl-color">Color de Trazo:</label>
+        <input type="color" [(ngModel)]="colorFigura" class="popover-color-picker">
+      </div>
+      <div class="popover-actions">
+        <button class="btn-popover-action cancel" (click)="mostrarFormGuardar.set(false)">Cancelar</button>
+        <button class="btn-popover-action save" (click)="guardarFigura()">Guardar</button>
+      </div>
+    </div>
+    <div *ngIf="!proyectoService.proyectoActivo()" class="popover-no-project">
+      <i class="fas fa-info-circle"></i>
+      <span>Selecciona o crea un Proyecto en el gestor para guardar esta figura.</span>
+    </div>
   </div>
   
   <div class="panel-body">

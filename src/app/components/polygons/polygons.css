@@ -284,3 +284,211 @@
     max-height: 45vh;
   }
 }
+
+/* SAVE TO PROJECT CSS CLASSES */
+.save-project-section {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.save-project-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.save-figura-input {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 12px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  outline: none;
+  background: white;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.save-figura-input:focus {
+  border-color: #3240A5;
+  box-shadow: 0 0 0 2px rgba(50, 64, 165, 0.1);
+}
+
+.color-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: #475569;
+}
+
+.save-figura-color {
+  border: none;
+  width: 35px;
+  height: 25px;
+  border-radius: 4px;
+  cursor: pointer;
+  background: none;
+  padding: 0;
+}
+
+/* HEADER ACTIONS */
+.header-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-save-header {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 15px;
+  cursor: pointer;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.btn-save-header:hover {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+}
+
+.btn-save-header.active {
+  background: #22c55e;
+  color: white;
+}
+
+/* SAVE POPOVER CARD */
+.save-popover-card {
+  position: absolute;
+  top: 50px;
+  left: 10px;
+  right: 10px;
+  z-index: 1060;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  animation: slideDownPopover 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  box-sizing: border-box;
+}
+
+@keyframes slideDownPopover {
+  from {
+    transform: translateY(-8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.popover-title {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #3240A5;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.popover-input {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  outline: none;
+  background: white;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+}
+
+.popover-input:focus {
+  border-color: #3240A5;
+}
+
+.popover-color-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.popover-lbl-color {
+  font-size: 11px;
+  color: #475569;
+  font-weight: 500;
+}
+
+.popover-color-picker {
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  width: 45px;
+  height: 24px;
+  cursor: pointer;
+  background: none;
+  padding: 0;
+}
+
+.popover-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.btn-popover-action {
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.btn-popover-action.cancel {
+  background: white;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+.btn-popover-action.cancel:hover {
+  background: #f1f5f9;
+}
+
+.btn-popover-action.save {
+  background: #3240A5;
+  color: white;
+}
+
+.btn-popover-action.save:hover {
+  background: #25318d;
+}
+
+.popover-no-project {
+  font-size: 11px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.4;
+  padding: 4px;
+}
+
+.popover-no-project i {
+  font-size: 13px;
+  color: #0284c7;
+}
+

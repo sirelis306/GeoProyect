@@ -11,26 +11,33 @@
   display: block;
 }
 
+/* Transiciones suaves para los polígonos interactivos (Efecto Fundido/Fade-in) */
+::ng-deep path.leaflet-interactive {
+  transition: fill-opacity 0.4s ease, stroke-opacity 0.4s ease, stroke-width 0.2s cubic-bezier(0.16, 1, 0.3, 1), fill 0.3s ease;
+}
+
 /* LEYENDA DEL MAPA */
 .map-legend-overlay {
   position: absolute;
   bottom: 20px;
   right: 20px;
   z-index: 1100;
-  background: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(12px);
-  padding: 15px 20px;
-  border-radius: 20px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 12px 16px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.4);
   min-width: 200px;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 .map-legend-overlay.collapsed {
-  padding: 10px 16px;
-  min-width: 150px;
+  padding: 12px 16px;
+  min-width: 180px;
 }
 
 .map-legend-overlay.collapsed .legend-body {
@@ -41,39 +48,48 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 11px;
-  font-weight: 800;
+  gap: 15px;
+  font-size: 13px;
+  font-weight: 700;
   color: #3240A5;
-  letter-spacing: 1.2px;
+  letter-spacing: normal;
   margin-bottom: 12px;
-  padding: 0 0 8px 0;
-  border-bottom: 1px solid rgba(50, 64, 165, 0.1);
-  font-family: 'Inter', sans-serif;
+  padding: 0 0 10px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   user-select: none;
   box-sizing: border-box;
+}
+
+.legend-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.legend-title-wrapper i {
+  font-size: 14px;
 }
 
 .collapsed .legend-header {
   margin-bottom: 0;
   border-bottom: none;
   padding: 0;
-  height: 24px;
+  height: 20px;
   display: flex;
   align-items: center;
 }
 
 .legend-toggle {
-  background: rgba(50, 64, 165, 0.08);
+  background: transparent;
   border: none;
-  color: #3240A5;
-  width: 24px;
-  height: 24px;
-  border-radius: 8px;
+  color: #64748b;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
+  box-shadow: none;
+  padding: 0;
 }
 
 .map-legend-overlay.collapsed .legend-toggle i {
@@ -174,4 +190,33 @@
 .pm-button:hover {
   background-color: #34495e !important;
   border-color: #38bdf8 !important;
+}
+
+/* Tooltip de información flotante (Hover) */
+.hover-info-tooltip {
+  position: absolute;
+  z-index: 3000;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  padding: 8px 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  font-family: 'Inter', system-ui, sans-serif;
+  transition: opacity 0.1s ease;
+}
+
+.tooltip-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #3240A5;
+}
+
+.tooltip-sub {
+  font-size: 9px;
+  color: #64748b;
+  margin-top: 2px;
+  font-weight: 500;
 }
