@@ -5,6 +5,7 @@ import { CoordService } from '../coord/coordService';
 import { GeocodingService } from '../gis/geocodingService';
 import { GisMathService } from '../gis/gisMathService';
 import { environment } from '../../../environments/environment';
+import { ToastService } from '../toast/toastService';
 import * as L from 'leaflet';
 
 @Injectable({ providedIn: 'root' })
@@ -13,6 +14,7 @@ export class ElementService {
   private coord = inject(CoordService);
   private geocoding = inject(GeocodingService);
   private mathService = inject(GisMathService);
+  private toastService = inject(ToastService);
   private API_URL = environment.apiUrl;
 
   // Signals de datos
@@ -433,8 +435,11 @@ export class ElementService {
 
   enviarAlServidor(datos: any) {
     this.http.post(`${this.API_URL}/elementos/crear`, datos).subscribe({
-      next: () => alert('Elemento guardado con éxito'),
-      error: (err) => console.error('Error al guardar:', err)
+      next: () => this.toastService.showSuccess('Elemento guardado con éxito'),
+      error: (err) => {
+        console.error('Error al guardar:', err);
+        this.toastService.showError('Error al guardar el elemento');
+      }
     });
   }
 

@@ -4,11 +4,12 @@ import { Sidebar } from './components/sidebar/sidebar';
 import { AuthService } from './services/auth/authService';
 import { RouterOutlet } from "@angular/router";
 import { Gis } from './services/gis/gisService';
+import { Toast } from './components/toast/toast';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, Sidebar, RouterOutlet],
+  imports: [CommonModule, Sidebar, RouterOutlet, Toast],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

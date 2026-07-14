@@ -1,0 +1,16 @@
+<div class="toast-container" *ngIf="toastService.toast().visible" [class]="toastService.toast().tipo">
+  <div class="toast-content">
+    <div class="toast-icon">
+      <i class="fas" 
+         [class.fa-check-circle]="toastService.toast().tipo === 'success'"
+         [class.fa-exclamation-circle]="toastService.toast().tipo === 'error'"
+         [class.fa-info-circle]="toastService.toast().tipo === 'info'"></i>
+    </div>
+    <div class="toast-message">
+      {{ toastService.toast().mensaje }}
+    </div>
+    <button class="toast-close" (click)="toastService.hide()">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+</div>
