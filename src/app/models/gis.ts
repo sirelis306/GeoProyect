@@ -83,3 +83,21 @@ export interface Region {
   nombre: string;
   color: string;
 }
+
+export interface Proyecto {
+  id?: number;
+  nombre: string;
+  descripcion?: string;
+  usuario_id?: number;
+}
+
+export interface ProyectoFigura {
+  id?: number;
+  proyecto_id: number;
+  nombre: string;
+  tipo: 'poligono' | 'ruta' | 'circulo';
+  coordenadas: any;
+  radio?: number;
+  color?: string;
+  visible?: boolean; // Auxiliar para la UI (👁️)
+}

@@ -1,7 +1,7 @@
-import { Component, inject, ViewChild, signal, effect } from '@angular/core';
+import { Component, inject, ViewChild, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GisService } from '../../services/gis/gisService';
-import { FormsModule, ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CapasEstado, TipoElemento } from '../../models/gis';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { Router } from '@angular/router';
@@ -32,7 +32,7 @@ export class Sidebar {
     return rol === 'admin' || rol === 'super_admin';
   }
 
-  constructor(public router: Router) { }
+  constructor(public router: Router) {}
 
   abrirModal(tipo: TipoElemento, item?: any) {
     this.tipoEdicion = tipo;

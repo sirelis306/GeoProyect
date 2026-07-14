@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { TipoElemento, CapasEstado } from '../../models/gis';
 import { CoordService } from '../coord/coordService';
 import { ElementService } from '../element/elementService';
@@ -31,6 +31,9 @@ export class GisService {
   get modoDibujo() { return this.map.modoDibujo; }
   toggleModuloPoligonos() { this.map.toggleModuloPoligonos(); }
   setModoDibujo(modo: string | null) { this.map.setModoDibujo(modo); }
+  
+  // Signal para enfocar una figura guardada en el mapa
+  figuraEnfocada = signal<any>(null);
 
   // Colores
   get COLORES_REGIONES_SIGNAL() { return this.map.COLORES_REGIONES_SIGNAL; }

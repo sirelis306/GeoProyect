@@ -5,6 +5,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth/authService';
 import { HistorialService } from '../../services/historial/historialService';
+import { ToastService } from '../../services/toast/toastService';
 import flatpickr from 'flatpickr';
 import { Spanish } from 'flatpickr/dist/l10n/es';
 
@@ -20,6 +21,7 @@ export class Historial implements OnInit, AfterViewInit {
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   private historialService = inject(HistorialService);
+  private toastService = inject(ToastService);
 
   esAdmin: boolean = false;
   searchTexto: string = '';
@@ -201,7 +203,7 @@ export class Historial implements OnInit, AfterViewInit {
   // Simulación interactiva de Revertir una Eliminación
   revertirEliminacion(item: any) {
     if (confirm(`¿Estás seguro de que deseas revertir la eliminación de "${item.identificador_elemento}"?`)) {
-      alert(`¡Éxito! El elemento "${item.identificador_elemento}" ha sido restaurado al sistema.`);
+      this.toastService.showSuccess(`¡Éxito! El elemento "${item.identificador_elemento}" ha sido restaurado al sistema.`);
 
       // Añadimos un registro de "creación" simulado para mostrar que se restauró
       const nuevoRegistro = {
