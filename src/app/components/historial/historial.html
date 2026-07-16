@@ -114,12 +114,12 @@
             <td>
               <div class="actions-panel">
                 <!-- Icono de Hoja para ver Detalle -->
-                <button class="btn-action-icon view" (click)="abrirModalDetalles(item)" title="Ver detalles del cambio">
+                <button class="btn-action-icon" (click)="abrirModalDetalles(item)" title="Ver detalles del cambio">
                   <i class="far fa-file-alt"></i>
                 </button>
                 
                 <!-- Icono de Revertir (Solo para acción eliminar) -->
-                <button class="btn-action-icon revert" 
+                <button class="btn-action-icon warning" 
                   *ngIf="item.accion === 'eliminar' && !item.revertido" 
                   (click)="revertirEliminacion(item)" 
                   title="Revertir eliminación (Restaurar)">

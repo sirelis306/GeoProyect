@@ -163,30 +163,7 @@
   opacity: 1;
 }
 
-.action-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  background: white;
-  color: #64748b;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-}
 
-.action-btn:hover {
-  background: #3240A5;
-  color: white;
-  border-color: #3240A5;
-}
-
-.action-btn.delete:hover {
-  background: #ef4444;
-  border-color: #ef4444;
-}
 
 @keyframes fadeIn {
   from { opacity: 0; }

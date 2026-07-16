@@ -252,24 +252,6 @@ form.ng-submitted ::ng-deep .custom-ng-select.ng-invalid .ng-select-container {
 }
 
 
-/* Ng-select specific overrides */
-::ng-deep .select-simple .ng-select-container {
-  min-height: 48px !important;
-  border-radius: 10px !important;
-}
-
-::ng-deep .select-simple .ng-input {
-  top: 50% !important;
-  transform: translateY(-50%) !important;
-  display: flex !important;
-  align-items: center !important;
-}
-
-::ng-deep .select-simple.ng-select-focused .ng-select-container {
-  border-color: #3240A5 !important;
-  background: #ffffff !important;
-  box-shadow: 0 0 0 3px rgba(50, 64, 165, 0.1) !important;
-}
 
 ::ng-deep .custom-ng-select .ng-select-container {
   border-radius: 10px !important;

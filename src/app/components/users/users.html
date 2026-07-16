@@ -15,7 +15,7 @@
       <div class="toolbar-left tw-flex-col sm:tw-flex-row tw-w-full md:tw-w-auto">
         <div class="search-box">
           <i class="fas fa-search"></i>
-          <input type="text" placeholder="Buscar usuario..." [(ngModel)]="searchTexto" (ngModelChange)="paginaActual = 1">
+          <input type="text" placeholder="Buscar usuario..." class="input-simple" [(ngModel)]="searchTexto" (ngModelChange)="paginaActual = 1" style="padding-left: 36px; height: 38px;">
         </div>
         <div class="filter-dropdown tw-w-full md:tw-w-[250px]">
           <ng-select class="select-simple" 
@@ -71,12 +71,14 @@
           </td>
 
           <td>
-            <button class="btn-icon edit" (click)="irEditarUsuario(user.id)" title="Editar usuario" style="margin-right: 8px;">
-              <i class="fas fa-edit"></i>
-            </button>
-            <button class="btn-icon deactivate" *ngIf="canDeactivate()" (click)="desactivar(user.id)" title="Desactivar usuario">
-              <i class="fas fa-user-slash"></i>
-            </button>
+            <div class="actions-cell-container">
+              <button class="btn-action-icon" (click)="irEditarUsuario(user.id)" title="Editar usuario">
+                <i class="fas fa-pencil-alt"></i>
+              </button>
+              <button class="btn-action-icon warning" *ngIf="canDeactivate()" (click)="desactivar(user.id)" title="Desactivar usuario">
+                <i class="fas fa-user-slash"></i>
+              </button>
+            </div>
           </td>
         </tr>
       </tbody>
