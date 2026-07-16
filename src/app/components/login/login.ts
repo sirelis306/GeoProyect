@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -17,6 +17,7 @@ export class Login implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private toastService = inject(ToastService);
+  private cdr = inject(ChangeDetectorRef);
 
   creds = { email: '', password: '' };
   error = '';
@@ -27,7 +28,16 @@ export class Login implements OnInit {
     // Escuchar si la sesión expiró para mostrar una alerta amigable (Toast)
     this.route.queryParams.subscribe(params => {
       if (params['expired'] === 'true') {
-        this.toastService.showError('Su sesión ha expirado por inactividad. Por favor, ingrese de nuevo.');
+        setTimeout(() => {
+          this.toastService.showError('Su sesión ha expirado por inactividad. Por favor, ingrese de nuevo.');
+          // Limpiar el parámetro de la URL para que no vuelva a aparecer al refrescar la página
+          this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { expired: null },
+            queryParamsHandling: 'merge',
+            replaceUrl: true
+          });
+        });
       }
     });
 
@@ -59,8 +69,13 @@ export class Login implements OnInit {
         }
       },
       error: (err) => {
-        this.cargando = false;
-        this.error = 'Usuario o contraseña incorrectos';
+        // Envolver en setTimeout para evitar ExpressionChangedAfterItHasBeenCheckedError
+        // y asegurar que el mensaje se renderice e informe al usuario inmediatamente
+        setTimeout(() => {
+          this.cargando = false;
+          this.error = 'Usuario o contraseña incorrectos';
+          this.cdr.detectChanges();
+        });
       }
     });
   }
