@@ -18,11 +18,13 @@ export class ProjectManager {
   public proyectoService = inject(ProyectoService);
 
   mostrarCrearProyecto = signal(false);
+  mostrarMenuExportar = signal(false); // Signal para menú de exportación
   nombreNuevoProyecto = '';
   descripcionNuevoProyecto = '';
 
   // Permite colapsar el panel flotante en la derecha
   colapsado = signal(false);
+  cargandoProyectos = signal(true);
 
   get leyendaVisible(): boolean {
     const capas = this.gis.capasVisibles();
@@ -32,7 +34,10 @@ export class ProjectManager {
   }
 
   constructor() {
-    this.proyectoService.cargarProyectos();
+    setTimeout(() => {
+      this.proyectoService.cargarProyectos();
+      this.cargandoProyectos.set(false);
+    }, 850);
   }
 
   crearNuevoProyecto() {
@@ -109,8 +114,14 @@ export class ProjectManager {
     this.gis.figuraEnfocada.set(figura);
   }
 
-  exportarProyecto(event: Event) {
+  toggleMenuExportar(event: Event) {
     event.stopPropagation();
+    this.mostrarMenuExportar.set(!this.mostrarMenuExportar());
+  }
+
+  exportarGeoJson(event: Event) {
+    event.stopPropagation();
+    this.mostrarMenuExportar.set(false);
     const activo = this.proyectoService.proyectoActivo();
     if (!activo) return;
 
@@ -128,7 +139,6 @@ export class ProjectManager {
       if (f.tipo === 'poligono') {
         const ring = this.formatGeoJsonRing(coordsParsed);
         if (ring.length > 0) {
-          // El primer y último punto de un anillo GeoJSON Polygon deben ser idénticos para cerrarlo
           if (
             ring[0][0] !== ring[ring.length - 1][0] ||
             ring[0][1] !== ring[ring.length - 1][1]
@@ -182,6 +192,114 @@ export class ProjectManager {
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute('href', dataStr);
     downloadAnchor.setAttribute('download', `${activo.nombre.toLowerCase().replace(/\s+/g, '-')}.geojson`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  }
+
+  exportarKml(event: Event) {
+    event.stopPropagation();
+    this.mostrarMenuExportar.set(false);
+    const activo = this.proyectoService.proyectoActivo();
+    if (!activo) return;
+
+    const figuras = this.proyectoService.figurasProyectoActivo();
+    
+    let kmlContent = `<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>${activo.nombre}</name>
+    <description>Proyecto exportado desde GeoProyect</description>
+`;
+
+    figuras.forEach((f: ProyectoFigura) => {
+      let coordsParsed: any;
+      try {
+        coordsParsed = typeof f.coordenadas === 'string' ? JSON.parse(f.coordenadas) : f.coordenadas;
+      } catch (e) {
+        coordsParsed = f.coordenadas;
+      }
+
+      // Convertir color HEX (#RRGGBB) a formato KML (AABBGGRR)
+      const colorHex = f.color || '#4f46e5';
+      const r = colorHex.substring(1, 3);
+      const g = colorHex.substring(3, 5);
+      const b = colorHex.substring(5, 7);
+      const kmlLineColor = `ff${b}${g}${r}`;
+      const kmlFillColor = `66${b}${g}${r}`;
+
+      kmlContent += `    <Style id="style_${f.id}">
+      <LineStyle>
+        <color>${kmlLineColor}</color>
+        <width>3</width>
+      </LineStyle>
+      <PolyStyle>
+        <color>${kmlFillColor}</color>
+      </PolyStyle>
+    </Style>
+`;
+
+      kmlContent += `    <Placemark>
+      <name>${f.nombre}</name>
+      <styleUrl>#style_${f.id}</styleUrl>
+      <description>Tipo: ${f.tipo} ${f.radio ? '| Radio: ' + Math.round(f.radio) + 'm' : ''}</description>
+`;
+
+      if (f.tipo === 'poligono') {
+        const ring = this.formatGeoJsonRing(coordsParsed);
+        if (ring.length > 0) {
+          if (
+            ring[0][0] !== ring[ring.length - 1][0] ||
+            ring[0][1] !== ring[ring.length - 1][1]
+          ) {
+            ring.push([ring[0][0], ring[0][1]]);
+          }
+          const coordString = ring.map(pt => `${pt[0]},${pt[1]},0`).join(' ');
+          kmlContent += `      <Polygon>
+        <outerBoundaryIs>
+          <LinearRing>
+            <coordinates>${coordString}</coordinates>
+          </LinearRing>
+        </outerBoundaryIs>
+      </Polygon>
+`;
+        }
+      } else if (f.tipo === 'ruta') {
+        const line = this.formatGeoJsonRing(coordsParsed);
+        if (line.length > 0) {
+          const coordString = line.map(pt => `${pt[0]},${pt[1]},0`).join(' ');
+          kmlContent += `      <LineString>
+        <coordinates>${coordString}</coordinates>
+      </LineString>
+`;
+        }
+      } else if (f.tipo === 'circulo' && f.radio) {
+        const centro = coordsParsed;
+        const ring = this.generarPoligonoCirculo(centro, f.radio);
+        if (ring.length > 0) {
+          const coordString = ring.map(pt => `${pt[0]},${pt[1]},0`).join(' ');
+          kmlContent += `      <Polygon>
+        <outerBoundaryIs>
+          <LinearRing>
+            <coordinates>${coordString}</coordinates>
+          </LinearRing>
+        </outerBoundaryIs>
+      </Polygon>
+`;
+        }
+      }
+
+      kmlContent += `    </Placemark>
+`;
+    });
+
+    kmlContent += `  </Document>
+</kml>`;
+
+    const dataStr = 'data:application/vnd.google-earth.kml+xml;charset=utf-8,' + encodeURIComponent(kmlContent);
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute('href', dataStr);
+    downloadAnchor.setAttribute('download', `${activo.nombre.toLowerCase().replace(/\s+/g, '-')}.kml`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();

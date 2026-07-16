@@ -10,72 +10,94 @@
   </div>
 
   <div class="card-body" *ngIf="!colapsado()">
-    <!-- Selector de Proyectos -->
-    <div class="project-selector-row">
-      <div style="display: flex; flex-direction: column; gap: 4px; flex: 1;">
-        <label class="project-lbl">Proyecto Activo</label>
-        <div class="project-select-wrapper">
-          <ng-select class="select-simple"
-            [items]="proyectoService.proyectos()"
-            bindLabel="nombre"
-            bindValue="id"
-            [ngModel]="proyectoService.proyectoActivo()?.id || null"
-            (change)="seleccionarProyectoNg($event)"
-            [clearable]="false"
-            [searchable]="true"
-            appendTo="body"
-            placeholder="-- Seleccionar --">
-          </ng-select>
-        </div>
-      </div>
-      <div class="project-btn-row">
-        <button class="btn-action-right green" (click)="mostrarCrearProyecto.set(true)" title="Crear Nuevo Proyecto">
-          <i class="fas fa-plus"></i>
-        </button>
-        <button class="btn-action-right info" *ngIf="proyectoService.proyectoActivo() && proyectoService.figurasProyectoActivo().length > 0" 
-          (click)="exportarProyecto($event)" title="Exportar Proyecto a GeoJSON">
-          <i class="fas fa-download"></i>
-        </button>
-        <button class="btn-action-right red" *ngIf="proyectoService.proyectoActivo()" 
-          (click)="eliminarProyecto(proyectoService.proyectoActivo()!.id!, $event)" title="Eliminar Proyecto">
-          <i class="fas fa-trash-alt"></i>
-        </button>
-      </div>
+    <!-- Skeleton Loader durante la carga inicial -->
+    <div class="skeleton-container" *ngIf="cargandoProyectos()">
+      <div class="skeleton-row" style="width: 50%; height: 10px; margin-bottom: 4px;"></div>
+      <div class="skeleton-row" style="height: 36px; margin-bottom: 10px;"></div>
+      <div class="skeleton-row" style="width: 60%; height: 10px; margin-bottom: 4px;"></div>
+      <div class="skeleton-row" style="height: 32px; margin-bottom: 6px;"></div>
+      <div class="skeleton-row" style="height: 32px;"></div>
     </div>
 
-    <!-- Formulario Nuevo Proyecto -->
-    <div class="new-project-panel" *ngIf="mostrarCrearProyecto()">
-      <input type="text" [(ngModel)]="nombreNuevoProyecto" placeholder="Nombre del proyecto..." class="project-input">
-      <textarea [(ngModel)]="descripcionNuevoProyecto" placeholder="Descripción (opcional)" class="project-textarea" rows="2"></textarea>
-      <div class="panel-buttons">
-        <button class="btn-project-sm cancel" (click)="mostrarCrearProyecto.set(false)">Cancelar</button>
-        <button class="btn-project-sm save" (click)="crearNuevoProyecto()">Crear</button>
-      </div>
-    </div>
-
-    <!-- Lista de Figuras del Proyecto -->
-    <div class="project-figures-wrapper" *ngIf="proyectoService.proyectoActivo()">
-      <div class="project-lbl mb-2">Elementos Guardados ({{ proyectoService.figurasProyectoActivo().length }})</div>
-      <div class="project-empty-text" *ngIf="proyectoService.figurasProyectoActivo().length === 0">
-        No hay figuras en este proyecto. Utiliza las herramientas de dibujo del mapa para crear polígonos, líneas o círculos y guárdalos aquí.
-      </div>
-      <div class="figures-scrollable-container" *ngIf="proyectoService.figurasProyectoActivo().length > 0">
-        <div class="figure-row-right" *ngFor="let f of proyectoService.figurasProyectoActivo()">
-          <div class="figure-click-zone" (click)="centrarFigura(f)" title="Hacer clic para centrar en el mapa">
-            <i class="fas" [class.fa-draw-polygon]="f.tipo === 'poligono'" [class.fa-route]="f.tipo === 'ruta'" [class.fa-circle]="f.tipo === 'circulo'"
-              [style.color]="f.color || '#4f46e5'"></i>
-            <span class="fig-name" [title]="f.nombre">{{ f.nombre }}</span>
+    <ng-container *ngIf="!cargandoProyectos()">
+      <!-- Selector de Proyectos -->
+      <div class="project-selector-row">
+        <div style="display: flex; flex-direction: column; gap: 4px; flex: 1;">
+          <label class="project-lbl">Proyecto Activo</label>
+          <div class="project-select-wrapper">
+            <ng-select class="select-simple"
+              [items]="proyectoService.proyectos()"
+              bindLabel="nombre"
+              bindValue="id"
+              [ngModel]="proyectoService.proyectoActivo()?.id || null"
+              (change)="seleccionarProyectoNg($event)"
+              [clearable]="false"
+              [searchable]="true"
+              appendTo="body"
+              placeholder="-- Seleccionar --">
+            </ng-select>
           </div>
-          <div class="figure-row-actions">
-            <button class="action-right-eye" (click)="toggleVisibilidadFigura(f, $event)" [title]="f.visible ? 'Ocultar' : 'Mostrar'">
-              <i class="fas" [class.fa-eye]="f.visible !== false" [class.fa-eye-slash]="f.visible === false"></i>
+        </div>
+        <div class="project-btn-row" style="position: relative;">
+          <button class="btn-action-icon success" (click)="mostrarCrearProyecto.set(true)" title="Crear Nuevo Proyecto">
+            <i class="fas fa-plus"></i>
+          </button>
+          <button class="btn-action-icon info" *ngIf="proyectoService.proyectoActivo() && proyectoService.figurasProyectoActivo().length > 0" 
+            [class.active]="mostrarMenuExportar()" (click)="toggleMenuExportar($event)" title="Exportar Proyecto">
+            <i class="fas fa-download"></i>
+          </button>
+
+          <!-- Popover de Formatos de Exportación -->
+          <div class="export-popover" *ngIf="mostrarMenuExportar()">
+            <button class="export-popover-item" (click)="exportarGeoJson($event)">
+              <i class="fas fa-file-code"></i> GeoJSON (.geojson)
             </button>
-            <button class="action-right-trash" (click)="eliminarFigura(f.id!, $event)" title="Borrar figura">
-              <i class="fas fa-trash-alt"></i>
+            <button class="export-popover-item" (click)="exportarKml($event)">
+              <i class="fas fa-globe-americas"></i> Google Earth (.kml)
             </button>
+          </div>
+
+          <button class="btn-action-icon danger" *ngIf="proyectoService.proyectoActivo()" 
+            (click)="eliminarProyecto(proyectoService.proyectoActivo()!.id!, $event)" title="Eliminar Proyecto">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Formulario Nuevo Proyecto -->
+      <div class="new-project-panel" *ngIf="mostrarCrearProyecto()">
+        <input type="text" [(ngModel)]="nombreNuevoProyecto" placeholder="Nombre del proyecto..." class="project-input">
+        <textarea [(ngModel)]="descripcionNuevoProyecto" placeholder="Descripción (opcional)" class="project-textarea" rows="2"></textarea>
+        <div class="panel-buttons">
+          <button class="btn-project-sm cancel" (click)="mostrarCrearProyecto.set(false)">Cancelar</button>
+          <button class="btn-project-sm save" (click)="crearNuevoProyecto()">Crear</button>
+        </div>
+      </div>
+
+      <!-- Lista de Figuras del Proyecto -->
+      <div class="project-figures-wrapper" *ngIf="proyectoService.proyectoActivo()">
+        <div class="project-lbl mb-2">Elementos Guardados ({{ proyectoService.figurasProyectoActivo().length }})</div>
+        <div class="project-empty-text" *ngIf="proyectoService.figurasProyectoActivo().length === 0">
+          No hay figuras en este proyecto. Utiliza las herramientas de dibujo del mapa para crear polígonos, líneas o círculos y guárdalos aquí.
+        </div>
+        <div class="figures-scrollable-container" *ngIf="proyectoService.figurasProyectoActivo().length > 0">
+          <div class="figure-row-right" *ngFor="let f of proyectoService.figurasProyectoActivo()">
+            <div class="figure-click-zone" (click)="centrarFigura(f)" title="Hacer clic para centrar en el mapa">
+              <i class="fas" [class.fa-draw-polygon]="f.tipo === 'poligono'" [class.fa-route]="f.tipo === 'ruta'" [class.fa-circle]="f.tipo === 'circulo'"
+                [style.color]="f.color || '#4f46e5'"></i>
+              <span class="fig-name" [title]="f.nombre">{{ f.nombre }}</span>
+            </div>
+            <div class="figure-row-actions">
+              <button class="btn-action-icon" style="width: 24px; height: 24px; border-radius: 6px; font-size: 11px;" (click)="toggleVisibilidadFigura(f, $event)" [title]="f.visible ? 'Ocultar' : 'Mostrar'">
+                <i class="fas" [class.fa-eye]="f.visible !== false" [class.fa-eye-slash]="f.visible === false"></i>
+              </button>
+              <button class="btn-action-icon danger" style="width: 24px; height: 24px; border-radius: 6px; font-size: 11px;" (click)="eliminarFigura(f.id!, $event)" title="Borrar figura">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </ng-container>
   </div>
 </div>

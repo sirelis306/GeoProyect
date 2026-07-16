@@ -67,7 +67,6 @@ export class Map implements AfterViewInit {
   private agentes = L.layerGroup();
   private layerAggregated = L.layerGroup();
   private capaCotas = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
-    attribution: 'Tiles &copy; Esri',
     zIndex: 100,
     opacity: 0.6
   });
@@ -75,11 +74,11 @@ export class Map implements AfterViewInit {
   private datosElectricidadCargados = false;
   private capaElectricidadGeoJson: L.GeoJSON | null = null;
   private capaBordeVenezuela: L.LayerGroup | null = null;
+  private viasActivoAnterior = false;
 
   // Capa Satelital para vista real en zoom cercano
   private capaSatelite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
     zIndex: 405,
-    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
   });
 
   // Tiles base: CartoDB Voyager (Versión completa con calles y detalles)
@@ -130,7 +129,16 @@ export class Map implements AfterViewInit {
       }
 
       // --- LÓGICA CAPA VÍAS HÍBRIDA (ZOOM SATELITAL) ---
-      if (estado.vias) {
+      const viasActivado = estado.vias;
+      if (viasActivado) {
+        // Si se acaba de activar (transición false -> true) y el zoom actual es menor a 14, hacemos zoom automático
+        if (!this.viasActivoAnterior) {
+          const currentZoom = this.map.getZoom();
+          if (currentZoom < 14) {
+            this.map.setView([10.4806, -66.9036], 14, { animate: true });
+          }
+        }
+
         const zoom = this.gis.zoomLevel();
         const esVistaSatelite = zoom >= 14;
 
@@ -145,6 +153,7 @@ export class Map implements AfterViewInit {
         this.map.removeLayer(this.capaSatelite);
         if (this.capaBordeVenezuela) this.map.removeLayer(this.capaBordeVenezuela);
       }
+      this.viasActivoAnterior = viasActivado;
 
       // Limpieza
       [this.radioBases, this.oficinas, this.abonados, this.agentes].forEach(g => g.clearLayers());

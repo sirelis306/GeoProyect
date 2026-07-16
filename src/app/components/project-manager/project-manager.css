@@ -128,50 +128,7 @@
   flex-shrink: 0;
 }
 
-.btn-action-right {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  background: #f1f5f9;
-  color: #475569;
-  font-size: 11px;
-  transition: all 0.2s ease;
-}
 
-.btn-action-right.green {
-  color: #22c55e;
-  background: #f0fdf4;
-}
-
-.btn-action-right.green:hover {
-  background: #dcfce7;
-  transform: translateY(-1px);
-}
-
-.btn-action-right.red {
-  color: #ef4444;
-  background: #fef2f2;
-}
-
-.btn-action-right.red:hover {
-  background: #fee2e2;
-  transform: translateY(-1px);
-}
-
-.btn-action-right.info {
-  color: #0284c7;
-  background: #f0f9ff;
-}
-
-.btn-action-right.info:hover {
-  background: #e0f2fe;
-  transform: translateY(-1px);
-}
 
 /* NEW PROJECT FORM */
 .new-project-panel {
@@ -336,36 +293,7 @@
   flex-shrink: 0;
 }
 
-.action-right-eye,
-.action-right-trash {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
-  font-size: 11px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
 
-.action-right-eye {
-  color: #64748b;
-}
-
-.action-right-eye:hover {
-  background: #cbd5e1;
-  color: #3240A5;
-}
-
-.action-right-trash {
-  color: #ef4444;
-}
-
-.action-right-trash:hover {
-  background: #fee2e2;
-}
 
 /* CUSTOM SCROLLBAR FOR FIGURES LIST */
 .figures-scrollable-container::-webkit-scrollbar {
@@ -393,53 +321,105 @@
 ::ng-deep .project-selector-row .select-simple .ng-select-container {
   min-height: 36px !important;
   height: 36px !important;
-  border: 1px solid #cbd5e1 !important;
   border-radius: 8px !important;
   background-color: white !important;
-  box-shadow: none !important;
-}
-
-::ng-deep .project-selector-row .select-simple.ng-select-opened .ng-select-container {
-  border-color: #3240A5 !important;
-  box-shadow: 0 0 0 2px rgba(50, 64, 165, 0.08) !important;
 }
 
 ::ng-deep .project-selector-row .select-simple .ng-value {
   font-size: 12px !important;
-  color: #334155 !important;
-  font-family: 'Inter', sans-serif !important;
-  font-weight: 500 !important;
   line-height: 34px !important;
 }
 
 ::ng-deep .project-selector-row .select-simple .ng-placeholder {
   font-size: 12px !important;
-  color: #94a3b8 !important;
-  font-family: 'Inter', sans-serif !important;
   line-height: 34px !important;
 }
 
 ::ng-deep .project-selector-row .select-simple .ng-dropdown-panel {
-  border: 1px solid #e2e8f0 !important;
   border-radius: 8px !important;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05) !important;
-  margin-top: 4px !important;
-  font-family: 'Inter', sans-serif !important;
-  z-index: 2000 !important;
 }
 
 ::ng-deep .project-selector-row .select-simple .ng-dropdown-panel .ng-option {
   font-size: 12px !important;
   padding: 8px 12px !important;
-  color: #334155 !important;
 }
 
-::ng-deep .project-selector-row .select-simple .ng-dropdown-panel .ng-option.ng-option-marked {
-  background-color: #f1f5f9 !important;
+/* EXPORT POPOVER */
+.export-popover {
+  position: absolute;
+  top: 36px;
+  right: 0;
+  left: auto;
+  z-index: 1010;
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 160px;
 }
 
-::ng-deep .project-selector-row .select-simple .ng-dropdown-panel .ng-option.ng-option-selected {
-  background-color: #f0f1fa !important;
-  color: #3240A5 !important;
-  font-weight: 600 !important;
+.export-popover-item {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 11px;
+  color: #334155;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.export-popover-item:hover {
+  background: #f1f5f9;
+  color: #3240A5;
+}
+
+.export-popover-item i {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.export-popover-item:hover i {
+  color: #3240A5;
+}
+
+.btn-action-right.info.active {
+  background: #0284c7 !important;
+  color: white !important;
+}
+
+/* SKELETON LOADER ANIMATIONS */
+.skeleton-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.skeleton-row {
+  height: 32px;
+  width: 100%;
+  background: linear-gradient(90deg, rgba(226, 232, 240, 0.6) 25%, rgba(203, 213, 225, 0.7) 37%, rgba(226, 232, 240, 0.6) 63%);
+  background-size: 400% 100%;
+  animation: skeletonShimmer 1.4s ease infinite;
+  border-radius: 8px;
+}
+
+@keyframes skeletonShimmer {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
