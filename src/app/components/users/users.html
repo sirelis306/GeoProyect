@@ -134,17 +134,24 @@
 
   <!-- Modal de Confirmación de Desactivación -->
   <div class="modal-overlay" *ngIf="mostrarConfirmarDesactivar" (click)="cancelarDesactivar()">
-    <div class="modal-content warning" (click)="$event.stopPropagation()">
-      <div class="modal-icon">
-        <i class="fas fa-exclamation-triangle"></i>
+    <div class="modal-content" style="max-width: 380px;" (click)="$event.stopPropagation()">
+      <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
+        <div class="header-title-group">
+          <i class="fas fa-exclamation-triangle" style="color: #dc2626; font-size: 20px;"></i>
+          <h3 style="font-size: 14px;">¿Desactivar Usuario?</h3>
+        </div>
+        <button class="close-modal-btn" (click)="cancelarDesactivar()"><i class="fas fa-times"></i></button>
       </div>
-      <div class="modal-body">
-        <h3 class="modal-title">¿Desactivar Usuario?</h3>
-        <p class="modal-message">¿Estás seguro de que deseas desactivar este usuario? Perderá acceso al sistema de forma inmediata.</p>
+      
+      <div class="modal-body" style="padding-top: 10px; padding-bottom: 10px;">
+        <p style="font-size: 12px; color: #475569; margin: 0; line-height: 1.5;">
+          ¿Estás seguro de que deseas desactivar este usuario? Perderá acceso al sistema de forma inmediata.
+        </p>
       </div>
-      <div class="modal-footer modal-footer-confirm">
-        <button class="btn-modal btn-cancelar" (click)="cancelarDesactivar()">Cancelar</button>
-        <button class="btn-modal btn-confirmar" (click)="confirmarDesactivar()">Confirmar</button>
+      
+      <div class="modal-footer" style="background: transparent; border-top: none; padding-top: 12px; gap: 8px; justify-content: flex-end;">
+        <button class="btn-secondary" (click)="cancelarDesactivar()">Cancelar</button>
+        <button class="btn-danger" (click)="confirmarDesactivar()">Desactivar</button>
       </div>
     </div>
   </div>
