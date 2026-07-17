@@ -57,10 +57,30 @@
             </button>
           </div>
 
+          <button class="btn-action-icon" [class.active]="mostrarImportar()" (click)="toggleImportar()" title="Importar KML/GeoJSON">
+            <i class="fas fa-upload"></i>
+          </button>
           <button class="btn-action-icon danger" *ngIf="proyectoService.proyectoActivo()" 
             (click)="eliminarProyecto(proyectoService.proyectoActivo()!.id!, $event)" title="Eliminar Proyecto">
             <i class="fas fa-trash-alt"></i>
           </button>
+        </div>
+      </div>
+
+      <!-- Panel de Importación de Archivos -->
+      <div class="import-project-panel" *ngIf="mostrarImportar()">
+        <div class="import-drag-zone" 
+          [class.drag-active]="dragActivo()"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave($event)"
+          (drop)="onDrop($event)"
+          (click)="fileInput.click()">
+          
+          <i class="fas fa-cloud-upload-alt upload-icon"></i>
+          <p class="upload-text">Arrastra aquí tu archivo o <span>haz clic para buscar</span></p>
+          <span class="upload-formats">Formatos soportados: .kml, .geojson</span>
+          
+          <input type="file" #fileInput (change)="onFileSelected($event)" accept=".kml,.geojson,.json" style="display: none;">
         </div>
       </div>
 
@@ -99,5 +119,162 @@
         </div>
       </div>
     </ng-container>
+  </div>
+</div>
+
+<!-- Modal de Confirmación de Importación (Glassmorphic) -->
+<div class="modal-overlay" *ngIf="mostrarModalConfirmacion() && archivoImportado()" (click)="cancelarImportacion()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="header-title-group">
+        <i class="fas fa-file-import header-icon"></i>
+        <h3>Confirmar Importación</h3>
+      </div>
+      <button class="close-modal-btn" (click)="cancelarImportacion()"><i class="fas fa-times"></i></button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="file-summary-card">
+        <div class="file-info-row">
+          <span class="lbl">Archivo:</span>
+          <span class="val truncate" [title]="archivoImportado()!.nombre">{{ archivoImportado()!.nombre }}</span>
+        </div>
+        <div class="file-info-row">
+          <span class="lbl">Formato:</span>
+          <span class="val font-semibold">{{ archivoImportado()!.tipo }}</span>
+        </div>
+        <div class="file-info-row">
+          <span class="lbl">Elementos:</span>
+          <span class="val count-badge">{{ archivoImportado()!.features.length }} figuras encontradas</span>
+        </div>
+      </div>
+      
+      <!-- Indicador de Destino Activo (con opción de cambiar) -->
+      <div class="active-project-dest" *ngIf="proyectoService.proyectoActivo() && !mostrarSubPanelGuardar()" style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 12px;">
+          <i class="fas fa-map-marked-alt" style="color: #3240A5;"></i>
+          <span style="color: #64748b; font-weight: 500;">Destino activo:</span>
+          <strong style="color: #1e293b;">{{ proyectoService.proyectoActivo()!.nombre }}</strong>
+        </div>
+        <button (click)="mostrarSubPanelGuardar.set(true)" style="background: transparent; border: none; color: #3240A5; font-size: 11px; font-weight: 600; cursor: pointer; text-decoration: underline; padding: 0;">
+          Cambiar
+        </button>
+      </div>
+      
+      <!-- Sub-panel para Asignar Destino al Guardar (cuando no hay proyecto activo) -->
+      <div class="project-assign-subpanel" *ngIf="mostrarSubPanelGuardar()">
+        <div class="subpanel-divider" style="height: 1px; background: #e2e8f0; margin: 16px 0;"></div>
+        <h4 class="subpanel-title" style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 10px 0;">
+          Asignar Destino Permanente
+        </h4>
+        
+        <div class="assign-tabs" style="display: flex; gap: 8px; margin-bottom: 12px;">
+          <button class="tab-btn" 
+            [class.active]="opcionAsignacion === 'existente'" 
+            (click)="opcionAsignacion = 'existente'"
+            style="flex: 1; height: 32px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 11px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: white; transition: all 0.2s;"
+            [style.background-color]="opcionAsignacion === 'existente' ? '#3240A5' : 'white'"
+            [style.color]="opcionAsignacion === 'existente' ? 'white' : '#64748b'"
+            [style.border-color]="opcionAsignacion === 'existente' ? '#3240A5' : '#e2e8f0'">
+            <i class="fas fa-folder-open"></i> Proyecto Existente
+          </button>
+          <button class="tab-btn" 
+            [class.active]="opcionAsignacion === 'nuevo'" 
+            (click)="opcionAsignacion = 'nuevo'"
+            style="flex: 1; height: 32px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 11px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: white; transition: all 0.2s;"
+            [style.background-color]="opcionAsignacion === 'nuevo' ? '#3240A5' : 'white'"
+            [style.color]="opcionAsignacion === 'nuevo' ? 'white' : '#64748b'"
+            [style.border-color]="opcionAsignacion === 'nuevo' ? '#3240A5' : '#e2e8f0'">
+            <i class="fas fa-folder-plus"></i> Crear Nuevo
+          </button>
+        </div>
+
+        <!-- Opción 1: Proyectos Existentes con Scroll y Buscador Integrado -->
+        <div class="tab-content" *ngIf="opcionAsignacion === 'existente'">
+          <div class="search-input-wrapper" style="position: relative; margin-bottom: 8px;">
+            <i class="fas fa-search search-icon" style="position: absolute; left: 10px; top: 11px; color: #94a3b8; font-size: 11px;"></i>
+            <input type="text" [(ngModel)]="filtroProyectosImportacion" placeholder="Buscar proyecto..." class="search-box" style="width: 100%; height: 32px; padding: 0 10px 0 28px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 11px; outline: none; background: #f8fafc;">
+          </div>
+          
+          <div class="projects-list-scroll" style="max-height: 140px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 4px; background: #f8fafc; display: flex; flex-direction: column; gap: 4px;">
+            <div 
+              class="project-list-item" 
+              *ngFor="let proj of proyectosFiltrados" 
+              [class.selected]="proyectoSeleccionadoId === proj.id"
+              (click)="proyectoSeleccionadoId = proj.id"
+              style="padding: 8px 12px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.2s;"
+              [style.background-color]="proyectoSeleccionadoId === proj.id ? '#eff6ff' : 'white'"
+              [style.border]="proyectoSeleccionadoId === proj.id ? '1px solid #bfdbfe' : '1px solid transparent'">
+              <div class="item-info" style="display: flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 500;" [style.color]="proyectoSeleccionadoId === proj.id ? '#1e40af' : '#334155'">
+                <i class="fas fa-map-marked-alt project-icon"></i>
+                <span class="project-name">{{ proj.nombre }}</span>
+              </div>
+              <i class="fas fa-check-circle check-icon" style="color: #3b82f6; font-size: 13px;" *ngIf="proyectoSeleccionadoId === proj.id"></i>
+            </div>
+            <div class="empty-list" *ngIf="proyectosFiltrados.length === 0" style="padding: 16px; text-align: center; color: #94a3b8; font-size: 11px;">
+              No se encontraron proyectos.
+            </div>
+          </div>
+        </div>
+
+        <!-- Opción 2: Proyecto Nuevo -->
+        <div class="tab-content" *ngIf="opcionAsignacion === 'nuevo'">
+          <div class="new-project-field">
+            <input type="text" [(ngModel)]="nombreProyectoNuevoImportacion" placeholder="Nombre del nuevo proyecto..." class="input-simple" style="height: 36px; font-size: 12px; padding: 0 12px; border-radius: 8px; width: 100%;">
+          </div>
+        </div>
+      </div>
+      
+      <p class="import-instruction" *ngIf="!mostrarSubPanelGuardar()">¿Cómo deseas procesar estos elementos en el mapa?</p>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="btn-import-opt secondary" (click)="importarSoloVisualizar()" *ngIf="!mostrarSubPanelGuardar()">
+        <i class="fas fa-eye"></i>
+        <div class="btn-lbl-group">
+          <span class="title">Solo Visualizar</span>
+          <span class="desc">Cargar en mapa sin guardar</span>
+        </div>
+      </button>
+      
+      <button class="btn-import-opt primary" 
+        [disabled]="mostrarSubPanelGuardar() && (opcionAsignacion === 'existente' ? !proyectoSeleccionadoId : !nombreProyectoNuevoImportacion.trim())" 
+        (click)="importarGuardarProyecto()"
+        [style.flex]="mostrarSubPanelGuardar() ? '1' : ''">
+        <i class="fas fa-database"></i>
+        <div class="btn-lbl-group">
+          <span class="title">{{ mostrarSubPanelGuardar() ? 'Confirmar Guardado' : 'Guardar en Proyecto' }}</span>
+          <span class="desc">{{ mostrarSubPanelGuardar() ? 'Almacenar figuras ahora' : 'Almacenar permanentemente' }}</span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Genérico de Confirmación (Glassmorphic) -->
+<div class="modal-overlay" *ngIf="confirmacionModal.abierto">
+  <div class="modal-content" style="max-width: 380px;" (click)="$event.stopPropagation()">
+    <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
+      <div class="header-title-group">
+        <i class="fas fa-exclamation-triangle" style="color: #dc2626; font-size: 20px;"></i>
+        <h3 style="font-size: 14px;">{{ confirmacionModal.titulo }}</h3>
+      </div>
+      <button class="close-modal-btn" (click)="cancelarConfirmacion()"><i class="fas fa-times"></i></button>
+    </div>
+    
+    <div class="modal-body" style="padding-top: 10px; padding-bottom: 10px;">
+      <p style="font-size: 12px; color: #475569; margin: 0; line-height: 1.5;">
+        {{ confirmacionModal.mensaje }}
+      </p>
+    </div>
+    
+    <div class="modal-footer" style="background: transparent; border-top: none; padding-top: 12px; gap: 8px; justify-content: flex-end;">
+      <button class="btn-secondary" (click)="cancelarConfirmacion()">
+        Cancelar
+      </button>
+      <button class="btn-danger" (click)="ejecutarConfirmacion()">
+        Eliminar
+      </button>
+    </div>
   </div>
 </div>

@@ -85,11 +85,13 @@ export class Map implements AfterViewInit {
   private tileBase = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { zIndex: 1 });
 
   constructor() {
-    // Escuchar figuras del proyecto activo para renderizarlas (sólo si el módulo está activo)
+    // Escuchar figuras del proyecto activo para renderizarlas (sólo si el módulo está activo y no hay previsualización activa)
     effect(() => {
       const figuras = this.proyectoService.figurasProyectoActivo();
       const activo = this.gis.moduloPoligonosActivo();
-      if (activo) {
+      const importacionActiva = this.gis.importacionPreliminarActiva();
+      
+      if (activo && !importacionActiva) {
         this.actualizarFigurasProyectoEnMapa(figuras);
       } else {
         this.projectShapesLayer.clearLayers();
@@ -102,6 +104,15 @@ export class Map implements AfterViewInit {
       if (figura) {
         this.centrarCamaraEnFigura(figura);
         setTimeout(() => this.gis.figuraEnfocada.set(null), 100);
+      }
+    });
+
+    // Escuchar caja de mapa para ajustar límites (fitBounds)
+    effect(() => {
+      const bounds = this.gis.cajaMapaAjustar();
+      if (bounds && this.map) {
+        this.map.fitBounds(bounds, { padding: [80, 80], maxZoom: 14 });
+        setTimeout(() => this.gis.cajaMapaAjustar.set(null), 100);
       }
     });
 
@@ -567,13 +578,27 @@ export class Map implements AfterViewInit {
         pane: 'drawnPane'
       };
 
+      let coords: any;
+      try {
+        coords = typeof f.coordenadas === 'string' ? JSON.parse(f.coordenadas) : f.coordenadas;
+      } catch (e) {
+        console.error('Error al parsear coordenadas de figura:', f, e);
+        coords = f.coordenadas;
+      }
+
       if (f.tipo === 'poligono') {
-        layer = L.polygon(f.coordenadas, options);
+        layer = L.polygon(coords, options);
       } else if (f.tipo === 'ruta') {
-        layer = L.polyline(f.coordenadas, options);
+        layer = L.polyline(coords, options);
       } else if (f.tipo === 'circulo' && f.radio) {
-        const centro = f.coordenadas;
-        layer = L.circle([centro.lat, centro.lng], { ...options, radius: f.radio });
+        const centro = coords;
+        if (centro) {
+          const lat = centro.lat !== undefined ? centro.lat : (Array.isArray(centro) ? centro[0] : undefined);
+          const lng = centro.lng !== undefined ? centro.lng : (Array.isArray(centro) ? centro[1] : undefined);
+          if (lat !== undefined && lng !== undefined) {
+            layer = L.circle([lat, lng], { ...options, radius: f.radio });
+          }
+        }
       }
 
       if (layer) {

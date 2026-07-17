@@ -34,6 +34,12 @@ export class GisService {
   
   // Signal para enfocar una figura guardada en el mapa
   figuraEnfocada = signal<any>(null);
+  
+  // Signal para ajustar los límites del mapa a una caja (bounds)
+  cajaMapaAjustar = signal<any>(null);
+
+  // Signal para ocultar temporalmente figuras activas durante previsualización de importación
+  importacionPreliminarActiva = signal<boolean>(false);
 
   // Colores
   get COLORES_REGIONES_SIGNAL() { return this.map.COLORES_REGIONES_SIGNAL; }
