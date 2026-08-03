@@ -1,4 +1,12 @@
-import { Component, Input, Output, EventEmitter, inject, signal } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  inject,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProyectoService } from '../../services/proyecto/proyectoService';
@@ -9,7 +17,8 @@ import { ToastService } from '../../services/toast/toastService';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './polygons.html',
-  styleUrl: './polygons.css'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './polygons.css',
 })
 export class Polygons {
   @Input() analisis: any = null;
@@ -44,7 +53,7 @@ export class Polygons {
       tipo: this.analisis.tipo,
       coordenadas: this.analisis.coordenadas,
       radio: this.analisis.radio,
-      color: this.colorFigura
+      color: this.colorFigura,
     };
 
     this.proyectoService.guardarFigura(activo.id, payload).subscribe({
@@ -58,7 +67,7 @@ export class Polygons {
       error: (err) => {
         console.error('Error al guardar figura:', err);
         this.toastService.showError('Error al guardar la figura en el proyecto.');
-      }
+      },
     });
   }
 }

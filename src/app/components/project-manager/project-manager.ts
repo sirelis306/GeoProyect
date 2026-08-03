@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -12,7 +12,8 @@ import { ToastService } from '../../services/toast/toastService';
   standalone: true,
   imports: [CommonModule, FormsModule, NgSelectModule],
   templateUrl: './project-manager.html',
-  styleUrl: './project-manager.css'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './project-manager.css',
 })
 export class ProjectManager {
   public gis = inject(GisService);
@@ -21,8 +22,8 @@ export class ProjectManager {
 
   mostrarCrearProyecto = signal(false);
   mostrarMenuExportar = signal(false); // Signal para menú de exportación
-  mostrarImportar = signal(false);     // Signal para mostrar panel de importación
-  dragActivo = signal(false);          // Estado drag over
+  mostrarImportar = signal(false); // Signal para mostrar panel de importación
+  dragActivo = signal(false); // Estado drag over
   mostrarModalConfirmacion = signal(false); // Modal confirmación
   archivoImportado = signal<any>(null); // Datos del archivo parseado
 
@@ -40,9 +41,10 @@ export class ProjectManager {
     const query = this.filtroProyectosImportacion.toLowerCase().trim();
     const proyectos = this.proyectoService.proyectos() || [];
     if (!query) return proyectos;
-    return proyectos.filter(p => 
-      (p.nombre && p.nombre.toLowerCase().includes(query)) ||
-      (p.descripcion && p.descripcion.toLowerCase().includes(query))
+    return proyectos.filter(
+      (p) =>
+        (p.nombre && p.nombre.toLowerCase().includes(query)) ||
+        (p.descripcion && p.descripcion.toLowerCase().includes(query)),
     );
   }
 
@@ -51,7 +53,7 @@ export class ProjectManager {
     abierto: false,
     titulo: '',
     mensaje: '',
-    accion: () => {}
+    accion: () => {},
   };
 
   cancelarConfirmacion() {
@@ -69,9 +71,11 @@ export class ProjectManager {
 
   get leyendaVisible(): boolean {
     const capas = this.gis.capasVisibles();
-    return (capas.operaciones && this.gis.getEstadosConDatos().length > 0) ||
-           (capas.regiones && !capas.operaciones) ||
-           capas.poblacion;
+    return (
+      (capas.operaciones && this.gis.getEstadosConDatos().length > 0) ||
+      (capas.regiones && !capas.operaciones) ||
+      capas.poblacion
+    );
   }
 
   constructor() {
@@ -83,15 +87,17 @@ export class ProjectManager {
 
   crearNuevoProyecto() {
     if (!this.nombreNuevoProyecto.trim()) return;
-    this.proyectoService.crearProyecto(this.nombreNuevoProyecto, this.descripcionNuevoProyecto).subscribe({
-      next: () => {
-        this.proyectoService.cargarProyectos();
-        this.nombreNuevoProyecto = '';
-        this.descripcionNuevoProyecto = '';
-        this.mostrarCrearProyecto.set(false);
-      },
-      error: (err) => console.error('Error al crear proyecto:', err)
-    });
+    this.proyectoService
+      .crearProyecto(this.nombreNuevoProyecto, this.descripcionNuevoProyecto)
+      .subscribe({
+        next: () => {
+          this.proyectoService.cargarProyectos();
+          this.nombreNuevoProyecto = '';
+          this.descripcionNuevoProyecto = '';
+          this.mostrarCrearProyecto.set(false);
+        },
+        error: (err) => console.error('Error al crear proyecto:', err),
+      });
   }
 
   eliminarProyecto(id: number, event: Event) {
@@ -99,7 +105,8 @@ export class ProjectManager {
     this.confirmacionModal = {
       abierto: true,
       titulo: '¿Eliminar Proyecto?',
-      mensaje: '¿Estás seguro de eliminar este proyecto y todos sus polígonos/rutas guardados? Esta acción es permanente y no se puede revertir.',
+      mensaje:
+        '¿Estás seguro de eliminar este proyecto y todos sus polígonos/rutas guardados? Esta acción es permanente y no se puede revertir.',
       accion: () => {
         this.proyectoService.eliminarProyecto(id).subscribe({
           next: () => {
@@ -109,9 +116,9 @@ export class ProjectManager {
             }
             this.toastService.showSuccess('Proyecto eliminado correctamente.');
           },
-          error: (err) => console.error('Error al eliminar proyecto:', err)
+          error: (err) => console.error('Error al eliminar proyecto:', err),
         });
-      }
+      },
     };
   }
 
@@ -141,13 +148,14 @@ export class ProjectManager {
       this.confirmacionModal = {
         abierto: true,
         titulo: '¿Eliminar Elemento Temporal?',
-        mensaje: '¿Estás seguro de eliminar esta figura importada temporal? Se removerá del mapa y la barra lateral.',
+        mensaje:
+          '¿Estás seguro de eliminar esta figura importada temporal? Se removerá del mapa y la barra lateral.',
         accion: () => {
-          this.proyectoService.figurasProyectoActivo.update(figuras => 
-            figuras.filter(f => f.id !== id)
+          this.proyectoService.figurasProyectoActivo.update((figuras) =>
+            figuras.filter((f) => f.id !== id),
           );
           this.toastService.showSuccess('Elemento temporal removido.');
-        }
+        },
       };
       return;
     }
@@ -165,9 +173,9 @@ export class ProjectManager {
             }
             this.toastService.showSuccess('Figura eliminada del proyecto.');
           },
-          error: (err) => console.error('Error al eliminar figura:', err)
+          error: (err) => console.error('Error al eliminar figura:', err),
         });
-      }
+      },
     };
   }
 
@@ -194,72 +202,80 @@ export class ProjectManager {
     if (!activo) return;
 
     const figuras = this.proyectoService.figurasProyectoActivo();
-    const features = figuras.map((f: ProyectoFigura) => {
-      let coordsParsed: any;
-      try {
-        coordsParsed = typeof f.coordenadas === 'string' ? JSON.parse(f.coordenadas) : f.coordenadas;
-      } catch (e) {
-        coordsParsed = f.coordenadas;
-      }
+    const features = figuras
+      .map((f: ProyectoFigura) => {
+        let coordsParsed: any;
+        try {
+          coordsParsed =
+            typeof f.coordenadas === 'string' ? JSON.parse(f.coordenadas) : f.coordenadas;
+        } catch (e) {
+          coordsParsed = f.coordenadas;
+        }
 
-      let geometry: any = null;
+        let geometry: any = null;
 
-      if (f.tipo === 'poligono') {
-        const ring = this.formatGeoJsonRing(coordsParsed);
-        if (ring.length > 0) {
-          if (
-            ring[0][0] !== ring[ring.length - 1][0] ||
-            ring[0][1] !== ring[ring.length - 1][1]
-          ) {
-            ring.push([ring[0][0], ring[0][1]]);
+        if (f.tipo === 'poligono') {
+          const ring = this.formatGeoJsonRing(coordsParsed);
+          if (ring.length > 0) {
+            if (
+              ring[0][0] !== ring[ring.length - 1][0] ||
+              ring[0][1] !== ring[ring.length - 1][1]
+            ) {
+              ring.push([ring[0][0], ring[0][1]]);
+            }
+            geometry = {
+              type: 'Polygon',
+              coordinates: [ring],
+            };
           }
-          geometry = {
-            type: 'Polygon',
-            coordinates: [ring]
-          };
+        } else if (f.tipo === 'ruta') {
+          const line = this.formatGeoJsonRing(coordsParsed);
+          if (line.length > 0) {
+            geometry = {
+              type: 'LineString',
+              coordinates: line,
+            };
+          }
+        } else if (f.tipo === 'circulo' && f.radio) {
+          const centro = coordsParsed;
+          const ring = this.generarPoligonoCirculo(centro, f.radio);
+          if (ring.length > 0) {
+            geometry = {
+              type: 'Polygon',
+              coordinates: [ring],
+            };
+          }
         }
-      } else if (f.tipo === 'ruta') {
-        const line = this.formatGeoJsonRing(coordsParsed);
-        if (line.length > 0) {
-          geometry = {
-            type: 'LineString',
-            coordinates: line
-          };
-        }
-      } else if (f.tipo === 'circulo' && f.radio) {
-        const centro = coordsParsed;
-        const ring = this.generarPoligonoCirculo(centro, f.radio);
-        if (ring.length > 0) {
-          geometry = {
-            type: 'Polygon',
-            coordinates: [ring]
-          };
-        }
-      }
 
-      return {
-        type: 'Feature',
-        properties: {
-          id: f.id,
-          nombre: f.nombre,
-          tipo: f.tipo,
-          color: f.color,
-          radio: f.radio
-        },
-        geometry: geometry
-      };
-    }).filter(feature => feature.geometry !== null);
+        return {
+          type: 'Feature',
+          properties: {
+            id: f.id,
+            nombre: f.nombre,
+            tipo: f.tipo,
+            color: f.color,
+            radio: f.radio,
+          },
+          geometry: geometry,
+        };
+      })
+      .filter((feature) => feature.geometry !== null);
 
     const featureCollection = {
       type: 'FeatureCollection',
       name: activo.nombre,
-      features: features
+      features: features,
     };
 
-    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(featureCollection, null, 2));
+    const dataStr =
+      'data:text/json;charset=utf-8,' +
+      encodeURIComponent(JSON.stringify(featureCollection, null, 2));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute('href', dataStr);
-    downloadAnchor.setAttribute('download', `${activo.nombre.toLowerCase().replace(/\s+/g, '-')}.geojson`);
+    downloadAnchor.setAttribute(
+      'download',
+      `${activo.nombre.toLowerCase().replace(/\s+/g, '-')}.geojson`,
+    );
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
@@ -272,7 +288,7 @@ export class ProjectManager {
     if (!activo) return;
 
     const figuras = this.proyectoService.figurasProyectoActivo();
-    
+
     let kmlContent = `<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
@@ -283,7 +299,8 @@ export class ProjectManager {
     figuras.forEach((f: ProyectoFigura) => {
       let coordsParsed: any;
       try {
-        coordsParsed = typeof f.coordenadas === 'string' ? JSON.parse(f.coordenadas) : f.coordenadas;
+        coordsParsed =
+          typeof f.coordenadas === 'string' ? JSON.parse(f.coordenadas) : f.coordenadas;
       } catch (e) {
         coordsParsed = f.coordenadas;
       }
@@ -316,13 +333,10 @@ export class ProjectManager {
       if (f.tipo === 'poligono') {
         const ring = this.formatGeoJsonRing(coordsParsed);
         if (ring.length > 0) {
-          if (
-            ring[0][0] !== ring[ring.length - 1][0] ||
-            ring[0][1] !== ring[ring.length - 1][1]
-          ) {
+          if (ring[0][0] !== ring[ring.length - 1][0] || ring[0][1] !== ring[ring.length - 1][1]) {
             ring.push([ring[0][0], ring[0][1]]);
           }
-          const coordString = ring.map(pt => `${pt[0]},${pt[1]},0`).join(' ');
+          const coordString = ring.map((pt) => `${pt[0]},${pt[1]},0`).join(' ');
           kmlContent += `      <Polygon>
         <outerBoundaryIs>
           <LinearRing>
@@ -335,7 +349,7 @@ export class ProjectManager {
       } else if (f.tipo === 'ruta') {
         const line = this.formatGeoJsonRing(coordsParsed);
         if (line.length > 0) {
-          const coordString = line.map(pt => `${pt[0]},${pt[1]},0`).join(' ');
+          const coordString = line.map((pt) => `${pt[0]},${pt[1]},0`).join(' ');
           kmlContent += `      <LineString>
         <coordinates>${coordString}</coordinates>
       </LineString>
@@ -345,7 +359,7 @@ export class ProjectManager {
         const centro = coordsParsed;
         const ring = this.generarPoligonoCirculo(centro, f.radio);
         if (ring.length > 0) {
-          const coordString = ring.map(pt => `${pt[0]},${pt[1]},0`).join(' ');
+          const coordString = ring.map((pt) => `${pt[0]},${pt[1]},0`).join(' ');
           kmlContent += `      <Polygon>
         <outerBoundaryIs>
           <LinearRing>
@@ -364,29 +378,37 @@ export class ProjectManager {
     kmlContent += `  </Document>
 </kml>`;
 
-    const dataStr = 'data:application/vnd.google-earth.kml+xml;charset=utf-8,' + encodeURIComponent(kmlContent);
+    const dataStr =
+      'data:application/vnd.google-earth.kml+xml;charset=utf-8,' + encodeURIComponent(kmlContent);
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute('href', dataStr);
-    downloadAnchor.setAttribute('download', `${activo.nombre.toLowerCase().replace(/\s+/g, '-')}.kml`);
+    downloadAnchor.setAttribute(
+      'download',
+      `${activo.nombre.toLowerCase().replace(/\s+/g, '-')}.kml`,
+    );
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
   }
 
-  private generarPoligonoCirculo(centro: { lat: number, lng: number }, radioMetros: number): number[][] {
+  private generarPoligonoCirculo(
+    centro: { lat: number; lng: number },
+    radioMetros: number,
+  ): number[][] {
     const puntos = [];
     const numPuntos = 64; // Cantidad de lados para que el círculo se vea liso/perfecto
     const earthRadius = 6378137; // Radio de la Tierra en metros
 
     for (let i = 0; i <= numPuntos; i++) {
       const angle = (i * 2 * Math.PI) / numPuntos;
-      
+
       const dLat = (radioMetros / earthRadius) * (180 / Math.PI);
-      const dLng = (radioMetros / (earthRadius * Math.cos(centro.lat * Math.PI / 180))) * (180 / Math.PI);
-      
+      const dLng =
+        (radioMetros / (earthRadius * Math.cos((centro.lat * Math.PI) / 180))) * (180 / Math.PI);
+
       const latPunto = centro.lat + dLat * Math.sin(angle);
       const lngPunto = centro.lng + dLng * Math.cos(angle);
-      
+
       puntos.push([lngPunto, latPunto]);
     }
     return puntos;
@@ -394,20 +416,26 @@ export class ProjectManager {
 
   private formatGeoJsonRing(coords: any): number[][] {
     if (!Array.isArray(coords)) return [];
-    
-    const actualCoords = Array.isArray(coords[0]) && !('lat' in coords[0]) && !('lng' in coords[0]) && coords[0].length > 1
-      ? coords[0] 
-      : coords;
 
-    return actualCoords.map((pt: any) => {
-      const formatted = this.toLngLatArray(pt);
-      return formatted ? formatted : [0, 0];
-    }).filter(pt => pt[0] !== 0 || pt[1] !== 0);
+    const actualCoords =
+      Array.isArray(coords[0]) &&
+      !('lat' in coords[0]) &&
+      !('lng' in coords[0]) &&
+      coords[0].length > 1
+        ? coords[0]
+        : coords;
+
+    return actualCoords
+      .map((pt: any) => {
+        const formatted = this.toLngLatArray(pt);
+        return formatted ? formatted : [0, 0];
+      })
+      .filter((pt) => pt[0] !== 0 || pt[1] !== 0);
   }
 
   private toLngLatArray(pt: any): number[] | null {
     if (!pt) return null;
-    
+
     if (typeof pt === 'object' && !Array.isArray(pt)) {
       const lat = pt.lat !== undefined ? pt.lat : pt.latitud;
       const lng = pt.lng !== undefined ? pt.lng : pt.longitud;
@@ -485,7 +513,7 @@ export class ProjectManager {
             if (geoJsonParsed.type === 'Feature') {
               geoJsonParsed = {
                 type: 'FeatureCollection',
-                features: [geoJsonParsed]
+                features: [geoJsonParsed],
               };
             } else {
               throw new Error('Estructura GeoJSON inválida.');
@@ -502,7 +530,7 @@ export class ProjectManager {
         this.archivoImportado.set({
           nombre: nombre,
           tipo: extension === '.kml' ? 'Google Earth (.kml)' : 'GeoJSON (.geojson)',
-          features: geoJsonParsed.features
+          features: geoJsonParsed.features,
         });
 
         // Inicializar preselección e integración de subpanel
@@ -522,7 +550,9 @@ export class ProjectManager {
         this.mostrarImportar.set(false); // Cierra el mini panel
       } catch (err) {
         console.error('Error parseando el archivo:', err);
-        this.toastService.showError('Error al leer el archivo. Compruebe que esté bien formateado.');
+        this.toastService.showError(
+          'Error al leer el archivo. Compruebe que esté bien formateado.',
+        );
       }
     };
 
@@ -539,7 +569,7 @@ export class ProjectManager {
       const placemark = placemarks[i];
       const nameNode = placemark.getElementsByTagName('name')[0];
       const name = nameNode ? nameNode.textContent || `Elemento #${i + 1}` : `Elemento #${i + 1}`;
-      
+
       let color = '#4f46e5';
       const styleUrlNode = placemark.getElementsByTagName('styleUrl')[0];
       if (styleUrlNode) {
@@ -548,7 +578,9 @@ export class ProjectManager {
           // Buscar nodo de estilo
           const styleNode = xmlDoc.getElementById(styleId);
           if (styleNode) {
-            const lineColorNode = styleNode.getElementsByTagName('LineStyle')[0]?.getElementsByTagName('color')[0];
+            const lineColorNode = styleNode
+              .getElementsByTagName('LineStyle')[0]
+              ?.getElementsByTagName('color')[0];
             if (lineColorNode && lineColorNode.textContent) {
               const kmlColor = lineColorNode.textContent.trim();
               if (kmlColor.length === 8) {
@@ -575,10 +607,10 @@ export class ProjectManager {
           const coords = this.parseKmlCoordinates(coordinatesNode.textContent);
           geometry = {
             type: 'Polygon',
-            coordinates: [coords]
+            coordinates: [coords],
           };
           tipo = 'poligono';
-          
+
           const descNode = placemark.getElementsByTagName('description')[0];
           if (descNode && descNode.textContent && descNode.textContent.includes('Radio:')) {
             const match = descNode.textContent.match(/Radio:\s*(\d+)m/);
@@ -598,7 +630,7 @@ export class ProjectManager {
           const coords = this.parseKmlCoordinates(coordinatesNode.textContent);
           geometry = {
             type: 'LineString',
-            coordinates: coords
+            coordinates: coords,
           };
           tipo = 'ruta';
         }
@@ -613,7 +645,7 @@ export class ProjectManager {
           if (coords.length > 0) {
             geometry = {
               type: 'Point',
-              coordinates: coords[0]
+              coordinates: coords[0],
             };
             tipo = 'punto';
           }
@@ -627,23 +659,23 @@ export class ProjectManager {
             nombre: name,
             tipo: tipo,
             color: color,
-            radio: radio
+            radio: radio,
           },
-          geometry: geometry
+          geometry: geometry,
         });
       }
     }
 
     return {
       type: 'FeatureCollection',
-      features: features
+      features: features,
     };
   }
 
   private parseKmlCoordinates(coordsText: string): number[][] {
     const points = coordsText.trim().split(/\s+/);
     const coords: number[][] = [];
-    points.forEach(p => {
+    points.forEach((p) => {
       const parts = p.split(',');
       if (parts.length >= 2) {
         const lng = Number(parts[0]);
@@ -664,7 +696,7 @@ export class ProjectManager {
       const prop = feat.properties || {};
       const geom = feat.geometry || {};
       const tipo = prop.tipo || 'poligono';
-      
+
       let coordenadas: any;
       if (tipo === 'poligono') {
         coordenadas = geom.coordinates[0].map((pt: any) => ({ lat: pt[1], lng: pt[0] }));
@@ -691,14 +723,14 @@ export class ProjectManager {
         coordenadas: JSON.stringify(coordenadas),
         color: prop.color || '#4f46e5',
         radio: prop.radio || null,
-        visible: true
+        visible: true,
       };
     });
 
     // Cargar en el servicio del proyecto (remplazando o agregando)
     this.proyectoService.figurasProyectoActivo.set(figInstancias);
     this.toastService.showSuccess(`Cargados ${figInstancias.length} elementos de forma temporal.`);
-    
+
     // Ajustar límites del mapa
     this.centrarCamaraEnCoordenadas(datos.features);
     this.gis.importacionPreliminarActiva.set(false);
@@ -722,7 +754,9 @@ export class ProjectManager {
     // Si no está abierto el subpanel
     if (!this.mostrarSubPanelGuardar()) {
       if (this.proyectoSeleccionadoId) {
-        const proj = this.proyectoService.proyectos().find(p => p.id === this.proyectoSeleccionadoId);
+        const proj = this.proyectoService
+          .proyectos()
+          .find((p) => p.id === this.proyectoSeleccionadoId);
         if (proj && proj.id) {
           this.proyectoService.seleccionarProyecto(proj);
           this.ejecutarGuardadoFiguras(proj.id, proj.nombre, datos.features);
@@ -739,7 +773,9 @@ export class ProjectManager {
         this.toastService.showError('Seleccione un proyecto de destino.');
         return;
       }
-      const proj = this.proyectoService.proyectos().find(p => p.id === this.proyectoSeleccionadoId);
+      const proj = this.proyectoService
+        .proyectos()
+        .find((p) => p.id === this.proyectoSeleccionadoId);
       if (proj && proj.id) {
         this.proyectoService.seleccionarProyecto(proj);
         this.ejecutarGuardadoFiguras(proj.id, proj.nombre, datos.features);
@@ -753,43 +789,53 @@ export class ProjectManager {
         this.toastService.showError('Escriba el nombre del nuevo proyecto.');
         return;
       }
-      
-      this.proyectoService.crearProyecto(this.nombreProyectoNuevoImportacion, 'Proyecto creado al importar figuras').subscribe({
-        next: (res) => {
-          this.proyectoService.cargarProyectos();
-          const nuevoProjId = res.id;
-          const nuevoProjNombre = res.nombre || this.nombreProyectoNuevoImportacion;
-          
-          if (nuevoProjId) {
-            const nuevoProj = { id: nuevoProjId, nombre: nuevoProjNombre, descripcion: 'Proyecto creado al importar figuras' };
-            this.proyectoService.seleccionarProyecto(nuevoProj);
-            this.ejecutarGuardadoFiguras(nuevoProjId, nuevoProjNombre, datos.features);
-          } else {
-            setTimeout(() => {
-              const proj = this.proyectoService.proyectos().find(p => p.nombre === this.nombreProyectoNuevoImportacion);
-              if (proj && proj.id) {
-                this.proyectoService.seleccionarProyecto(proj);
-                this.ejecutarGuardadoFiguras(proj.id, proj.nombre, datos.features);
-              } else {
-                this.toastService.showError('Error al crear el proyecto de destino.');
-              }
-            }, 500);
-          }
-        },
-        error: (err) => {
-          console.error('Error al crear proyecto en importación:', err);
-          this.toastService.showError('Fallo al crear el proyecto.');
-        }
-      });
+
+      this.proyectoService
+        .crearProyecto(this.nombreProyectoNuevoImportacion, 'Proyecto creado al importar figuras')
+        .subscribe({
+          next: (res) => {
+            this.proyectoService.cargarProyectos();
+            const nuevoProjId = res.id;
+            const nuevoProjNombre = res.nombre || this.nombreProyectoNuevoImportacion;
+
+            if (nuevoProjId) {
+              const nuevoProj = {
+                id: nuevoProjId,
+                nombre: nuevoProjNombre,
+                descripcion: 'Proyecto creado al importar figuras',
+              };
+              this.proyectoService.seleccionarProyecto(nuevoProj);
+              this.ejecutarGuardadoFiguras(nuevoProjId, nuevoProjNombre, datos.features);
+            } else {
+              setTimeout(() => {
+                const proj = this.proyectoService
+                  .proyectos()
+                  .find((p) => p.nombre === this.nombreProyectoNuevoImportacion);
+                if (proj && proj.id) {
+                  this.proyectoService.seleccionarProyecto(proj);
+                  this.ejecutarGuardadoFiguras(proj.id, proj.nombre, datos.features);
+                } else {
+                  this.toastService.showError('Error al crear el proyecto de destino.');
+                }
+              }, 500);
+            }
+          },
+          error: (err) => {
+            console.error('Error al crear proyecto en importación:', err);
+            this.toastService.showError('Fallo al crear el proyecto.');
+          },
+        });
     }
   }
 
   private ejecutarGuardadoFiguras(proyectoId: number, proyectoNombre: string, features: any[]) {
     let guardadosCount = 0;
-    
+
     const guardarSecuencial = (index: number) => {
       if (index >= features.length) {
-        this.toastService.showSuccess(`Guardadas ${guardadosCount} figuras en el proyecto '${proyectoNombre}'.`);
+        this.toastService.showSuccess(
+          `Guardadas ${guardadosCount} figuras en el proyecto '${proyectoNombre}'.`,
+        );
         this.proyectoService.cargarFigurasProyecto(proyectoId);
         this.centrarCamaraEnCoordenadas(features);
         this.gis.importacionPreliminarActiva.set(false);
@@ -805,7 +851,7 @@ export class ProjectManager {
       const prop = feat.properties || {};
       const geom = feat.geometry || {};
       const tipo = prop.tipo || 'poligono';
-      
+
       let coordenadas: any;
       if (tipo === 'poligono') {
         coordenadas = geom.coordinates[0].map((pt: any) => ({ lat: pt[1], lng: pt[0] }));
@@ -831,7 +877,7 @@ export class ProjectManager {
         coordenadas: JSON.stringify(coordenadas),
         color: prop.color || '#4f46e5',
         radio: prop.radio || null,
-        visible: true
+        visible: true,
       };
 
       this.proyectoService.guardarFigura(proyectoId, figuraAGuardar).subscribe({
@@ -842,7 +888,7 @@ export class ProjectManager {
         error: (err) => {
           console.error(`Error guardando figura #${index + 1}:`, err);
           guardarSecuencial(index + 1);
-        }
+        },
       });
     };
 
@@ -884,7 +930,7 @@ export class ProjectManager {
       // Mandar límites del bounding box al servicio
       this.gis.cajaMapaAjustar.set([
         [minLat, minLng],
-        [maxLat, maxLng]
+        [maxLat, maxLng],
       ]);
     }
   }

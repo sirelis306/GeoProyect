@@ -1,4 +1,10 @@
-import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  ChangeDetectorRef,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -10,7 +16,8 @@ import { UserService } from '../../services/users/userService';
   standalone: true,
   imports: [CommonModule, FormsModule, NgSelectModule],
   templateUrl: './users.html',
-  styleUrl: './users.css'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './users.css',
 })
 export class Users implements OnInit {
   private userService = inject(UserService);
@@ -29,7 +36,7 @@ export class Users implements OnInit {
     type: 'success' as 'success' | 'error' | 'warning',
     title: '',
     message: '',
-    buttonText: 'Entendido'
+    buttonText: 'Entendido',
   };
 
   paginaActual = 1;
@@ -54,14 +61,16 @@ export class Users implements OnInit {
 
   canDeactivate(): boolean {
     if (!this.currentUser || !this.currentUser.roles) return false;
-    return this.currentUser.roles.rol_super_administrador || this.currentUser.roles.rol_administrador;
+    return (
+      this.currentUser.roles.rol_super_administrador || this.currentUser.roles.rol_administrador
+    );
   }
 
   cargarRoles() {
     this.userService.obtenerRoles().subscribe({
       next: (roles) => {
         const uniqueRoles = new Map<string, string>();
-        roles.forEach(r => {
+        roles.forEach((r) => {
           const cleanValue = r.nombre_rol.replace(/^rol_/, '');
           const cleanKey = 'rol_' + cleanValue;
           const label = this.formatRolLabel(cleanKey);
@@ -70,38 +79,36 @@ export class Users implements OnInit {
 
         const rolesMapeados = Array.from(uniqueRoles.entries()).map(([value, label]) => ({
           value,
-          label
+          label,
         }));
 
         setTimeout(() => {
           this.rolesOptions = [{ value: 'todos', label: 'Todos los roles' }, ...rolesMapeados];
           this.cdr.markForCheck();
         });
-      }
+      },
     });
   }
 
   formatRolLabel(rol: string): string {
     const cleanRol = rol.startsWith('rol_') ? rol : 'rol_' + rol;
     const labels: any = {
-      'rol_super_administrador': 'Súper Administrador',
-      'rol_administrador': 'Administrador',
-      'rol_analista': 'Analista',
-      'rol_regular': 'Regular'
+      rol_super_administrador: 'Súper Administrador',
+      rol_administrador: 'Administrador',
+      rol_analista: 'Analista',
+      rol_regular: 'Regular',
     };
     return labels[cleanRol] || rol;
   }
 
   /* Retorna la lista filtrada basándose en el texto de búsqueda y el rol seleccionado */
   get usuariosFiltrados() {
-    return this.listaUsuarios.filter(user => {
-      const matchTexto =
-        (user.primerNombre + ' ' + user.primerApellido + ' ' + user.email)
-          .toLowerCase()
-          .includes(this.searchTexto.toLowerCase());
+    return this.listaUsuarios.filter((user) => {
+      const matchTexto = (user.primerNombre + ' ' + user.primerApellido + ' ' + user.email)
+        .toLowerCase()
+        .includes(this.searchTexto.toLowerCase());
 
-      const matchRol = this.filtroRol === 'todos' ||
-        user.roles?.['rol_' + this.filtroRol] === true;
+      const matchRol = this.filtroRol === 'todos' || user.roles?.['rol_' + this.filtroRol] === true;
 
       return matchTexto && matchRol;
     });
@@ -114,7 +121,8 @@ export class Users implements OnInit {
     if (this.paginaActual > this.totalPaginas) {
       this.paginaActual = 1;
     }
-    this.rangoInicio = this.totalRegistros > 0 ? (this.paginaActual - 1) * this.limiteActual + 1 : 0;
+    this.rangoInicio =
+      this.totalRegistros > 0 ? (this.paginaActual - 1) * this.limiteActual + 1 : 0;
     this.rangoFin = Math.min(this.paginaActual * this.limiteActual, this.totalRegistros);
     const start = (this.paginaActual - 1) * this.limiteActual;
     const end = start + this.limiteActual;
@@ -143,12 +151,12 @@ export class Users implements OnInit {
   obtenerUsuarios() {
     this.userService.obtenerUsuarios().subscribe({
       next: (data) => {
-        this.listaUsuarios = data.map(u => {
+        this.listaUsuarios = data.map((u) => {
           const rolesObj: any = {
             rol_super_administrador: false,
             rol_administrador: false,
             rol_analista: false,
-            rol_regular: false
+            rol_regular: false,
           };
           if (Array.isArray(u.roles)) {
             u.roles.forEach((r: string) => {
@@ -159,10 +167,10 @@ export class Users implements OnInit {
           }
           return {
             ...u,
-            roles: rolesObj
+            roles: rolesObj,
           };
         });
-        // No es estrictamente necesario llamar a detectChanges() aquí si usamos HttpClient 
+        // No es estrictamente necesario llamar a detectChanges() aquí si usamos HttpClient
         // y el componente está en la zona de Angular, pero markForCheck es más seguro.
         this.cdr.markForCheck();
       },
@@ -172,15 +180,17 @@ export class Users implements OnInit {
         const currentUserJson = localStorage.getItem('user_geo');
         if (currentUserJson && this.listaUsuarios.length === 0) {
           const currentUser = JSON.parse(currentUserJson);
-          this.listaUsuarios = [{
-            ...currentUser,
-            primerNombre: currentUser.nombre?.split(' ')[0] || 'Usuario',
-            primerApellido: currentUser.nombre?.split(' ')[1] || 'QA',
-            cargo: 'QA',
-            roles: currentUser.roles || { rol_regular: true }
-          }];
+          this.listaUsuarios = [
+            {
+              ...currentUser,
+              primerNombre: currentUser.nombre?.split(' ')[0] || 'Usuario',
+              primerApellido: currentUser.nombre?.split(' ')[1] || 'QA',
+              cargo: 'QA',
+              roles: currentUser.roles || { rol_regular: true },
+            },
+          ];
         }
-      }
+      },
     });
   }
 
@@ -207,13 +217,17 @@ export class Users implements OnInit {
 
       this.userService.desactivarUsuario(id).subscribe({
         next: () => {
-          this.mostrarModal('success', '¡Desactivado!', 'El usuario ha sido desactivado con éxito.');
+          this.mostrarModal(
+            'success',
+            '¡Desactivado!',
+            'El usuario ha sido desactivado con éxito.',
+          );
           this.obtenerUsuarios();
         },
         error: (err) => {
           const msg = err.error?.mensaje || 'Error al desactivar el usuario.';
           this.mostrarModal('error', 'Error', msg);
-        }
+        },
       });
     }
   }
@@ -224,7 +238,12 @@ export class Users implements OnInit {
     this.cdr.markForCheck();
   }
 
-  mostrarModal(type: 'success' | 'error' | 'warning', title: string, message: string, buttonText: string = 'Entendido') {
+  mostrarModal(
+    type: 'success' | 'error' | 'warning',
+    title: string,
+    message: string,
+    buttonText: string = 'Entendido',
+  ) {
     this.modalConfig = { show: true, type, title, message, buttonText };
     this.cdr.markForCheck();
   }

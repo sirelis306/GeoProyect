@@ -1,4 +1,13 @@
-import { Component, inject, OnInit, ChangeDetectorRef, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  ChangeDetectorRef,
+  ViewChild,
+  ElementRef,
+  AfterViewInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -14,7 +23,8 @@ import { Spanish } from 'flatpickr/dist/l10n/es';
   standalone: true,
   imports: [CommonModule, FormsModule, NgSelectModule, RouterModule],
   templateUrl: './historial.html',
-  styleUrl: './historial.css'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './historial.css',
 })
 export class Historial implements OnInit, AfterViewInit {
   private authService = inject(AuthService);
@@ -50,7 +60,7 @@ export class Historial implements OnInit, AfterViewInit {
     { value: 'todos', label: 'Todas las operaciones' },
     { value: 'crear', label: 'Agregar' },
     { value: 'editar', label: 'Editar' },
-    { value: 'eliminar', label: 'Eliminar' }
+    { value: 'eliminar', label: 'Eliminar' },
   ];
 
   entidadesOptions = [
@@ -58,7 +68,7 @@ export class Historial implements OnInit, AfterViewInit {
     { value: 'antenas', label: 'Radiobases' },
     { value: 'abonados', label: 'Abonados' },
     { value: 'agentes', label: 'Agentes' },
-    { value: 'oficinas', label: 'Oficinas' }
+    { value: 'oficinas', label: 'Oficinas' },
   ];
 
   // Lista del historial de operaciones
@@ -75,34 +85,37 @@ export class Historial implements OnInit, AfterViewInit {
   }
 
   cargarHistorial() {
-    this.historialService.obtenerHistorial(
-      this.paginaActual,
-      this.limiteActual,
-      this.filtroAccion,
-      this.filtroEntidad,
-      this.searchTexto,
-      this.fechaInicio,
-      this.fechaFin
-    ).subscribe({
-      next: (res: any) => {
-        this.listaHistorial = res.data.map((item: any) => ({
-          ...item,
-          creado_en: item.created_at
-        }));
-        this.totalRegistros = res.total;
-        this.totalPaginas = res.pages;
-        this.paginaActual = res.page;
-        this.limiteActual = res.limit;
+    this.historialService
+      .obtenerHistorial(
+        this.paginaActual,
+        this.limiteActual,
+        this.filtroAccion,
+        this.filtroEntidad,
+        this.searchTexto,
+        this.fechaInicio,
+        this.fechaFin,
+      )
+      .subscribe({
+        next: (res: any) => {
+          this.listaHistorial = res.data.map((item: any) => ({
+            ...item,
+            creado_en: item.created_at,
+          }));
+          this.totalRegistros = res.total;
+          this.totalPaginas = res.pages;
+          this.paginaActual = res.page;
+          this.limiteActual = res.limit;
 
-        this.rangoInicio = this.totalRegistros > 0 ? (this.paginaActual - 1) * this.limiteActual + 1 : 0;
-        this.rangoFin = Math.min(this.paginaActual * this.limiteActual, this.totalRegistros);
+          this.rangoInicio =
+            this.totalRegistros > 0 ? (this.paginaActual - 1) * this.limiteActual + 1 : 0;
+          this.rangoFin = Math.min(this.paginaActual * this.limiteActual, this.totalRegistros);
 
-        this.cdr.markForCheck();
-      },
-      error: (err) => {
-        console.error('Error cargando historial:', err);
-      }
-    });
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          console.error('Error cargando historial:', err);
+        },
+      });
   }
 
   // Retorna los registros directamente ya que el backend realiza la paginación y filtrado
@@ -130,7 +143,7 @@ export class Historial implements OnInit, AfterViewInit {
           this.cargarHistorial();
         }
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -202,8 +215,14 @@ export class Historial implements OnInit, AfterViewInit {
 
   // Simulación interactiva de Revertir una Eliminación
   revertirEliminacion(item: any) {
-    if (confirm(`¿Estás seguro de que deseas revertir la eliminación de "${item.identificador_elemento}"?`)) {
-      this.toastService.showSuccess(`¡Éxito! El elemento "${item.identificador_elemento}" ha sido restaurado al sistema.`);
+    if (
+      confirm(
+        `¿Estás seguro de que deseas revertir la eliminación de "${item.identificador_elemento}"?`,
+      )
+    ) {
+      this.toastService.showSuccess(
+        `¡Éxito! El elemento "${item.identificador_elemento}" ha sido restaurado al sistema.`,
+      );
 
       // Añadimos un registro de "creación" simulado para mostrar que se restauró
       const nuevoRegistro = {
@@ -217,8 +236,8 @@ export class Historial implements OnInit, AfterViewInit {
         creado_en: new Date().toISOString(),
         detalles: {
           ...item.detalles,
-          activo: 1 // vuelve a estar activo
-        }
+          activo: 1, // vuelve a estar activo
+        },
       };
 
       // Modificamos el registro original en el historial para mostrar que fue revertido
@@ -232,53 +251,53 @@ export class Historial implements OnInit, AfterViewInit {
 
   getAccionLabel(accion: string): string {
     const labels: any = {
-      'crear': 'Agregar',
-      'editar': 'Editar',
-      'actualizar': 'Editar',
-      'eliminar': 'Eliminar',
-      'desactivar': 'Eliminar'
+      crear: 'Agregar',
+      editar: 'Editar',
+      actualizar: 'Editar',
+      eliminar: 'Eliminar',
+      desactivar: 'Eliminar',
     };
     return labels[accion] || accion;
   }
 
   getAccionClass(accion: string): string {
     const classes: any = {
-      'crear': 'badge-crear',
-      'editar': 'badge-editar',
-      'actualizar': 'badge-editar',
-      'eliminar': 'badge-eliminar',
-      'desactivar': 'badge-eliminar'
+      crear: 'badge-crear',
+      editar: 'badge-editar',
+      actualizar: 'badge-editar',
+      eliminar: 'badge-eliminar',
+      desactivar: 'badge-eliminar',
     };
     return classes[accion] || 'badge-default';
   }
 
   getAccionIcon(accion: string): string {
     const icons: any = {
-      'crear': 'fa-plus-circle',
-      'editar': 'fa-pen',
-      'actualizar': 'fa-pen',
-      'eliminar': 'fa-trash-alt',
-      'desactivar': 'fa-trash-alt'
+      crear: 'fa-plus-circle',
+      editar: 'fa-pen',
+      actualizar: 'fa-pen',
+      eliminar: 'fa-trash-alt',
+      desactivar: 'fa-trash-alt',
     };
     return icons[accion] || 'fa-info-circle';
   }
 
   getEntityLabel(tipo: string, tablaAfectada: string): string {
     const labels: any = {
-      'antenas': 'Radiobase',
-      'abonados': 'Abonado',
-      'agentes': 'Agente',
-      'oficinas': 'Oficina'
+      antenas: 'Radiobase',
+      abonados: 'Abonado',
+      agentes: 'Agente',
+      oficinas: 'Oficina',
     };
     return labels[tipo] || labels[tablaAfectada] || tablaAfectada || 'Elemento';
   }
 
   getEntityIcon(entidad: string): string {
     const icons: any = {
-      'antenas': 'fa-broadcast-tower',
-      'abonados': 'fa-user-check',
-      'agentes': 'fa-store',
-      'oficinas': 'fa-building'
+      antenas: 'fa-broadcast-tower',
+      abonados: 'fa-user-check',
+      agentes: 'fa-store',
+      oficinas: 'fa-building',
     };
     return icons[entidad] || 'fa-cube';
   }

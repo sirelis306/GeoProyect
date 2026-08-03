@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ToastService } from '../../services/toast/toastService';
 
@@ -7,7 +7,8 @@ import { ToastService } from '../../services/toast/toastService';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './toast.html',
-  styleUrl: './toast.css'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './toast.css',
 })
 export class Toast {
   public toastService = inject(ToastService);

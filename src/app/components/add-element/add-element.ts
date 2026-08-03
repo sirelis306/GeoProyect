@@ -1,4 +1,13 @@
-import { Component, Input, Output, EventEmitter, inject, signal, computed } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  inject,
+  signal,
+  computed,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -10,7 +19,8 @@ import { TipoElemento } from '../../models/gis';
   standalone: true,
   imports: [CommonModule, FormsModule, NgSelectModule],
   templateUrl: './add-element.html',
-  styleUrl: './add-element.css'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './add-element.css',
 })
 export class AddElementComponent {
   private gis = inject(GisService);
@@ -20,7 +30,9 @@ export class AddElementComponent {
     this._tipo = val;
     this.tipoSeleccionado = val;
   }
-  get tipo() { return this._tipo; }
+  get tipo() {
+    return this._tipo;
+  }
 
   @Input() set itemAEditar(val: any) {
     if (val) {
@@ -29,10 +41,12 @@ export class AddElementComponent {
       this.tipoSeleccionado = val.tipoReal || val.tipo;
       this.nuevoItem = {
         ...val,
-        tecnologia: val.tecnologia ? val.tecnologia.split(' / ').filter((t: string) => t !== '') : [],
+        tecnologia: val.tecnologia
+          ? val.tecnologia.split(' / ').filter((t: string) => t !== '')
+          : [],
         segmentacion_elegida: val.segmentacion || '4G',
         codigoDealer: val.codigoDealer || val.codigo_dealer || '',
-        clasificacion: val.clasificacion || ''
+        clasificacion: val.clasificacion || '',
       };
     } else {
       this.modoEdicion = false;
@@ -53,16 +67,16 @@ export class AddElementComponent {
     { id: 'antenas', nombre: 'Radio Base', icono: 'fas fa-broadcast-tower', color: '#FF1493' },
     { id: 'abonados', nombre: 'Abonado', icono: 'fas fa-user-check', color: '#00BFFF' },
     { id: 'oficinas', nombre: 'Oficina', icono: 'fas fa-building', color: '#32CD32' },
-    { id: 'agentes', nombre: 'Agente', icono: 'fas fa-store', color: '#FF8C00' }
+    { id: 'agentes', nombre: 'Agente', icono: 'fas fa-store', color: '#FF8C00' },
   ];
 
   enviando = false;
-  
+
   modalConfig = {
     show: false,
     type: 'success' as 'success' | 'error' | 'warning',
     title: '',
-    message: ''
+    message: '',
   };
 
   mostrarModal(type: 'success' | 'error' | 'warning', title: string, message: string) {
@@ -72,18 +86,18 @@ export class AddElementComponent {
   cerrarModal() {
     this.modalConfig.show = false;
   }
-  nuevoItem: any = { 
-    nombre: '', 
-    estado: null, 
-    latitud: null, 
-    longitud: null, 
-    direccion: '', 
-    cantidad: null, 
-    actividad: 'Operativa', 
+  nuevoItem: any = {
+    nombre: '',
+    estado: null,
+    latitud: null,
+    longitud: null,
+    direccion: '',
+    cantidad: null,
+    actividad: 'Operativa',
     tecnologia: [],
     segmentacion_elegida: '4G',
     codigoDealer: '',
-    clasificacion: null
+    clasificacion: null,
   };
 
   get effectiveType(): TipoElemento {
@@ -94,15 +108,14 @@ export class AddElementComponent {
     { value: 'GSM', label: 'GSM' },
     { value: 'UMTS', label: 'UMTS' },
     { value: 'LTE', label: 'LTE' },
-    { value: 'NR', label: 'NR' }
+    { value: 'NR', label: 'NR' },
   ];
 
   listaActividad = ['Operativa', 'Mantenimiento', 'Vandalizada', 'Inoperativa'];
   clasificaciones = ['AA', 'ACI', 'PYME', 'Compartida'];
 
   // Lista de estados computada para evitar refrescos constantes
-  listaEstados = computed(() => this.gis.estadosSignal().map(e => e.nombre));
-
+  listaEstados = computed(() => this.gis.estadosSignal().map((e) => e.nombre));
 
   get todasSeleccionadas(): boolean {
     return this.nuevoItem.tecnologia?.length === this.opcionesTecnologia.length;
@@ -120,7 +133,7 @@ export class AddElementComponent {
     if (this.todasSeleccionadas) {
       this.nuevoItem.tecnologia = [];
     } else {
-      this.nuevoItem.tecnologia = this.opcionesTecnologia.map(t => t.value);
+      this.nuevoItem.tecnologia = this.opcionesTecnologia.map((t) => t.value);
     }
   }
 
@@ -128,12 +141,16 @@ export class AddElementComponent {
     try {
       form.control.markAllAsTouched();
       if (form.invalid) {
-        this.mostrarModal('warning', 'Campos Incompletos', 'Por favor, rellene todos los campos obligatorios marcados con (*).');
+        this.mostrarModal(
+          'warning',
+          'Campos Incompletos',
+          'Por favor, rellene todos los campos obligatorios marcados con (*).',
+        );
         return;
       }
 
       this.enviando = true;
-      
+
       // Si el usuario ingresó dirección pero no coordenadas, intentamos geocodificar
       if (this.nuevoItem.direccion && (!this.nuevoItem.latitud || !this.nuevoItem.longitud)) {
         const coords = await this.gis.obtenerCoordsDesdeDireccion(this.nuevoItem.direccion);
@@ -146,16 +163,21 @@ export class AddElementComponent {
       const tipoFinal = this.tipo === 'ninguno' ? this.tipoSeleccionado : this.tipo;
       const itemFinal = await this.gis.construirYValidarElemento(tipoFinal, this.nuevoItem);
 
-      const request = this.modoEdicion && this.idEditar 
-        ? this.gis.actualizarElemento(this.idEditar, itemFinal)
-        : this.gis.agregarElemento(tipoFinal, itemFinal);
+      const request =
+        this.modoEdicion && this.idEditar
+          ? this.gis.actualizarElemento(this.idEditar, itemFinal)
+          : this.gis.agregarElemento(tipoFinal, itemFinal);
 
       request.subscribe({
         next: () => {
           this.enviando = false;
           this.resetearFormulario(form);
           this.onSaved.emit();
-          this.mostrarModal('success', '¡Éxito!', `Elemento ${this.modoEdicion ? 'actualizado' : 'guardado'} correctamente.`);
+          this.mostrarModal(
+            'success',
+            '¡Éxito!',
+            `Elemento ${this.modoEdicion ? 'actualizado' : 'guardado'} correctamente.`,
+          );
           setTimeout(() => {
             this.onClose.emit();
             this.cerrarModal();
@@ -164,7 +186,7 @@ export class AddElementComponent {
         error: (err) => {
           this.enviando = false;
           this.mostrarModal('error', 'Error', err.error?.mensaje || 'Error al guardar');
-        }
+        },
       });
     } catch (error: any) {
       this.enviando = false;
@@ -174,9 +196,17 @@ export class AddElementComponent {
 
   resetearFormulario(form?: NgForm) {
     this.nuevoItem = {
-      nombre: '', estado: null, latitud: null, longitud: null, direccion: '',
-      cantidad: null, actividad: 'Operativa', tecnologia: [],
-      segmentacion_elegida: '4G', codigoDealer: '', clasificacion: null
+      nombre: '',
+      estado: null,
+      latitud: null,
+      longitud: null,
+      direccion: '',
+      cantidad: null,
+      actividad: 'Operativa',
+      tecnologia: [],
+      segmentacion_elegida: '4G',
+      codigoDealer: '',
+      clasificacion: null,
     };
     if (form) {
       form.resetForm(this.nuevoItem);

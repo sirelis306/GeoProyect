@@ -1,4 +1,10 @@
-import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  ChangeDetectorRef,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -10,7 +16,8 @@ import { ToastService } from '../../services/toast/toastService';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './login.html',
-  styleUrl: './login.css'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './login.css',
 })
 export class Login implements OnInit {
   private auth = inject(AuthService);
@@ -26,16 +33,18 @@ export class Login implements OnInit {
 
   ngOnInit() {
     // Escuchar si la sesión expiró para mostrar una alerta amigable (Toast)
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.subscribe((params) => {
       if (params['expired'] === 'true') {
         setTimeout(() => {
-          this.toastService.showError('Su sesión ha expirado por inactividad. Por favor, ingrese de nuevo.');
+          this.toastService.showError(
+            'Su sesión ha expirado por inactividad. Por favor, ingrese de nuevo.',
+          );
           // Limpiar el parámetro de la URL para que no vuelva a aparecer al refrescar la página
           this.router.navigate([], {
             relativeTo: this.route,
             queryParams: { expired: null },
             queryParamsHandling: 'merge',
-            replaceUrl: true
+            replaceUrl: true,
           });
         });
       }
@@ -60,7 +69,7 @@ export class Login implements OnInit {
       next: (res) => {
         this.cargando = false;
         console.log('Login exitoso', res);
-        
+
         const user = this.auth.currentUser();
         if (user && (user.cambiar_password === true || user.cambiar_password === 1)) {
           this.router.navigate(['/cambiar-contrasena']);
@@ -76,7 +85,7 @@ export class Login implements OnInit {
           this.error = 'Usuario o contraseña incorrectos';
           this.cdr.detectChanges();
         });
-      }
+      },
     });
   }
 }

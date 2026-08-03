@@ -1,4 +1,15 @@
-import { Component, Input, Output, EventEmitter, inject, signal, effect, ElementRef, ViewChild } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  inject,
+  signal,
+  effect,
+  ElementRef,
+  ViewChild,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GisService } from '../../services/gis/gisService';
@@ -8,7 +19,8 @@ import { GisService } from '../../services/gis/gisService';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './search-modal.html',
-  styleUrl: './search-modal.css'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './search-modal.css',
 })
 export class SearchModal {
   private gis = inject(GisService);
@@ -26,46 +38,54 @@ export class SearchModal {
   resultados = signal<any[]>([]);
 
   constructor() {
-    effect(() => {
-      // Auto-enfoque al abrir
-      if (this.visible) {
-        setTimeout(() => this.searchInput?.nativeElement?.focus(), 100);
-      } else {
-        this.busqueda.set('');
-        this.mostrarConfirmarEliminar = false;
-        this.itemAEliminar = null;
-      }
-    }, { allowSignalWrites: true });
+    effect(
+      () => {
+        // Auto-enfoque al abrir
+        if (this.visible) {
+          setTimeout(() => this.searchInput?.nativeElement?.focus(), 100);
+        } else {
+          this.busqueda.set('');
+          this.mostrarConfirmarEliminar = false;
+          this.itemAEliminar = null;
+        }
+      },
+      { allowSignalWrites: true },
+    );
 
-    effect(() => {
-      const search = this.busqueda().toLowerCase();
-      if (!search || search.length < 2) {
-        this.resultados.set([]);
-        return;
-      }
+    effect(
+      () => {
+        const search = this.busqueda().toLowerCase();
+        if (!search || search.length < 2) {
+          this.resultados.set([]);
+          return;
+        }
 
-      const terminos = search.split(' ').filter(t => t.length > 0);
+        const terminos = search.split(' ').filter((t) => t.length > 0);
 
-      const todos = [
-        ...this.gis.radioBasesSignal().map(i => ({ ...i, tipoReal: 'antenas' })),
-        ...this.gis.abonadosSignal().map(i => ({ ...i, tipoReal: 'abonados' })),
-        ...this.gis.oficinasSignal().map(i => ({ ...i, tipoReal: 'oficinas' })),
-        ...this.gis.agentesSignal().map(i => ({ ...i, tipoReal: 'agentes' }))
-      ];
+        const todos = [
+          ...this.gis.radioBasesSignal().map((i) => ({ ...i, tipoReal: 'antenas' })),
+          ...this.gis.abonadosSignal().map((i) => ({ ...i, tipoReal: 'abonados' })),
+          ...this.gis.oficinasSignal().map((i) => ({ ...i, tipoReal: 'oficinas' })),
+          ...this.gis.agentesSignal().map((i) => ({ ...i, tipoReal: 'agentes' })),
+        ];
 
-      const filtrados = todos.filter((item: any) => {
-        const fullText = `
+        const filtrados = todos
+          .filter((item: any) => {
+            const fullText = `
           ${item.nombre || ''} 
           ${item.direccion || ''} 
           ${item.serial || ''} 
           ${item.codigoDealer || ''} 
           ${item.estado || ''}
         `.toLowerCase();
-        return terminos.every(term => fullText.includes(term));
-      }).slice(0, 20);
+            return terminos.every((term) => fullText.includes(term));
+          })
+          .slice(0, 20);
 
-      this.resultados.set(filtrados);
-    }, { allowSignalWrites: true });
+        this.resultados.set(filtrados);
+      },
+      { allowSignalWrites: true },
+    );
   }
 
   close() {
@@ -102,7 +122,7 @@ export class SearchModal {
         },
         error: (err) => {
           console.error('Error al eliminar elemento:', err);
-        }
+        },
       });
     }
   }
@@ -113,22 +133,32 @@ export class SearchModal {
   }
 
   getIcon(item: any): string {
-    switch(item.tipoReal) {
-      case 'antenas': return 'fas fa-broadcast-tower';
-      case 'abonados': return 'fas fa-user-check';
-      case 'oficinas': return 'fas fa-building';
-      case 'agentes': return 'fas fa-store';
-      default: return 'fas fa-map-marker-alt';
+    switch (item.tipoReal) {
+      case 'antenas':
+        return 'fas fa-broadcast-tower';
+      case 'abonados':
+        return 'fas fa-user-check';
+      case 'oficinas':
+        return 'fas fa-building';
+      case 'agentes':
+        return 'fas fa-store';
+      default:
+        return 'fas fa-map-marker-alt';
     }
   }
 
   getColor(item: any): string {
-    switch(item.tipoReal) {
-      case 'antenas': return '#FF1493';
-      case 'abonados': return '#00BFFF';
-      case 'oficinas': return '#32CD32';
-      case 'agentes': return '#FF8C00';
-      default: return '#3240A5';
+    switch (item.tipoReal) {
+      case 'antenas':
+        return '#FF1493';
+      case 'abonados':
+        return '#00BFFF';
+      case 'oficinas':
+        return '#32CD32';
+      case 'agentes':
+        return '#FF8C00';
+      default:
+        return '#3240A5';
     }
   }
 }

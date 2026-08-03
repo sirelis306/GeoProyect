@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -9,7 +9,8 @@ import { AuthService } from '../../services/auth/authService';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './change-password.html',
-  styleUrl: './change-password.css'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './change-password.css',
 })
 export class ChangePassword {
   private auth = inject(AuthService);
@@ -57,22 +58,24 @@ export class ChangePassword {
 
     this.cargando = true;
 
-    this.auth.cambiarPassword({
-      current_password: this.currentPassword,
-      new_password: this.newPassword
-    }).subscribe({
-      next: (res) => {
-        this.cargando = false;
-        this.success = 'Contraseña cambiada con éxito. Redirigiendo...';
-        setTimeout(() => {
-          this.router.navigate(['/mapa']);
-        }, 2000);
-      },
-      error: (err) => {
-        this.cargando = false;
-        this.error = err.error?.error || 'Error al cambiar la contraseña. Verifique sus datos.';
-      }
-    });
+    this.auth
+      .cambiarPassword({
+        current_password: this.currentPassword,
+        new_password: this.newPassword,
+      })
+      .subscribe({
+        next: (res) => {
+          this.cargando = false;
+          this.success = 'Contraseña cambiada con éxito. Redirigiendo...';
+          setTimeout(() => {
+            this.router.navigate(['/mapa']);
+          }, 2000);
+        },
+        error: (err) => {
+          this.cargando = false;
+          this.error = err.error?.error || 'Error al cambiar la contraseña. Verifique sus datos.';
+        },
+      });
   }
 
   logout() {

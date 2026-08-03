@@ -14,6 +14,10 @@
 /* Transiciones suaves para los polígonos interactivos (Efecto Fundido/Fade-in) */
 ::ng-deep path.leaflet-interactive {
   transition: fill-opacity 0.4s ease, stroke-opacity 0.4s ease, stroke-width 0.2s cubic-bezier(0.16, 1, 0.3, 1), fill 0.3s ease;
+  outline: none;
+}
+::ng-deep path.leaflet-interactive:focus {
+  outline: none;
 }
 
 /* LEYENDA DEL MAPA */

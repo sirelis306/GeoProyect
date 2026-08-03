@@ -1,4 +1,4 @@
-import { Component, inject, ViewChild, signal } from '@angular/core';
+import { Component, inject, ViewChild, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GisService } from '../../services/gis/gisService';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -13,8 +13,17 @@ import { SearchModal } from '../search-modal/search-modal';
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, NgSelectModule, RouterModule, AddElementComponent, SearchModal],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    NgSelectModule,
+    RouterModule,
+    AddElementComponent,
+    SearchModal,
+  ],
   templateUrl: './sidebar.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './sidebar.css',
 })
 export class Sidebar {
@@ -71,7 +80,7 @@ export class Sidebar {
         if (sidebarEl) {
           sidebarEl.scrollTo({
             top: sidebarEl.scrollHeight,
-            behavior: 'smooth'
+            behavior: 'smooth',
           });
         }
       }, 150);

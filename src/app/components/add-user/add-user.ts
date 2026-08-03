@@ -1,4 +1,10 @@
-import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  ChangeDetectorRef,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { RouterLink, Router, ActivatedRoute } from '@angular/router';
@@ -12,7 +18,8 @@ import { User } from '../../models/user';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink, NgSelectModule],
   templateUrl: './add-user.html',
-  styleUrl: './add-user.css'
+  changeDetection: ChangeDetectionStrategy.Eager,
+  styleUrl: './add-user.css',
 })
 export class AddUser implements OnInit {
   private router = inject(Router);
@@ -49,8 +56,8 @@ export class AddUser implements OnInit {
       rol_super_administrador: false,
       rol_administrador: false,
       rol_analista: false,
-      rol_regular: false
-    }
+      rol_regular: false,
+    },
   };
 
   tiposDocumento = ['V', 'E', 'P'];
@@ -58,7 +65,7 @@ export class AddUser implements OnInit {
 
   sexos = [
     { label: 'Masculino', value: 'M' },
-    { label: 'Femenino', value: 'F' }
+    { label: 'Femenino', value: 'F' },
   ];
 
   cargos = [
@@ -69,18 +76,33 @@ export class AddUser implements OnInit {
     { label: 'Analista de Atención de Canales', value: 'Analista de Atención de Canales' },
     { label: 'Apoyo Administrativo', value: 'Apoyo Administrativo' },
     { label: 'Apoyo Especializado', value: 'Apoyo Especializado' },
-    { label: 'Apoyo Especializado de Operaciones de la Red', value: 'Apoyo Especializado de Operaciones de la Red' },
+    {
+      label: 'Apoyo Especializado de Operaciones de la Red',
+      value: 'Apoyo Especializado de Operaciones de la Red',
+    },
     { label: 'Apoyo Especializado II', value: 'Apoyo Especializado II' },
     { label: 'Apoyo Técnico', value: 'Apoyo Técnico' },
     { label: 'Apoyo Técnico Comercial', value: 'Apoyo Técnico Comercial' },
     { label: 'Apoyo Técnico de Administración', value: 'Apoyo Técnico de Administración' },
-    { label: 'Apoyo Técnico de Servicios Logísticos', value: 'Apoyo Técnico de Servicios Logísticos' },
+    {
+      label: 'Apoyo Técnico de Servicios Logísticos',
+      value: 'Apoyo Técnico de Servicios Logísticos',
+    },
     { label: 'Asesor', value: 'Asesor' },
     { label: 'Asistente', value: 'Asistente' },
     { label: 'Asistente Administrativo', value: 'Asistente Administrativo' },
-    { label: 'Asistente de Operación y Mantenimiento', value: 'Asistente de Operación y Mantenimiento' },
-    { label: 'Asistente de Optimización y Desempeño', value: 'Asistente de Optimización y Desempeño' },
-    { label: 'Asistente de Tecnología de la Información', value: 'Asistente de Tecnología de la Información' },
+    {
+      label: 'Asistente de Operación y Mantenimiento',
+      value: 'Asistente de Operación y Mantenimiento',
+    },
+    {
+      label: 'Asistente de Optimización y Desempeño',
+      value: 'Asistente de Optimización y Desempeño',
+    },
+    {
+      label: 'Asistente de Tecnología de la Información',
+      value: 'Asistente de Tecnología de la Información',
+    },
     { label: 'Auxiliar de cocina', value: 'Auxiliar de cocina' },
     { label: 'Ayudante', value: 'Ayudante' },
     { label: 'Ayudante de seguridad integral', value: 'Ayudante de seguridad integral' },
@@ -92,7 +114,10 @@ export class AddUser implements OnInit {
     { label: 'Coordinador', value: 'Coordinador' },
     { label: 'Ejecutivo', value: 'Ejecutivo' },
     { label: 'Enfermero', value: 'Enfermero' },
-    { label: 'Especialista soporte servicio en mensajería', value: 'Especialista soporte servicio en mensajería' },
+    {
+      label: 'Especialista soporte servicio en mensajería',
+      value: 'Especialista soporte servicio en mensajería',
+    },
     { label: 'Experto', value: 'Experto' },
     { label: 'Experto I', value: 'Experto I' },
     { label: 'Experto II', value: 'Experto II' },
@@ -111,40 +136,70 @@ export class AddUser implements OnInit {
     { label: 'Supervisor', value: 'Supervisor' },
     { label: 'Teleoperador', value: 'Teleoperador' },
     { label: 'Teleoperador 0800 Activar', value: 'Teleoperador 0800 Activar' },
-    { label: 'Vicepresidente', value: 'Vicepresidente' }
+    { label: 'Vicepresidente', value: 'Vicepresidente' },
   ];
 
   estados = [
-    'Amazonas', 'Anzoátegui', 'Apure', 'Aragua', 'Barinas', 'Bolívar', 'Carabobo', 'Cojedes',
-    'Delta Amacuro', 'Falcón', 'Guárico', 'Lara', 'Mérida', 'Miranda', 'Monagas', 'Nueva Esparta',
-    'Portuguesa', 'Sucre', 'Táchira', 'Trujillo', 'La Guaira', 'Yaracuy', 'Zulia', 'Distrito Capital'
+    'Amazonas',
+    'Anzoátegui',
+    'Apure',
+    'Aragua',
+    'Barinas',
+    'Bolívar',
+    'Carabobo',
+    'Cojedes',
+    'Delta Amacuro',
+    'Falcón',
+    'Guárico',
+    'Lara',
+    'Mérida',
+    'Miranda',
+    'Monagas',
+    'Nueva Esparta',
+    'Portuguesa',
+    'Sucre',
+    'Táchira',
+    'Trujillo',
+    'La Guaira',
+    'Yaracuy',
+    'Zulia',
+    'Distrito Capital',
   ].sort((a, b) => a.localeCompare(b));
 
   ciudadesMap: { [key: string]: string[] } = {
-    'Amazonas': ['Puerto Ayacucho', 'San Fernando de Atabapo'],
-    'Anzoátegui': ['Barcelona', 'Puerto La Cruz', 'El Tigre', 'Anaco', 'Lechería'],
-    'Apure': ['San Fernando de Apure', 'Elorza', 'Guasdualito'],
-    'Aragua': ['Maracay', 'Cagua', 'Turmero', 'La Victoria', 'El Limón'],
-    'Barinas': ['Barinas', 'Socopó', 'Santa Bárbara'],
-    'Bolívar': ['Ciudad Bolívar', 'Puerto Ordaz', 'San Félix', 'Upata', 'El Callao'],
-    'Carabobo': ['Valencia', 'Puerto Cabello', 'Guacara', 'San Diego', 'Naguanagua'],
-    'Cojedes': ['San Carlos', 'Tinaquillo'],
+    Amazonas: ['Puerto Ayacucho', 'San Fernando de Atabapo'],
+    Anzoátegui: ['Barcelona', 'Puerto La Cruz', 'El Tigre', 'Anaco', 'Lechería'],
+    Apure: ['San Fernando de Apure', 'Elorza', 'Guasdualito'],
+    Aragua: ['Maracay', 'Cagua', 'Turmero', 'La Victoria', 'El Limón'],
+    Barinas: ['Barinas', 'Socopó', 'Santa Bárbara'],
+    Bolívar: ['Ciudad Bolívar', 'Puerto Ordaz', 'San Félix', 'Upata', 'El Callao'],
+    Carabobo: ['Valencia', 'Puerto Cabello', 'Guacara', 'San Diego', 'Naguanagua'],
+    Cojedes: ['San Carlos', 'Tinaquillo'],
     'Delta Amacuro': ['Tucupita'],
-    'Falcón': ['Coro', 'Punto Fijo', 'Tucacas'],
-    'Guárico': ['San Juan de los Morros', 'Valle de la Pascua', 'Calabozo', 'Zaraza'],
-    'Lara': ['Barquisimeto', 'Cabudare', 'Carora', 'El Tocuyo'],
-    'Mérida': ['Mérida', 'El Vigía', 'Ejido', 'Tovar'],
-    'Miranda': ['Los Teques', 'Guarenas', 'Guatire', 'Charallave', 'Petare', 'Baruta', 'Chacao', 'El Hatillo'],
-    'Monagas': ['Maturín', 'Punta de Mata'],
+    Falcón: ['Coro', 'Punto Fijo', 'Tucacas'],
+    Guárico: ['San Juan de los Morros', 'Valle de la Pascua', 'Calabozo', 'Zaraza'],
+    Lara: ['Barquisimeto', 'Cabudare', 'Carora', 'El Tocuyo'],
+    Mérida: ['Mérida', 'El Vigía', 'Ejido', 'Tovar'],
+    Miranda: [
+      'Los Teques',
+      'Guarenas',
+      'Guatire',
+      'Charallave',
+      'Petare',
+      'Baruta',
+      'Chacao',
+      'El Hatillo',
+    ],
+    Monagas: ['Maturín', 'Punta de Mata'],
     'Nueva Esparta': ['Porlamar', 'Pampatar', 'La Asunción', 'Juan Griego'],
-    'Portuguesa': ['Acarigua', 'Guanare', 'Araure'],
-    'Sucre': ['Cumaná', 'Carúpano', 'Güiria'],
-    'Táchira': ['San Cristóbal', 'Táriba', 'San Antonio del Táchira', 'Rubio'],
-    'Trujillo': ['Valera', 'Trujillo', 'Boconó'],
+    Portuguesa: ['Acarigua', 'Guanare', 'Araure'],
+    Sucre: ['Cumaná', 'Carúpano', 'Güiria'],
+    Táchira: ['San Cristóbal', 'Táriba', 'San Antonio del Táchira', 'Rubio'],
+    Trujillo: ['Valera', 'Trujillo', 'Boconó'],
     'La Guaira': ['La Guaira', 'Maiquetía', 'Catia La Mar', 'Macuto'],
-    'Yaracuy': ['San Felipe', 'Yaritagua', 'Chivacoa'],
-    'Zulia': ['Maracaibo', 'San Francisco', 'Cabimas', 'Ciudad Ojeda', 'Machiques'],
-    'Distrito Capital': ['Caracas']
+    Yaracuy: ['San Felipe', 'Yaritagua', 'Chivacoa'],
+    Zulia: ['Maracaibo', 'San Francisco', 'Cabimas', 'Ciudad Ojeda', 'Machiques'],
+    'Distrito Capital': ['Caracas'],
   };
 
   ciudadesDisponibles: string[] = [];
@@ -154,7 +209,7 @@ export class AddUser implements OnInit {
     type: 'success' as 'success' | 'error' | 'warning',
     title: '',
     message: '',
-    buttonText: 'Entendido'
+    buttonText: 'Entendido',
   };
 
   ngOnInit() {
@@ -169,7 +224,12 @@ export class AddUser implements OnInit {
     }
   }
 
-  mostrarModal(type: 'success' | 'error' | 'warning', title: string, message: string, buttonText: string = 'Entendido') {
+  mostrarModal(
+    type: 'success' | 'error' | 'warning',
+    title: string,
+    message: string,
+    buttonText: string = 'Entendido',
+  ) {
     this.modalConfig = { show: true, type, title, message, buttonText };
     this.cdr.detectChanges();
   }
@@ -189,7 +249,7 @@ export class AddUser implements OnInit {
           rol_super_administrador: false,
           rol_administrador: false,
           rol_analista: false,
-          rol_regular: false
+          rol_regular: false,
         };
         if (Array.isArray(userData.roles)) {
           userData.roles.forEach((r: string) => {
@@ -203,7 +263,7 @@ export class AddUser implements OnInit {
         this.user = {
           ...this.user,
           ...userData,
-          roles: rolesObj
+          roles: rolesObj,
         };
         if (this.user.estado) this.onEstadoChange(false);
         this.cargandoUsuario = false;
@@ -212,7 +272,7 @@ export class AddUser implements OnInit {
       error: (err) => {
         this.cargandoUsuario = false;
         this.mostrarModal('error', 'Error de Carga', 'No se pudo cargar el usuario para editar.');
-      }
+      },
     });
   }
 
@@ -225,17 +285,25 @@ export class AddUser implements OnInit {
     this.errorMsg = '';
     if (form.invalid) {
       this.showErrors = true;
-      this.mostrarModal('warning', 'Campos Incompletos', 'Por favor, rellene todos los campos obligatorios marcados con (*).');
+      this.mostrarModal(
+        'warning',
+        'Campos Incompletos',
+        'Por favor, rellene todos los campos obligatorios marcados con (*).',
+      );
       return;
     }
-    const tieneRol = Object.values(this.user.roles).some(rol => rol === true);
+    const tieneRol = Object.values(this.user.roles).some((rol) => rol === true);
     if (!tieneRol) {
-      this.mostrarModal('warning', 'Sin Roles', 'Debe seleccionar al menos un rol para el usuario.');
+      this.mostrarModal(
+        'warning',
+        'Sin Roles',
+        'Debe seleccionar al menos un rol para el usuario.',
+      );
       return;
     }
 
     const rolesArray: string[] = [];
-    Object.keys(this.user.roles).forEach(key => {
+    Object.keys(this.user.roles).forEach((key) => {
       if ((this.user.roles as any)[key] === true) {
         rolesArray.push(key);
       }
@@ -243,7 +311,7 @@ export class AddUser implements OnInit {
 
     const payload = {
       ...this.user,
-      roles: rolesArray
+      roles: rolesArray,
     };
 
     this.cargando = true;
@@ -251,13 +319,17 @@ export class AddUser implements OnInit {
       this.userService.actualizarUsuario(this.userId, payload).subscribe({
         next: () => {
           this.cargando = false;
-          this.mostrarModal('success', '¡Actualizado!', 'El usuario ha sido actualizado con éxito.');
+          this.mostrarModal(
+            'success',
+            '¡Actualizado!',
+            'El usuario ha sido actualizado con éxito.',
+          );
         },
         error: (err) => {
           this.cargando = false;
           const msg = err.error?.mensaje || 'Error al actualizar el usuario.';
           this.mostrarModal('error', 'Error', msg);
-        }
+        },
       });
     } else {
       this.userService.crearUsuario(payload).subscribe({
@@ -270,7 +342,7 @@ export class AddUser implements OnInit {
           this.cargando = false;
           const msg = err.error?.mensaje || 'Error al crear el usuario.';
           this.mostrarModal('error', 'Error', msg);
-        }
+        },
       });
     }
   }
