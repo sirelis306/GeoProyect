@@ -447,4 +447,9 @@ export class ElementService {
   async obtenerCoordsDesdeDireccion(dir: string | null | undefined) {
     return this.geocoding.obtenerCoordsDesdeDireccion(dir);
   }
+
+  // Llama al backend para filtrar espacialmente
+  filtrarPorPoligonos(wkt: string) {
+    return this.http.post<any[]>(`${this.API_URL}/elementos/filtrar-poligono`, { wkt });
+  }
 }

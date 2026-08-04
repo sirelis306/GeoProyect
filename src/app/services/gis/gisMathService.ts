@@ -14,6 +14,30 @@ export class GisMathService {
   }
 
   /**
+   * Convierte un array de vértices a formato MULTIPOLYGON de WKT.
+   * Solo considera polígonos. Los círculos se aproximan a polígonos si se desea, 
+   * pero aquí asumiremos Polígonos de Leaflet.
+   */
+  figurasToWKT(figuras: {tipo: string, layer: L.Layer}[]): string | null {
+    const poligonos = figuras.filter(f => f.tipo === 'poligono');
+    if (poligonos.length === 0) return null;
+
+    const wktPolygons = poligonos.map(f => {
+      const p = f.layer as L.Polygon;
+      const latlngs = (p.getLatLngs()[0] as L.LatLng[]);
+      // El formato WKT es LONGITUD LATITUD
+      let coords = latlngs.map(ll => `${ll.lng} ${ll.lat}`);
+      // Asegurarse de cerrar el polígono
+      if (coords[0] !== coords[coords.length - 1]) {
+        coords.push(coords[0]);
+      }
+      return `((${coords.join(', ')}))`;
+    });
+
+    return `MULTIPOLYGON(${wktPolygons.join(', ')})`;
+  }
+
+  /**
    * Comprueba si un punto (lat, lng) está dentro de un polígono delimitado por sus vértices.
    * Utiliza el algoritmo de Ray-Casting (PNPOLY).
    */

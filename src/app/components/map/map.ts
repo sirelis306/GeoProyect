@@ -16,6 +16,7 @@ import * as L from 'leaflet';
 import { ProyectoService } from '../../services/proyecto/proyectoService';
 import { Totales } from '../totales/totales';
 import { ElementRendererService } from '../../services/element/elementRendererService';
+import { ElementService } from '../../services/element/elementService';
 import { GisMathService } from '../../services/gis/gisMathService';
 import { Polygons } from '../polygons/polygons';
 import { ProjectManager } from '../project-manager/project-manager';
@@ -34,6 +35,7 @@ export class Map implements AfterViewInit {
   private http = inject(HttpClient);
   private renderer = inject(ElementRendererService);
   private mathService = inject(GisMathService);
+  private elementService = inject(ElementService);
   public proyectoService = inject(ProyectoService);
 
   public leyendaAbierta = signal(true);
@@ -74,6 +76,9 @@ export class Map implements AfterViewInit {
 
   private map!: L.Map;
   private poblacionData: Record<string, number> = {};
+  
+  // Guardamos los elementos ya filtrados por el backend para todo el proyecto activo
+  public proyectoElementosFiltrados = signal<{radioBases: any[], oficinas: any[], agentes: any[]} | null>(null);
 
   private radioBases = L.layerGroup();
   private abonados = L.layerGroup();
@@ -116,8 +121,29 @@ export class Map implements AfterViewInit {
 
       if (activo && !importacionActiva) {
         this.actualizarFigurasProyectoEnMapa(figuras);
+        
+        // Convertir figuras del proyecto a WKT y consultar al backend
+        const wkt = this.mathService.figurasToWKT(figuras.map(f => {
+          let coords = f.coordenadas;
+          try { coords = typeof f.coordenadas === 'string' ? JSON.parse(f.coordenadas) : f.coordenadas; } catch(e){}
+          // Se crea un L.polygon temporal solo para extraer los vértices de manera consistente
+          return { tipo: f.tipo, layer: L.polygon(coords) };
+        }));
+        
+        if (wkt) {
+          this.elementService.filtrarPorPoligonos(wkt).subscribe((elementos: any[]) => {
+            this.proyectoElementosFiltrados.set({
+              radioBases: elementos.filter((e: any) => e.tipo === 'antenas'),
+              oficinas: elementos.filter((e: any) => e.tipo === 'oficinas'),
+              agentes: elementos.filter((e: any) => e.tipo === 'agentes')
+            });
+          });
+        } else {
+          this.proyectoElementosFiltrados.set(null);
+        }
       } else {
         this.projectShapesLayer.clearLayers();
+        this.proyectoElementosFiltrados.set(null);
       }
     });
 
@@ -219,6 +245,9 @@ export class Map implements AfterViewInit {
       if (analisis && (analisis.tipo === 'poligono' || analisis.tipo === 'circulo' || analisis.tipo === 'ruta')) {
         // Mostrar siempre los elementos del polígono como pines individuales,
         // ocultando cualquier total o pin del resto del país.
+        this.renderIndividualMarkers(['antenas', 'oficinas', 'agentes']);
+      } else if (this.proyectoElementosFiltrados() !== null) {
+        // Mostrar solo los elementos dentro de TODOS los polígonos del proyecto
         this.renderIndividualMarkers(['antenas', 'oficinas', 'agentes']);
       } else if (estado.operaciones) {
         if (zoom >= 11.5) {
@@ -863,7 +892,10 @@ export class Map implements AfterViewInit {
       const icon = this.renderer.crearPinIcon('antenas');
       const termino = this.gis.busquedaAntena().toLowerCase();
       
-      const dataSource = isFiltered && analisis.elementos ? analisis.elementos.radioBases : this.gis.radioBasesSignal();
+      const proyFiltros = this.proyectoElementosFiltrados();
+      const dataSource = (isFiltered && analisis.elementos) 
+        ? analisis.elementos.radioBases 
+        : (proyFiltros ? proyFiltros.radioBases : this.gis.radioBasesSignal());
       
       dataSource
         .filter(
@@ -904,7 +936,11 @@ export class Map implements AfterViewInit {
 
     if (tipos.includes('oficinas')) {
       const icon = this.renderer.crearPinIcon('oficinas');
-      const dataSource = isFiltered && analisis.elementos ? analisis.elementos.oficinas : this.gis.oficinasSignal();
+      
+      const proyFiltros = this.proyectoElementosFiltrados();
+      const dataSource = (isFiltered && analisis.elementos) 
+        ? analisis.elementos.oficinas 
+        : (proyFiltros ? proyFiltros.oficinas : this.gis.oficinasSignal());
       dataSource.forEach((o: any) => {
         if (o.latitud && o.longitud) {
           L.marker([o.latitud, o.longitud], { icon, pane: 'elementsPane' })
@@ -930,7 +966,11 @@ export class Map implements AfterViewInit {
 
     if (tipos.includes('agentes')) {
       const icon = this.renderer.crearPinIcon('agentes');
-      const dataSource = isFiltered && analisis.elementos ? analisis.elementos.agentes : this.gis.agentesSignal();
+      
+      const proyFiltros = this.proyectoElementosFiltrados();
+      const dataSource = (isFiltered && analisis.elementos) 
+        ? analisis.elementos.agentes 
+        : (proyFiltros ? proyFiltros.agentes : this.gis.agentesSignal());
       dataSource.forEach((ag: any) => {
         if (ag.latitud && ag.longitud) {
           L.marker([ag.latitud, ag.longitud], { icon, pane: 'elementsPane' })
@@ -1410,9 +1450,9 @@ export class Map implements AfterViewInit {
     }
 
     // Filtrar elementos (Radiobases, Agentes, Oficinas)
-    let radioBases = [];
-    let agentes = [];
-    let oficinas = [];
+    let radioBases: any[] = [];
+    let agentes: any[] = [];
+    let oficinas: any[] = [];
 
     let centroide: L.LatLng | null = null;
     if (tipo === 'circulo' && centroCirculo) {
@@ -1459,15 +1499,22 @@ export class Map implements AfterViewInit {
           !this.elementoEnOtrasFiguras(of.latitud, of.longitud, layer)
         );
     } else if (tipo === 'poligono') {
-      radioBases = this.gis
-        .radioBasesSignal()
-        .filter((rb) => (!bounds || bounds.contains([rb.latitud, rb.longitud])) && this.mathService.puntoEnPoligono(rb.latitud, rb.longitud, vertices) && !this.elementoEnOtrasFiguras(rb.latitud, rb.longitud, layer));
-      agentes = this.gis
-        .agentesSignal()
-        .filter((ag) => (!bounds || bounds.contains([ag.latitud, ag.longitud])) && this.mathService.puntoEnPoligono(ag.latitud, ag.longitud, vertices) && !this.elementoEnOtrasFiguras(ag.latitud, ag.longitud, layer));
-      oficinas = this.gis
-        .oficinasSignal()
-        .filter((of) => (!bounds || bounds.contains([of.latitud, of.longitud])) && this.mathService.puntoEnPoligono(of.latitud, of.longitud, vertices) && !this.elementoEnOtrasFiguras(of.latitud, of.longitud, layer));
+      // Usamos el backend para buscar con ST_Contains en MySQL, súper rápido!
+      const wkt = this.mathService.figurasToWKT([{tipo: 'poligono', layer}]);
+      if (wkt) {
+        this.elementService.filtrarPorPoligonos(wkt).subscribe((elementos: any[]) => {
+          const radioBasesSync = elementos.filter((e: any) => e.tipo === 'antenas' && !this.elementoEnOtrasFiguras(e.latitud, e.longitud, layer));
+          const agentesSync = elementos.filter((e: any) => e.tipo === 'agentes' && !this.elementoEnOtrasFiguras(e.latitud, e.longitud, layer));
+          const oficinasSync = elementos.filter((e: any) => e.tipo === 'oficinas' && !this.elementoEnOtrasFiguras(e.latitud, e.longitud, layer));
+          
+          this.analisisFigura.update((a: any) => {
+            if (a) {
+              a.elementos = { radioBases: radioBasesSync, agentes: agentesSync, oficinas: oficinasSync };
+            }
+            return a ? { ...a } : a;
+          });
+        });
+      }
     } else {
       const bufferMetros = 500;
       radioBases = this.gis
